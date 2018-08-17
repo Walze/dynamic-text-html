@@ -12,21 +12,23 @@ export class Formatter {
    */
   constructor(flag, defaultSelector, triggers) {
     this.flag = flag
-    this.default = defaultSelector
 
     /**
      * @type { [ {name: string, on: (ref: Formatter, text: string) => any} ] }
      */
-    this.triggers = this._setTriggers(triggers)
+    this.triggers = [
+      {
+        name: 'default',
+        on: this.formatDefault(defaultSelector)
+      },
+      ...this._setTriggers(triggers),
+    ]
 
   }
 
   _setTriggers(triggers) {
 
     return Object.keys(triggers).map(triggerName => {
-      if (triggerName === 'default') return { name: 'default' }
-
-
       const triggerFunc = triggers[triggerName]
 
       if (typeof triggerFunc !== 'function')
@@ -39,22 +41,29 @@ export class Formatter {
     })
   }
 
-  formatDefault(fileName, text) {
-    return {
-      file: fileName + '.txt',
-      marked: marked(text),
-      raw: text
+  formatDefault(defaultSelector) {
+    return (_, file) => {
+
+      const defaultInfo = {
+        file: file.name + '.txt',
+        marked: marked(file.data),
+        raw: file.data
+      }
+
+      Array.from(document.querySelectorAll(defaultSelector))
+        .map((campo, i) => {
+          this._setCampoNameToggle(defaultInfo, campo, i)
+          campo.innerHTML = defaultInfo.marked
+        })
+
+      return defaultInfo
     }
   }
 
   fire(triggerName, text) {
-    for (const name of Object.keys(this.triggers)) {
-      if (triggerName !== name) continue
-
-      this.triggers[triggerName].on(this, text)
-
-      return
-    }
+    return this.triggers
+      .find(trigger => trigger.name == triggerName)
+      .on(this, text)
   }
 
   formatFatherChild(array, fatherSelector, childSelector) {
@@ -71,7 +80,7 @@ export class Formatter {
    * @returns {string}
    */
   getFlag(text) {
-    const match = text.match(/\[\[(.+)\]\]/)
+    const match = text.match(this.flag)
 
     return match ? match[1] : null
   }
@@ -89,10 +98,25 @@ export class Formatter {
       .split(/\r\n|\r|\n/g)
       .filter(txt => !!txt)
   }
+
+
+  _setCampoNameToggle(info, campo) {
+    let active = false
+
+    campo.addEventListener('click', e => {
+      if (e.detail !== 4) return
+
+      active = !active
+
+      if (active) campo.innerHTML = info.marked
+      else campo.innerHTML = info.file
+    })
+  }
+
 }
 
 
-export default class DynamicText {
+export class DynamicText {
 
   /**
    * Creates an instance of DynamicText.
@@ -101,62 +125,47 @@ export default class DynamicText {
    */
   constructor(customFormatter) {
     this.formatter = customFormatter
-    this.campos = Array.from(document.querySelectorAll(customFormatter.default))
 
-    this.files = require('../textos/**.txt')
-    this.texts = []
+    this.requiredFiles = require('../textos/**.txt')
+    this.files = []
 
-    this._loadTexts().then(() => this._render())
+    this._loadFiles()
+      .then(files => {
+        files.map(file => this.defaultOrCustom(file))
+      })
   }
 
-  /**
-   * @param {Element} campo
-   * @param {number} i
-   * @memberof Campos
-   */
-  _setCampoNumToggle(campo, i) {
-    const string = this.texts[i].file
-    let active = false
+  async _loadFiles() {
+    const files = []
 
-    campo.addEventListener('click', e => {
-      if (e.detail !== 4) return
-
-      active = !active
-
-      if (active) campo.innerHTML = string
-      else campo.innerHTML = this.texts[i].marked
-    })
-  }
-
-  async _loadTexts() {
-    const txts = []
-
-    for (const nome of Object.keys(this.files)) {
-
-      const text = await fetch(this.files[nome]).then(resp => resp.text())
-
-      if (!this.formatter.getFlag(text))
-        txts.push(this.formatter.formatDefault(nome, text))
-      else {
-        const trigger = this.formatter.getFlag(text)
-
-        console.log('should not push', trigger, this.formatter.fire(trigger, text))
-      }
-
+    for (const name of Object.keys(this.requiredFiles)) {
+      files.push(
+        {
+          name,
+          data: await fetch(this.requiredFiles[name]).then(resp => resp.text())
+        }
+      )
     }
 
-    this.texts = txts
+    this.files = files
 
-    return txts
+    return files
+  }
+
+  defaultOrCustom(file) {
+    if (!this.formatter.getFlag(file.data))
+      this.formatter.fire('default', file)
+    else
+      this.formatter.fire(
+        this.formatter.getFlag(file.data),
+        file.data,
+      )
   }
 
   _render() {
-    if (!this.texts.length)
+    if (!this.files.length)
       throw alert('Nenhum arquivo de text foi encontrado na pasta')
 
-    this.campos.map((campo, i) => {
-      this._setCampoNumToggle(campo, i)
-      campo.innerHTML = this.texts[i].marked
-    })
+
   }
 }
