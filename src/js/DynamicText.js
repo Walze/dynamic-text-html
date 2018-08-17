@@ -15,7 +15,7 @@ function formatList(texto) {
 }
 
 
-export default class Campos {
+export default class DynamicText {
 
   /**
    * @param {string} selector CSS Selector

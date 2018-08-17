@@ -1,4 +1,4 @@
-import Campos from "./js/Campos"
+import DynamicText from './js/DynamicText'
 
-const campos = new Campos('.x-campo')
+const campos = new DynamicText('.x-campo')
 console.log(campos)
