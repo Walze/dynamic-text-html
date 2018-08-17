@@ -4,24 +4,24 @@ import marked from 'marked'
 export class Formatter {
 
   /**
-   * Creates an instance of CustomFormatter.
-   *
+   *Creates an instance of Formatter.
    * @param {RegExp} flag
-   * @param {string} defaultSelector
-   * @param { { [key: string]: (ref: Formatter, text: string) => any } } triggers
+   * @param {string} cssSelector
+   * @param {{ADDLATER}} triggers
+   * @memberof Formatter
    */
-  constructor(flag, defaultSelector, triggers) {
+  constructor(flag, cssSelector, triggers) {
     this.flag = flag
 
     /**
      * @type { [ {name: string, on: (ref: Formatter, text: string) => any} ] }
      */
     this.triggers = [
+      ...this._setTriggers(triggers),
       {
         name: 'default',
-        on: this.formatDefault(defaultSelector)
+        on: this.formatDefault(cssSelector)
       },
-      ...this._setTriggers(triggers),
     ]
 
   }
@@ -75,20 +75,12 @@ export class Formatter {
     }
   }
 
-  /**
-   * @param {string} text
-   * @returns {string}
-   */
   getFlag(text) {
     const match = text.match(this.flag)
 
     return match ? match[1] : null
   }
 
-  /**
-   * @param {string} text
-   * @returns {string}
-   */
   replaceFlag(text, replaceWith = '\n') {
     return text.replace(this.flag, replaceWith)
   }
@@ -120,11 +112,11 @@ export class DynamicText {
 
   /**
    * Creates an instance of DynamicText.
-   * @param {Formatter} customFormatter
+   * @param {Formatter} formatter
    * @memberof DynamicText
    */
-  constructor(customFormatter) {
-    this.formatter = customFormatter
+  constructor(formatter) {
+    this.formatter = formatter
 
     this.requiredFiles = require('../textos/**.txt')
     this.files = []
