@@ -1,4 +1,13 @@
-import DynamicText from './js/DynamicText'
+import DynamicText, { Formatter } from './js/DynamicText'
 
-const campos = new DynamicText('.x-campo')
+const formatter = new Formatter(/\[\[.+\]\]/, '[campo]', {
+  LIST: (ref, texto) => {
+    console.warn(ref, texto)
+  },
+})
+
+console.log(formatter)
+
+const campos = new DynamicText(formatter)
+
 console.log(campos)
