@@ -1,31 +1,46 @@
 
 import marked from 'marked'
 
+
+
+
+/**
+ *  @typedef { { name: string, data:string } } fileType
+ *  @typedef { (ref: Formatter, file: fileType, ...args: any[]) => void  } emit
+ *  @typedef { { name: string, emit: emit } } triggerType
+ *  @typedef { { [key: string]: emit } } triggerParamType
+ */
+
 export class Formatter {
 
   /**
    *Creates an instance of Formatter.
    * @param {RegExp} flag
-   * @param {string} cssSelector
-   * @param {{ADDLATER}} triggers
+   * @param {string} defaultCssSelector
+   * @param { triggerParamType } triggers
    * @memberof Formatter
    */
-  constructor(flag, cssSelector, triggers) {
+  constructor(flag, defaultCssSelector, triggers) {
     this.flag = flag
 
     /**
-     * @type { [ {name: string, on: (ref: Formatter, text: string) => any} ] }
+     * @type { triggerType[] }
      */
     this.triggers = [
       ...this._setTriggers(triggers),
       {
         name: 'default',
-        on: this.formatDefault(cssSelector)
+        emit: this.formatDefault(defaultCssSelector)
       },
     ]
 
   }
 
+
+  /**
+   * @param {triggerParamType} triggers
+   * @returns { triggerType[] }
+   */
   _setTriggers(triggers) {
 
     return Object.keys(triggers).map(triggerName => {
@@ -36,36 +51,54 @@ export class Formatter {
 
       return {
         name: triggerName,
-        on: triggerFunc
+        emit: triggerFunc
       }
     })
   }
 
-  formatDefault(defaultSelector) {
-    return (_, file) => {
+
+  /**
+   * @param {string} defaultCssSelector
+   * @returns { (_: Formatter, text: string, fileName: string, campoIndex: string) =>  { file: string; marked: string; raw: string; }}
+   */
+  formatDefault(defaultCssSelector) {
+    return (_, text, fileName, campoIndex) => {
 
       const defaultInfo = {
-        file: file.name + '.txt',
-        marked: marked(file.data),
-        raw: file.data
+        file: fileName + '.txt',
+        marked: marked(text),
+        raw: text
       }
 
-      Array.from(document.querySelectorAll(defaultSelector))
-        .map((campo, i) => {
-          this._setCampoNameToggle(defaultInfo, campo, i)
-          campo.innerHTML = defaultInfo.marked
-        })
+      const campos = document.querySelectorAll(defaultCssSelector)
+      const campo = campos[campoIndex]
+
+
+      this._setCampoNameToggle(defaultInfo, campo)
+      campo.innerHTML = defaultInfo.marked
 
       return defaultInfo
     }
   }
 
-  fire(triggerName, text) {
+
+  /**
+   * @param {string} triggerName
+   * @param {string} text
+   * @param { any[] } args
+   */
+  fire(triggerName, text, ...args) {
     return this.triggers
-      .find(trigger => trigger.name == triggerName)
-      .on(this, text)
+      .find(trigger => trigger.name === triggerName)
+      .emit(this, text, ...args)
   }
 
+
+  /**
+   * @param { string[] } array
+   * @param { string } fatherSelector
+   * @param { string } childSelector
+   */
   formatFatherChild(array, fatherSelector, childSelector) {
     for (const father of document.querySelectorAll(fatherSelector)) {
       let index = 0
@@ -75,16 +108,27 @@ export class Formatter {
     }
   }
 
-  getFlag(text) {
+
+  /**
+   * @param { string } text
+   */
+  matchFlag(text) {
     const match = text.match(this.flag)
 
     return match ? match[1] : null
   }
 
+  /**
+   * @param { string } text
+   * @param { string } replaceWith
+   */
   replaceFlag(text, replaceWith = '\n') {
     return text.replace(this.flag, replaceWith)
   }
 
+  /**
+   * @param { string } text
+   */
   breakLines(text) {
     return this.replaceFlag(text)
       .split(/\r\n|\r|\n/g)
@@ -92,6 +136,10 @@ export class Formatter {
   }
 
 
+  /**
+   * @param {*} info
+   * @param { Element } campo
+   */
   _setCampoNameToggle(info, campo) {
     let active = false
 
@@ -105,38 +153,44 @@ export class Formatter {
     })
   }
 
+
 }
 
 
 export class DynamicText {
 
   /**
-   * Creates an instance of DynamicText.
    * @param {Formatter} formatter
-   * @memberof DynamicText
    */
   constructor(formatter) {
     this.formatter = formatter
 
     this.requiredFiles = require('../textos/**.txt')
+
+    if (!Object.keys(this.requiredFiles).length)
+      throw alert('Nenhum arquivo de text foi encontrado na pasta')
+
+    /**
+     * @type { fileType[] }
+     */
     this.files = []
 
     this._loadFiles()
       .then(files => {
-        files.map(file => this.defaultOrCustom(file))
+        files.map((file, i) => this.defaultOrCustom(file, i))
       })
   }
 
+  /**
+   * @returns { fileType[] }
+   */
   async _loadFiles() {
     const files = []
 
     for (const name of Object.keys(this.requiredFiles)) {
-      files.push(
-        {
-          name,
-          data: await fetch(this.requiredFiles[name]).then(resp => resp.text())
-        }
-      )
+      const data = await fetch(this.requiredFiles[name]).then(resp => resp.text())
+
+      files.push({ name, data })
     }
 
     this.files = files
@@ -144,20 +198,18 @@ export class DynamicText {
     return files
   }
 
-  defaultOrCustom(file) {
-    if (!this.formatter.getFlag(file.data))
-      this.formatter.fire('default', file)
+  /**
+   * @param { fileType } file
+   * @param { number } index
+   */
+  defaultOrCustom(file, index) {
+    if (!this.formatter.matchFlag(file.data))
+      this.formatter.fire('default', file.data, file.name, index)
     else
       this.formatter.fire(
-        this.formatter.getFlag(file.data),
+        this.formatter.matchFlag(file.data),
         file.data,
       )
   }
 
-  _render() {
-    if (!this.files.length)
-      throw alert('Nenhum arquivo de text foi encontrado na pasta')
-
-
-  }
 }
