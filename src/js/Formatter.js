@@ -56,6 +56,9 @@ export default class Formatter {
 
     return (_, text, fileName, fieldIndex) => {
 
+      /**
+       * @typedef { file: string; marked: string; raw: string; } infoDef
+       */
       const defaultInfo = {
         file: fileName + '.txt',
         marked: marked(text),
@@ -64,7 +67,7 @@ export default class Formatter {
 
       const field = fields[fieldIndex]
 
-      this._setFieldNameToggle(defaultInfo, field)
+      // this._setFieldNameToggle(defaultInfo.file, defaultInfo.marked, field)
       field.innerHTML = defaultInfo.marked
 
       return defaultInfo
@@ -73,8 +76,8 @@ export default class Formatter {
 
 
   /**
-   * @param {string} triggerName
-   * @param {string} text
+   * @param { string } triggerName
+   * @param { string } text
    * @param { any[] } args
    */
   fire(triggerName, text, ...args) {
@@ -164,10 +167,11 @@ export default class Formatter {
 
 
   /**
-   * @param {*} info
+   * @param { string } marked
+   * @param { string } fileName
    * @param { Element } field
    */
-  _setFieldNameToggle(info, field) {
+  _setFieldNameToggle(fileName, marked, field) {
     let active = false
 
     field.addEventListener('click', e => {
@@ -175,8 +179,8 @@ export default class Formatter {
 
       active = !active
 
-      if (active) field.innerHTML = info.marked
-      else field.innerHTML = info.file
+      if (active) field.innerHTML = marked
+      else field.innerHTML = fileName
     })
   }
 
