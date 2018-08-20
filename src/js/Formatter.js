@@ -106,50 +106,62 @@ export default class Formatter {
    */
   breakLines(text, everyN = 2) {
 
-    // const lines = text
-    //   .split(/\r\n|\r|\n/g)
+    const lines =
+      this.replaceFlag(text)
+        .split(/\r\n|\r|\n/g)
 
-    // /**
-    //  * @type { [][] }
-    //  */
-    // const arr = []
-    // let arrIndex = 0
-    // let arrArrIndex = 0
+    /**
+     * @type { [][] }
+     */
+    const arr = []
+    let arrIndex = 0
+    let arrArrIndex = 0
 
-    // let prevLine = null
+    let prevLine = null
+    let lastTrue = false;
 
-    // console.log(
-    //   lines,
-    //   lines.map(line => {
+    console.log(
+      lines,
+      lines.map((line, lineI) => {
 
-    //     let arrItem = arr[arrIndex]
+        let arrItem = arr[arrIndex]
 
-    //     if (!Array.isArray(arrItem)) arrItem = []
+        if (!Array.isArray(arrItem)) arrItem = []
 
-    //     let nPrevEmpty = false;
+        let nPrevEmpty = false;
+        const currentEmpty = line !== '';
 
+        // checa se os N ultimos itens são vazios
+        [...Array(everyN - 1)].map((_, i) => {
+          const index = lineI - (i + 1)
 
-    //     // checa se as 2 ultimos itens são vazios
-    //     [...Array(everyN)].map((_, i) => {
-    //       if (arrArrIndex - (i + 1) < 0) return
+          if (index < 0) return nPrevEmpty = false
 
-    //       lines[arrArrIndex - (i + 1)] === '' ? nPrevEmpty = true : nPrevEmpty = false
+          lines[index] === '' ? nPrevEmpty = true : nPrevEmpty = false
+        })
 
-    //     })
+        console.log(lineI, line, nPrevEmpty && !currentEmpty, '||', arrIndex, arrArrIndex)
 
-    //     console.log(line, nPrevEmpty)
+        if (currentEmpty) {
+          arrItem[arrArrIndex++] = line
+        }
 
-    //     if (line !== '') {
-    //       arrItem[arrArrIndex++] = line
-    //     }
+        arr[arrIndex] = arrItem
 
-    //     if (nPrevEmpty) arrIndex++
+        const nextIndex = (nPrevEmpty && !currentEmpty)
 
-    //     arr[arrIndex] = arrItem
-    //     prevLine = line
-    //   }),
-    //   arr
-    // )
+        if (!nextIndex) {
+          lastTrue = false
+        }
+
+        if (nextIndex && !lastTrue) {
+          arrIndex++
+          lastTrue = true
+        }
+        prevLine = line
+      }),
+      arr
+    )
 
     return this
       .replaceFlag(text)
