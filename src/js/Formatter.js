@@ -56,9 +56,6 @@ export default class Formatter {
 
     return (_, text, fileName, fieldIndex) => {
 
-      /**
-       * @typedef { file: string; marked: string; raw: string; } infoDef
-       */
       const defaultInfo = {
         file: fileName + '.txt',
         marked: marked(text),
@@ -106,6 +103,7 @@ export default class Formatter {
 
   /**
    * @param { string } text
+   * @returns { [] | [][] }
    */
   breakLines(text, everyN = 0) {
 
@@ -162,7 +160,7 @@ export default class Formatter {
 
     })
 
-    return groups
+    return everyN !== 0 ? groups : groups[0]
   }
 
 

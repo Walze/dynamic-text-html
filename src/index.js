@@ -10,7 +10,7 @@ const formatter = new Formatter(
   {
     LIST: (ref, texto) => {
       return formatFatherChild(
-        ref.breakLines(texto)[0],
+        ref.breakLines(texto),
         '[items]',
         '[item]'
       )
