@@ -1,11 +1,15 @@
-import { DynamicText, Formatter } from './js/DynamicText'
+
+import { formatFatherChild } from './customFormatters'
+import Formatter from './js/Formatter';
+import DynamicText from './js/DynamicText';
+
 
 const formatter = new Formatter(
   /\[\[(.+)\]\]/,
-  '[campo]',
+  '[field]',
   {
     LIST: (ref, texto) => {
-      ref.formatFatherChild(
+      return formatFatherChild(
         ref.breakLines(texto),
         '[items]',
         '[item]'
@@ -14,8 +18,6 @@ const formatter = new Formatter(
   }
 )
 
-console.log(formatter)
+const fields = new DynamicText(formatter)
 
-const campos = new DynamicText(formatter)
-
-console.log(campos)
+console.log(fields)
