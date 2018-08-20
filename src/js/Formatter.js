@@ -1,14 +1,14 @@
 
 import marked from 'marked'
 
+
 export default class Formatter {
 
   /**
    *Creates an instance of Formatter.
-   * @param {RegExp} flag
-   * @param {string} defaultCssSelector
+   * @param { RegExp } flag
+   * @param { string } defaultCssSelector
    * @param { triggerParamType } triggers
-   * @memberof Formatter
    */
   constructor(flag, defaultCssSelector, triggers) {
     this.flag = flag
@@ -28,7 +28,7 @@ export default class Formatter {
 
 
   /**
-   * @param {triggerParamType} triggers
+   * @param { triggerParamType } triggers
    * @returns { triggerType[] }
    */
   _setTriggers(triggers) {
@@ -104,67 +104,62 @@ export default class Formatter {
   /**
    * @param { string } text
    */
-  breakLines(text, everyN = 2) {
+  breakLines(text, everyN = 0) {
 
-    const lines =
-      this.replaceFlag(text)
-        .split(/\r\n|\r|\n/g)
+    const lines = this
+      .replaceFlag(text, '')
+      .trim()
+      .split(/\r\n|\r|\n/g)
 
     /**
      * @type { [][] }
      */
-    const groups = [];
-    let groupsIndex = 0;
-    let groupItemIndex = 0;
+    const groups = []
+    let groupsIndex = 0
+    let groupItemIndex = 0
 
-    let lastTrue = false;
+    let lastTrue = false
 
     lines.map((line, lineI) => {
 
-      let groupItem = groups[groupsIndex]
-      let nPrevEmpty = false
-      const currentEmpty = line !== ''
+      let currNPrevEmpty = false
+      const hasText = line !== ''
 
       // set array if undefined
-      if (!Array.isArray(groupItem)) groupItem = [];
+      if (!Array.isArray(groups[groupsIndex])) groups[groupsIndex] = []
 
-      // checa se os N ultimos itens são vazios
-      [...Array(everyN - 1)].map((_, i) => {
-        const index = lineI - (i + 1)
+      // checks if N previous items are empty
+      let breakCounter = 0;
 
-        if (index < 0) return nPrevEmpty = false
+      [...Array(everyN)].map((_, i) => {
+        const index = lineI - i
 
-        lines[index] === '' ? nPrevEmpty = true : nPrevEmpty = false
+        if (index < 0) return breakCounter--
+
+        // lines[lineI - i] === '' ? breakCounter++ : breakCounter--
+        const condition = lines[lineI - i] === ''
+        breakCounter += condition
       })
 
-      // console.log(lineI, line, nPrevEmpty && !currentEmpty, '||', arrIndex, arrArrIndex)
+      currNPrevEmpty = (breakCounter === everyN) && everyN !== 0
 
-      if (currentEmpty) {
-        groupItem[groupItemIndex++] = line
+      if (hasText) {
+        groups[groupsIndex][groupItemIndex++] = line
       }
 
-      groups[groupsIndex] = groupItem
-
-      const goToNextGroup = (nPrevEmpty && !currentEmpty)
+      const goToNextGroup = currNPrevEmpty
 
       if (!goToNextGroup) lastTrue = false
 
       if (goToNextGroup && !lastTrue) {
         groupsIndex++
+        groupItemIndex = 0
         lastTrue = true
       }
 
     })
 
-    console.log(
-      lines,
-      groups
-    )
-
-    return this
-      .replaceFlag(text)
-      .split(/\r\n|\r|\n/g)
-      .filter(txt => !!txt)
+    return groups
   }
 
 

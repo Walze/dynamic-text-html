@@ -1,7 +1,7 @@
 
 import { formatFatherChild } from './customFormatters'
-import Formatter from './js/Formatter';
-import DynamicText from './js/DynamicText';
+import Formatter from './js/Formatter'
+import DynamicText from './js/DynamicText'
 
 
 const formatter = new Formatter(
@@ -10,7 +10,7 @@ const formatter = new Formatter(
   {
     LIST: (ref, texto) => {
       return formatFatherChild(
-        ref.breakLines(texto),
+        ref.breakLines(texto)[0],
         '[items]',
         '[item]'
       )

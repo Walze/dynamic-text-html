@@ -1,16 +1,9 @@
 
 
-/**
- *  @typedef { { name: string, data:string } } fileType
- *  @typedef { (ref: Formatter, file: fileType, ...args: any[]) => any  } emit
- *  @typedef { { name: string, emit: emit } } triggerType
- *  @typedef { { [key: string]: emit } } triggerParamType
- */
-
 export default class DynamicText {
 
   /**
-   * @param {Formatter} formatter
+   * @param { Formatter } formatter
    */
   constructor(formatter) {
     this.formatter = formatter
