@@ -119,11 +119,14 @@ export default class Formatter {
     let groupsIndex = 0
     let groupItemIndex = 0
 
-    let lastTrue = false
+    /**
+     * Block consecutive breaks
+     */
+    let blocked = false
 
     lines.map((line, lineI) => {
 
-      let currNPrevEmpty = false
+      let goToNextGroup = false
       const hasText = line !== ''
 
       // set array if undefined
@@ -138,24 +141,24 @@ export default class Formatter {
         if (index < 0) return breakCounter--
 
         // lines[lineI - i] === '' ? breakCounter++ : breakCounter--
-        const condition = lines[lineI - i] === ''
-        breakCounter += condition
+        breakCounter += lines[lineI - i] === ''
       })
 
-      currNPrevEmpty = (breakCounter === everyN) && everyN !== 0
+      // if breakcounter matches param
+      goToNextGroup = (breakCounter === everyN) && everyN !== 0
 
+      // adds line to group item if has text
       if (hasText) {
         groups[groupsIndex][groupItemIndex++] = line
       }
 
-      const goToNextGroup = currNPrevEmpty
+      if (!goToNextGroup)
+        blocked = false
 
-      if (!goToNextGroup) lastTrue = false
-
-      if (goToNextGroup && !lastTrue) {
+      if (goToNextGroup && !blocked) {
         groupsIndex++
         groupItemIndex = 0
-        lastTrue = true
+        blocked = true
       }
 
     })
