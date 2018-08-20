@@ -113,54 +113,52 @@ export default class Formatter {
     /**
      * @type { [][] }
      */
-    const arr = []
-    let arrIndex = 0
-    let arrArrIndex = 0
+    const groups = [];
+    let groupsIndex = 0;
+    let groupItemIndex = 0;
 
-    let prevLine = null
     let lastTrue = false;
+
+    lines.map((line, lineI) => {
+
+      let groupItem = groups[groupsIndex]
+      let nPrevEmpty = false
+      const currentEmpty = line !== ''
+
+      // set array if undefined
+      if (!Array.isArray(groupItem)) groupItem = [];
+
+      // checa se os N ultimos itens são vazios
+      [...Array(everyN - 1)].map((_, i) => {
+        const index = lineI - (i + 1)
+
+        if (index < 0) return nPrevEmpty = false
+
+        lines[index] === '' ? nPrevEmpty = true : nPrevEmpty = false
+      })
+
+      // console.log(lineI, line, nPrevEmpty && !currentEmpty, '||', arrIndex, arrArrIndex)
+
+      if (currentEmpty) {
+        groupItem[groupItemIndex++] = line
+      }
+
+      groups[groupsIndex] = groupItem
+
+      const goToNextGroup = (nPrevEmpty && !currentEmpty)
+
+      if (!goToNextGroup) lastTrue = false
+
+      if (goToNextGroup && !lastTrue) {
+        groupsIndex++
+        lastTrue = true
+      }
+
+    })
 
     console.log(
       lines,
-      lines.map((line, lineI) => {
-
-        let arrItem = arr[arrIndex]
-
-        if (!Array.isArray(arrItem)) arrItem = []
-
-        let nPrevEmpty = false;
-        const currentEmpty = line !== '';
-
-        // checa se os N ultimos itens são vazios
-        [...Array(everyN - 1)].map((_, i) => {
-          const index = lineI - (i + 1)
-
-          if (index < 0) return nPrevEmpty = false
-
-          lines[index] === '' ? nPrevEmpty = true : nPrevEmpty = false
-        })
-
-        console.log(lineI, line, nPrevEmpty && !currentEmpty, '||', arrIndex, arrArrIndex)
-
-        if (currentEmpty) {
-          arrItem[arrArrIndex++] = line
-        }
-
-        arr[arrIndex] = arrItem
-
-        const nextIndex = (nPrevEmpty && !currentEmpty)
-
-        if (!nextIndex) {
-          lastTrue = false
-        }
-
-        if (nextIndex && !lastTrue) {
-          arrIndex++
-          lastTrue = true
-        }
-        prevLine = line
-      }),
-      arr
+      groups
     )
 
     return this
