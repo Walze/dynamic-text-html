@@ -54,9 +54,9 @@ export default class DynamicText {
       let firedTriggersReturn
 
       if (!matchedFlag)
-        firedTriggersReturn = this.formatter.fire('default', file.data, file.name, fieldIndex++)
+        firedTriggersReturn = this.formatter.fire('default', file, fieldIndex++)
       else
-        firedTriggersReturn = this.formatter.fire(matchedFlag, file.data)
+        firedTriggersReturn = this.formatter.fire(matchedFlag, file)
 
       firedTriggersReturns.push(firedTriggersReturn)
     }

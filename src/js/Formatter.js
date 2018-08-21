@@ -48,22 +48,22 @@ export default class Formatter {
 
   /**
    * @param {string} defaultCssSelector
-   * @returns { (_: Formatter, text: string, fileName: string, fieldIndex: number) =>  { file: string; marked: string; raw: string; }}
+   * @returns { (_: Formatter, file: fileType, fieldIndex: number) =>  { file: string; marked: string; raw: string; }}
    */
   formatDefault(defaultCssSelector) {
     const fields = document.querySelectorAll(defaultCssSelector)
 
-    return (_, text, fileName, fieldIndex) => {
+    return (_, file, fieldIndex) => {
 
       const defaultInfo = {
-        file: fileName + '.txt',
-        marked: marked(text),
-        raw: text
+        file: file.name + '.txt',
+        marked: marked(file.data),
+        raw: file.data
       }
 
       const field = fields[fieldIndex]
 
-      // this._setFieldNameToggle(defaultInfo.file, defaultInfo.marked, field)
+      this._setFieldNameToggle(defaultInfo.file, defaultInfo.marked, field)
       field.innerHTML = defaultInfo.marked
 
       return defaultInfo
@@ -73,13 +73,13 @@ export default class Formatter {
 
   /**
    * @param { string } triggerName
-   * @param { string } text
+   * @param { fileType } file
    * @param { any[] } args
    */
-  fire(triggerName, text, ...args) {
+  fire(triggerName, file, ...args) {
     return this.triggers
       .find(trigger => trigger.name === triggerName)
-      .emit(this, text, ...args)
+      .emit(this, file, ...args)
   }
 
 
@@ -167,9 +167,10 @@ export default class Formatter {
 
   /**
    * @param { any[] } array
+   * @param { fileType } file
    * @param { string[] } selectors
    */
-  formatFatherChildren(array, ...selectors) {
+  formatFatherChildren(file, array, ...selectors) {
 
     // gets the fathers
     const fathers = Array.from(document.querySelectorAll(selectors[0]))
@@ -200,6 +201,7 @@ export default class Formatter {
 
       })
 
+      this._setFieldNameToggle(file.name, father.innerHTML, father)
     })
 
   }
@@ -213,13 +215,16 @@ export default class Formatter {
   _setFieldNameToggle(fileName, marked, field) {
     let active = false
 
+
     field.addEventListener('click', e => {
-      if (e.detail !== 4) return
+      if (e.detail !== 3) return
+
+      console.log(fileName, active)
 
       active = !active
 
       if (active) field.innerHTML = marked
-      else field.innerHTML = fileName
+      else field.innerHTML = fileName + '.txt'
     })
   }
 

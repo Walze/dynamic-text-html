@@ -7,16 +7,16 @@ import DynamicText from './js/DynamicText'
  */
 const triggers = {
 
-  LIST: (ref, texto) => {
+  LIST: (ref, file) => {
 
     const selectors = [
       '[items]',
       '[head]',
       '[item]'
     ]
-
     return ref.formatFatherChildren(
-      ref.everyNthLineBreak(texto, selectors.length),
+      file,
+      ref.everyNthLineBreak(file.data, selectors.length),
       ...selectors
     )
   },
