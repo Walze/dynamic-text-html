@@ -5,7 +5,6 @@ import marked from 'marked'
 export default class Formatter {
 
   /**
-   *Creates an instance of Formatter.
    * @param { RegExp } flag
    * @param { string } defaultCssSelector
    * @param { triggerParamType } triggers
@@ -120,7 +119,7 @@ export default class Formatter {
     let groupItemIndex = 0
 
     /**
-     * Block consecutive breaks
+     * Blocks consecutive breaks
      */
     let blocked = false
 
