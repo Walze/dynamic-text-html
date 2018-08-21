@@ -12,7 +12,7 @@ export default class DynamicText {
     this.fileURLs = fileURLs
 
     if (!Object.keys(this.fileURLs).length)
-      throw alert('Nenhum arquivo de text foi encontrado na pasta')
+      throw new Error('Nenhum arquivo de text foi encontrado na pasta')
 
     /**
      * @type { fileType[] }
@@ -36,6 +36,10 @@ export default class DynamicText {
             name,
             data: await response.text()
           }))
+          .catch(err => {
+            console.error(err)
+            throw new Error('Could not fetch text files')
+          })
       )
 
     return this.files = await Promise.all(promises)
@@ -46,18 +50,20 @@ export default class DynamicText {
    */
   fireFilesToFormatter(files) {
 
-    let fieldIndex = 0
+    let defaultFileIndex = 0
     const firedTriggersReturns = []
 
     for (const file of files) {
 
-      const matchedFlag = this.formatter.matchFlag(file.data)
       let firedTriggersReturn
 
-      if (!matchedFlag)
-        firedTriggersReturn = this.formatter.fire('default', file, fieldIndex++)
+      // if didn't match, it's a default field
+      const customField = this.formatter.matchFlag(file.data)
+
+      if (customField)
+        firedTriggersReturn = this.formatter.pullTrigger(customField, file)
       else
-        firedTriggersReturn = this.formatter.fire(matchedFlag, file)
+        firedTriggersReturn = this.formatter.pullTrigger('default', file, defaultFileIndex++)
 
       firedTriggersReturns.push(firedTriggersReturn)
     }

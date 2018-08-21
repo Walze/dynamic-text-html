@@ -8,7 +8,7 @@ declare global {
 
     export type emit = (ref: Formatter, file: fileType, ...args: any[]) => any
 
-    export type triggerType = { name: string, emit: emit }
+    export type triggerType = { name: string, fire: emit }
 
     export type triggerParamType = { [key: string]: emit }
 }

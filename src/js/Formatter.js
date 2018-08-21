@@ -16,10 +16,10 @@ export default class Formatter {
      * @type { triggerType[] }
      */
     this.triggers = [
-      ...this._setTriggers(triggers),
+      ...this._processTriggers(triggers),
       {
         name: 'default',
-        emit: this.formatDefault(defaultCssSelector)
+        fire: this._formatDefault(defaultCssSelector)
       },
     ]
 
@@ -27,27 +27,36 @@ export default class Formatter {
 
 
   /**
+   * @private
    * @param {string} defaultCssSelector
-   * @returns { (_: Formatter, file: fileType, fieldIndex: number) =>  { file: string; marked: string; raw: string; }}
+   * @returns { (_: Formatter, file: fileType, fileIndex: number) => { file: string; marked: string; raw: string; }}
    */
-  formatDefault(defaultCssSelector) {
+  _formatDefault(defaultCssSelector) {
     const fields = document.querySelectorAll(defaultCssSelector)
 
-    return (_, file, fieldIndex) => {
+    return (_, file, fileIndex) => {
 
+      const field = fields[fileIndex]
       const defaultInfo = {
         file: file.name + '.txt',
         marked: marked(file.data),
         raw: file.data
       }
 
-      const field = fields[fieldIndex]
-
-      this._setFieldNameToggle(defaultInfo.file, defaultInfo.marked, field)
+      this._displayFileNameToggle(defaultInfo.file, defaultInfo.marked, field)
       field.innerHTML = defaultInfo.marked
 
       return defaultInfo
     }
+  }
+
+  /**
+   * @param { string } name
+   * @returns { triggerType }
+   */
+  findTrigger(name) {
+    return this.triggers
+      .find(trigger => trigger.name === name)
   }
 
 
@@ -56,10 +65,10 @@ export default class Formatter {
    * @param { fileType } file
    * @param { any[] } args
    */
-  fire(triggerName, file, ...args) {
-    return this.triggers
-      .find(trigger => trigger.name === triggerName)
-      .emit(this, file, ...args)
+  pullTrigger(triggerName, file, ...args) {
+    return this
+      .findTrigger(triggerName)
+      .fire(this, file, ...args)
   }
 
 
@@ -181,7 +190,7 @@ export default class Formatter {
 
       })
 
-      this._setFieldNameToggle(file.name, father.innerHTML, father)
+      this._displayFileNameToggle(file.name, father.innerHTML, father)
     })
 
   }
@@ -192,19 +201,21 @@ export default class Formatter {
    * @param { triggerParamType } triggers
    * @returns { triggerType[] }
    */
-  _setTriggers(triggers) {
+  _processTriggers(triggers) {
 
-    return Object.keys(triggers).map(triggerName => {
-      const triggerFunc = triggers[triggerName]
+    return Object
+      .keys(triggers)
+      .map(triggerName => {
+        const triggerFunc = triggers[triggerName]
 
-      if (typeof triggerFunc !== 'function')
-        throw new Error('Trigger is not fucntion')
+        if (typeof triggerFunc !== 'function')
+          throw new Error('Trigger is not fucntion')
 
-      return {
-        name: triggerName,
-        emit: triggerFunc
-      }
-    })
+        return {
+          name: triggerName,
+          fire: triggerFunc
+        }
+      })
   }
 
 
@@ -214,7 +225,7 @@ export default class Formatter {
    * @param { string } fileName
    * @param { Element } field
    */
-  _setFieldNameToggle(fileName, marked, field) {
+  _displayFileNameToggle(fileName, marked, field) {
     let active = false
 
 
