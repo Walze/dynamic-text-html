@@ -27,26 +27,6 @@ export default class Formatter {
 
 
   /**
-   * @param { triggerParamType } triggers
-   * @returns { triggerType[] }
-   */
-  _setTriggers(triggers) {
-
-    return Object.keys(triggers).map(triggerName => {
-      const triggerFunc = triggers[triggerName]
-
-      if (typeof triggerFunc !== 'function')
-        throw new Error('Trigger is not fucntion')
-
-      return {
-        name: triggerName,
-        emit: triggerFunc
-      }
-    })
-  }
-
-
-  /**
    * @param {string} defaultCssSelector
    * @returns { (_: Formatter, file: fileType, fieldIndex: number) =>  { file: string; marked: string; raw: string; }}
    */
@@ -208,6 +188,28 @@ export default class Formatter {
 
 
   /**
+   * @private
+   * @param { triggerParamType } triggers
+   * @returns { triggerType[] }
+   */
+  _setTriggers(triggers) {
+
+    return Object.keys(triggers).map(triggerName => {
+      const triggerFunc = triggers[triggerName]
+
+      if (typeof triggerFunc !== 'function')
+        throw new Error('Trigger is not fucntion')
+
+      return {
+        name: triggerName,
+        emit: triggerFunc
+      }
+    })
+  }
+
+
+  /**
+   * @private
    * @param { string } marked
    * @param { string } fileName
    * @param { Element } field
