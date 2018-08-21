@@ -104,7 +104,7 @@ export default class Formatter {
    * @param { string } text
    * @returns { [] | [][] }
    */
-  breakLines(text, everyN = 0) {
+  everyNthLineBreak(text, everyN = 0) {
 
     const lines = this
       .replaceFlag(text, '')

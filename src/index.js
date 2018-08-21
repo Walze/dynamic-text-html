@@ -6,6 +6,7 @@ import DynamicText from './js/DynamicText'
  * @type { triggerParamType }
  */
 const triggers = {
+
   LIST: (ref, texto) => {
 
     const selectors = [
@@ -15,15 +16,16 @@ const triggers = {
     ]
 
     return ref.formatFatherChildren(
-      ref.breakLines(texto, selectors.length),
+      ref.everyNthLineBreak(texto, selectors.length),
       ...selectors
     )
   },
+
 }
 
 
-const formatter = new Formatter(/\[\[(.+)\]\]/, '[field]', triggers)
-
-const fields = new DynamicText(formatter)
+const fields = new DynamicText(
+  new Formatter(/\[\[(.+)\]\]/, '[field]', triggers)
+)
 
 console.log(fields)
