@@ -21,7 +21,7 @@ export default class DynamicText {
 
     this.triggersReturns = this
       ._loadFiles()
-      .then(files => this.fireFilesToFormatter(files))
+      .then(files => this.fireFiles(files))
   }
 
   /**
@@ -48,7 +48,7 @@ export default class DynamicText {
   /**
    * @param { fileType[] } files
    */
-  fireFilesToFormatter(files) {
+  fireFiles(files) {
 
     let defaultFileIndex = 0
     const firedTriggersReturns = []
@@ -57,11 +57,11 @@ export default class DynamicText {
 
       let firedTriggersReturn
 
-      // if didn't match, it's a default field
-      const customField = this.formatter.matchFlag(file.data)
+      // if didn't match, it's a default
+      const customTrigger = this.formatter.matchFlag(file.data)
 
-      if (customField)
-        firedTriggersReturn = this.formatter.pullTrigger(customField, file)
+      if (customTrigger)
+        firedTriggersReturn = this.formatter.pullTrigger(customTrigger, file)
       else
         firedTriggersReturn = this.formatter.pullTrigger('default', file, defaultFileIndex++)
 
