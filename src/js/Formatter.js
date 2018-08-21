@@ -219,8 +219,6 @@ export default class Formatter {
     field.addEventListener('click', e => {
       if (e.detail !== 3) return
 
-      console.log(fileName, active)
-
       active = !active
 
       if (active) field.innerHTML = marked
