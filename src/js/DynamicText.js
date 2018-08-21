@@ -42,7 +42,7 @@ export default class DynamicText {
           })
       )
 
-    return this.files = await Promise.all(promises)
+    return this.files = Promise.all(promises)
   }
 
   /**
