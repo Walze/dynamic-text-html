@@ -1,23 +1,28 @@
 
-import { formatFatherChild } from './customFormatters'
 import Formatter from './js/Formatter'
 import DynamicText from './js/DynamicText'
 
+/**
+ * @type { triggerParamType }
+ */
+const triggers = {
+  LIST: (ref, texto) => {
 
-const formatter = new Formatter(
-  /\[\[(.+)\]\]/,
-  '[field]',
-  {
-    LIST: (ref, texto) => {
-      return formatFatherChild(
-        ref.breakLines(texto, 3),
-        '[items]',
-        '[head]',
-        '[item]'
-      )
-    },
-  }
-)
+    const selectors = [
+      '[items]',
+      '[head]',
+      '[item]'
+    ]
+
+    return ref.formatFatherChildren(
+      ref.breakLines(texto, selectors.length),
+      ...selectors
+    )
+  },
+}
+
+
+const formatter = new Formatter(/\[\[(.+)\]\]/, '[field]', triggers)
 
 const fields = new DynamicText(formatter)
 

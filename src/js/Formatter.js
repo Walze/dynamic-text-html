@@ -165,6 +165,45 @@ export default class Formatter {
     return everyN !== 0 ? groups : groups[0]
   }
 
+  /**
+   * @param { any[] } array
+   * @param { string[] } selectors
+   */
+  formatFatherChildren(array, ...selectors) {
+
+    // gets the fathers
+    const fathers = Array.from(document.querySelectorAll(selectors[0]))
+
+    // iterates fathers
+    fathers.map((father, fatherI) => {
+
+      // iterates selectors
+      selectors.map((selector, selectorI) => {
+        // if selector is father selector, return
+        if (selectorI === 0) return
+
+        const children = Array.from(father.querySelectorAll(selector))
+
+        // iterates children
+        children.map((child, childI) => {
+
+          // -1 because the first is the fathers selector
+          const index = selectorI - 1 + (childI * (selectors.length - 1))
+
+          // if 2 dimentional array
+          if (array[0].constructor === Array)
+            child.innerHTML = marked(array[fatherI][index])
+          else
+            child.innerHTML = marked(array[index])
+
+        })
+
+      })
+
+    })
+
+  }
+
 
   /**
    * @param { string } marked
