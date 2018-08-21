@@ -23,9 +23,9 @@ const triggers = {
 
 }
 
+const files = require('./textos/**.txt')
+const formatter = new Formatter(/\[\[(.+)\]\]/, '[field]', triggers)
 
-const fields = new DynamicText(
-  new Formatter(/\[\[(.+)\]\]/, '[field]', triggers)
-)
+const fields = new DynamicText(formatter, files)
 
 console.log(fields)

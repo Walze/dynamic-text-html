@@ -4,13 +4,14 @@ export default class DynamicText {
 
   /**
    * @param { Formatter } formatter
+   * @param { { [key: string]: string } } fileURLs object with file locations, objects properties must match file name
    */
-  constructor(formatter) {
+  constructor(formatter, fileURLs) {
     this.formatter = formatter
 
-    this.requiredFiles = require('../textos/**.txt')
+    this.fileURLs = fileURLs
 
-    if (!Object.keys(this.requiredFiles).length)
+    if (!Object.keys(this.fileURLs).length)
       throw alert('Nenhum arquivo de text foi encontrado na pasta')
 
     /**
@@ -28,9 +29,9 @@ export default class DynamicText {
    */
   async _loadFiles() {
     const promises = Object
-      .keys(this.requiredFiles)
+      .keys(this.fileURLs)
       .map(name =>
-        fetch(this.requiredFiles[name])
+        fetch(this.fileURLs[name])
           .then(async response => ({
             name,
             data: await response.text()
