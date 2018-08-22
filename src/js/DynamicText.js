@@ -30,10 +30,10 @@ export default class DynamicText {
   async _loadFiles() {
     const promises = Object
       .keys(this.fileURLs)
-      .map(name =>
+      .map((name) =>
         fetch(this.fileURLs[name])
           .then(async response => ({
-            name,
+            name: name + '.txt',
             data: await response.text()
           }))
           .catch(err => {
@@ -52,6 +52,8 @@ export default class DynamicText {
 
     let defaultFileIndex = 0
     const firedTriggersReturns = []
+
+    console.log(files)
 
     for (const file of files) {
 

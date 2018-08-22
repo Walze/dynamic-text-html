@@ -1,0 +1,23 @@
+.dynamic {
+  position: relative;
+  margin: 3rem 0;
+}
+
+.show-file-name {
+  position: relative;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, .666);
+  color: white;
+  font-size: 3rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.show-file-name.active {
+  display: flex;
+}

@@ -38,13 +38,12 @@ export default class Formatter {
 
       const field = fields[fileIndex]
       const defaultInfo = {
-        file: file.name + '.txt',
         marked: marked(file.data),
         raw: file.data
       }
 
-      this._displayFileNameToggle(defaultInfo.file, defaultInfo.marked, field)
       field.innerHTML = defaultInfo.marked
+      this._displayFileNameToggle(file.name, field)
 
       return defaultInfo
     }
@@ -190,7 +189,7 @@ export default class Formatter {
 
       })
 
-      this._displayFileNameToggle(file.name, father.innerHTML, father)
+      this._displayFileNameToggle(file.name, father)
     })
 
   }
@@ -225,26 +224,53 @@ export default class Formatter {
    * @param { string } fileName
    * @param { Element } field
    */
-  _displayFileNameToggle(fileName, marked, field) {
-    let active = false
+  async _displayFileNameToggle(fileName, field) {
 
+    const overlay = document.createElement('div')
+    overlay.classList.add('show-file-name')
+    overlay.innerHTML = fileName
+
+    field.classList.add('dynamic')
+    field.insertBefore(overlay, field.firstChild)
+
+
+    const click = this.onDynamicFieldClick(overlay, 2)
+    let zPressed = false
+
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'z') zPressed = false
+    })
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'z') zPressed = true
+    })
 
     field.addEventListener('click', e => {
-      if (e.detail !== 3) return
+      if (zPressed) click(e)
+    })
+
+    overlay.addEventListener('click', click)
+  }
+
+  /**
+   * @param { Element } overlay
+   * @param { number } [clickAmount=3]
+   * @returns { (e: MouseEvent) => void }
+   */
+  onDynamicFieldClick(overlay, clickAmount = 3) {
+    let active = false
+
+    return e => {
+      if (e.detail < clickAmount) return
+      e.stopPropagation()
 
       active = !active
 
-      // if (active) field.innerHTML = marked
-      // else field.innerHTML = fileName + '.txt'
-
-
-      // change ::after content to fileName
       if (active)
-        field.classList.add('show-file-name')
+        overlay.classList.add('active')
       else
-        field.classList.remove('show-file-name')
+        overlay.classList.remove('active')
 
-    })
+    }
   }
 
 

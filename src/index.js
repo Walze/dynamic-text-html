@@ -1,7 +1,7 @@
 
 import Formatter from './js/Formatter'
 import DynamicText from './js/DynamicText'
-import './styles/show-file-name.css'
+import './styles/dynamic-files.css'
 
 const p1 = performance.now()
 
