@@ -21,7 +21,11 @@ export default class DynamicText {
 
     this.triggersReturns = this
       ._loadFiles()
-      .then(files => this.fireFiles(files))
+      .then(files => {
+        this.fireFiles(files)
+
+        window.dispatchEvent(new Event('DYNAMIC_LOADED'))
+      })
   }
 
   /**
@@ -52,8 +56,6 @@ export default class DynamicText {
 
     let defaultFileIndex = 0
     const firedTriggersReturns = []
-
-    console.log(files)
 
     for (const file of files) {
 

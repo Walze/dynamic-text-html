@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "parcel src/index.html --open",
-    "build": "parcel build src/index.html --public-url . --detailed-report --no-cache"
+    "build": "parcel build src/index.html --public-url . --detailed-report --no-cache --out-dir ./build"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
