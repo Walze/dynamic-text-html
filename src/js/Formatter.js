@@ -155,11 +155,11 @@ export default class Formatter {
   }
 
   /**
-   * @param { any[] } array
+   * @param { string[] } lines
    * @param { fileType } file
-   * @param { string[] } selectors
+   * @param { string[] } selectors 1st selector is just for selecting the father, others are used in txt files
    */
-  formatFatherChildren(file, array, ...selectors) {
+  formatFatherChildren(file, lines, ...selectors) {
 
     // gets the fathers
     const fathers = Array.from(document.querySelectorAll(selectors[0]))
@@ -181,10 +181,10 @@ export default class Formatter {
           const index = selectorI - 1 + (childI * (selectors.length - 1))
 
           // if 2 dimentional array
-          if (array[0].constructor === Array)
-            child.innerHTML = marked(array[fatherI][index])
+          if (lines[0].constructor === Array)
+            child.innerHTML = marked(lines[fatherI][index])
           else
-            child.innerHTML = marked(array[index])
+            child.innerHTML = marked(lines[index])
 
         })
 
@@ -234,11 +234,18 @@ export default class Formatter {
 
       active = !active
 
-      if (active) field.innerHTML = marked
-      else field.innerHTML = fileName + '.txt'
+      // if (active) field.innerHTML = marked
+      // else field.innerHTML = fileName + '.txt'
+
+
+      // change ::after content to fileName
+      if (active)
+        field.classList.add('show-file-name')
+      else
+        field.classList.remove('show-file-name')
+
     })
   }
 
 
 }
-

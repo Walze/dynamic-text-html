@@ -1,6 +1,7 @@
 
 import Formatter from './js/Formatter'
 import DynamicText from './js/DynamicText'
+import './styles/show-file-name.css'
 
 const p1 = performance.now()
 
@@ -9,18 +10,17 @@ const p1 = performance.now()
  */
 const triggers = {
 
-  LIST: (ref, file) => {
+  LIST: (formatter, file) => {
 
     const selectors = [
       '[items]',
       '[head]',
       '[item]'
     ]
-    return ref.formatFatherChildren(
-      file,
-      ref.everyNthLineBreak(file.data, selectors.length),
-      ...selectors
-    )
+
+    const lines = formatter.everyNthLineBreak(file.data, selectors.length)
+
+    return formatter.formatFatherChildren(file, lines, ...selectors)
   },
 
 }
