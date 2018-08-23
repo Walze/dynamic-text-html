@@ -20,7 +20,10 @@ declare global {
         ...args: any[]
     ) => any
 
-    export type triggerType = { name: string, fire: emitDefault }
+    export type triggerType = {
+        [key: string]: emitCustom
+        default?: (fields: Element[]) => any
+    }
 
     export type triggerParamType = {
         [key: string]: emitCustom
