@@ -1,4 +1,4 @@
-
+import '../styles/dynamic-files.css'
 
 export default class DynamicText {
 

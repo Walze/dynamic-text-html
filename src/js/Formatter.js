@@ -35,7 +35,7 @@ export default class Formatter {
   /**
    * @private
    * @param {string} defaultCssSelector
-   * @returns { (_: Formatter, file: fileType, fileIndex: number) => { file: string; marked: string; raw: string; }}
+   * @returns { emitDefault }
    */
   _formatDefault(defaultCssSelector) {
 
@@ -86,8 +86,28 @@ export default class Formatter {
    */
   pullTrigger(triggerName, file, ...args) {
 
+    if (triggerName === 'default') {
+
+      // Last trigger is always default
+      return this.triggers[this.triggers.length - 1].fire(this, file, ...args)
+
+    }
+
     const trigger = this.findTrigger(triggerName)
-    return trigger ? trigger.fire(this, file, ...args) : null
+
+    // Takes "name" from "name.txt"
+    const selector = `[${file.name.match(/(.+).txt/u)[1]}]`
+    const divs = Array
+      .from(document.querySelectorAll(selector))
+      .map(div => {
+
+        this._displayFileNameToggle(file.name, div)
+        return div
+
+      })
+
+
+    return trigger ? trigger.fire(this, file, divs, ...args) : null
 
   }
 
@@ -194,12 +214,10 @@ export default class Formatter {
   /**
    * @param { string[] } lines
    * @param { fileType } file
-   * @param { string[] } selectors 1st selector is just for selecting the father, others are used in txt files
+   * @param { Element[] } fathers
+   * @param { string[] } selectors
    */
-  formatFatherChildren(file, lines, ...selectors) {
-
-    // gets the fathers
-    const fathers = Array.from(document.querySelectorAll(selectors[0]))
+  formatFatherChildren(file, lines, fathers, ...selectors) {
 
     // iterates fathers
     fathers.map((father, fatherI) => {
@@ -207,17 +225,13 @@ export default class Formatter {
       // iterates selectors
       selectors.map((selector, selectorI) => {
 
-        // if selector is father selector, return
-        if (selectorI === 0) return
-
         const children = Array.from(father.querySelectorAll(selector))
 
         // iterates children
         children.map((child, childI) => {
 
-          // -1 because the first is the fathers selector
-          const multiply = childI * (selectors.length - 1)
-          const index = selectorI - 1 + multiply
+          const multiply = childI * selectors.length
+          const index = selectorI + multiply
 
           // if 2 dimentional array
           if (lines[0].constructor === Array)
@@ -228,8 +242,6 @@ export default class Formatter {
         })
 
       })
-
-      this._displayFileNameToggle(file.name, father)
 
     })
 
@@ -325,6 +337,5 @@ export default class Formatter {
     }
 
   }
-
 
 }

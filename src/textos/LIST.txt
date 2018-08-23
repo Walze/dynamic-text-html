@@ -1,13 +1,10 @@
-[[LIST]]
+[[list]]
 
 # ASDF2
 aspdofmapsdomf
 
 # asmdpofmapsd3333
 mfap
-
-# lol
-osdfmpo
 
 # asdpmoadsmpgamsdopmpaosfdmhba
 asdf
@@ -19,9 +16,6 @@ lista2body1
 
 //
 lista2body2
-
-//
-lista2body3
 
 //
 lista2body4

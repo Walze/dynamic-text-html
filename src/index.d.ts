@@ -6,9 +6,21 @@ declare global {
 
     export type fileType = { name: string, data: string }
 
-    export type emit = (ref: Formatter, file: fileType, ...args: any[]) => any
+    export type emitDefault = (
+        ref: Formatter,
+        file: fileType,
+        fieldIndex: number,
+        ...args: any[]
+    ) => any
 
-    export type triggerType = { name: string, fire: emit }
+    export type emitCustom = (
+        ref: Formatter,
+        file: fileType,
+        divs: Element[],
+        ...args: any[]
+    ) => any
 
-    export type triggerParamType = { [key: string]: emit }
+    export type triggerType = { name: string, fire: emitDefault }
+
+    export type triggerParamType = { [key: string]: emitCustom }
 }

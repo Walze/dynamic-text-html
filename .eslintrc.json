@@ -20,6 +20,7 @@
         "one-var": "off",
         "object-curly-spacing": "off",
         "multiline-ternary": "off",
+        "max-params": "off",
         "class-methods-use-this": "off",
         "dot-location": "off",
         "arrow-parens": "off",
