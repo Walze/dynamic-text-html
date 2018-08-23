@@ -4,13 +4,37 @@
         "commonjs": true,
         "es6": true
     },
-    "extends": "eslint:recommended",
+    "extends": "eslint:all",
     "parserOptions": {
         "ecmaVersion": 2018,
         "sourceType": "module"
     },
     "rules": {
+        "valid-jsdoc": "off",
+        "no-underscore-dangle": "off",
+        "quote-props": "off",
+        "sort-imports": "off",
+        "sort-keys": "off",
+        "sort-vars": "off",
+        "comma-dangle": "off",
+        "one-var": "off",
+        "class-methods-use-this": "off",
+        "dot-location": "off",
+        "arrow-parens": "off",
+        "max-lines-per-function": "off",
+        "no-magic-numbers": "off",
+        "capitalized-comments": "off",
+        "curly": "off",
+        "nonblock-statement-body-position": "off",
+        "array-callback-return": "off",
+        "no-plusplus": "off",
+        "no-ternary": "off",
+        "max-len": "off",
+        "max-lines": "off",
+        "max-statements-per-line": "off",
+        "max-statements": "off",
         "no-console": "off",
+        "space-before-function-paren": "off",
         "indent": [
             "error",
             2

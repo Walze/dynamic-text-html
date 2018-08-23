@@ -10,6 +10,7 @@ export default class Formatter {
    * @param { triggerParamType } triggers
    */
   constructor(flag, defaultCssSelector, triggers) {
+
     this.flag = flag
 
     /**
@@ -32,13 +33,14 @@ export default class Formatter {
    * @returns { (_: Formatter, file: fileType, fileIndex: number) => { file: string; marked: string; raw: string; }}
    */
   _formatDefault(defaultCssSelector) {
+
     const fields = document.querySelectorAll(defaultCssSelector)
 
-    return (_, file, fileIndex) => {
+    return (__, file, fileIndex) => {
 
       const field = fields[fileIndex]
       const defaultInfo = {
-        marked: marked(file.data),
+        marked: this.mark(file.data),
         raw: file.data
       }
 
@@ -46,7 +48,18 @@ export default class Formatter {
       this._displayFileNameToggle(file.name, field)
 
       return defaultInfo
+
     }
+
+  }
+
+  /**
+   * @param { string } text
+   */
+  mark(text) {
+
+    return marked(text)
+
   }
 
   /**
@@ -54,8 +67,10 @@ export default class Formatter {
    * @returns { triggerType }
    */
   findTrigger(name) {
+
     return this.triggers
       .find(trigger => trigger.name === name)
+
   }
 
 
@@ -65,9 +80,11 @@ export default class Formatter {
    * @param { any[] } args
    */
   pullTrigger(triggerName, file, ...args) {
+
     return this
       .findTrigger(triggerName)
       .fire(this, file, ...args)
+
   }
 
 
@@ -75,9 +92,13 @@ export default class Formatter {
    * @param { string } text
    */
   matchFlag(text) {
+
     const matched = text.match(this.flag)
 
-    return matched ? matched[1] : null
+    return matched
+      ? matched[1]
+      : null
+
   }
 
   /**
@@ -85,7 +106,9 @@ export default class Formatter {
    * @param { string } replaceWith
    */
   replaceFlag(text, replaceWith = '\n') {
+
     return text.replace(this.flag, replaceWith)
+
   }
 
   /**
@@ -97,7 +120,7 @@ export default class Formatter {
     const lines = this
       .replaceFlag(text, '')
       .trim()
-      .split(/\r\n|\r|\n/g)
+      .split(/\r\n|\r|\n/ug)
 
     /**
      * @type { [][] }
@@ -122,35 +145,46 @@ export default class Formatter {
       // checks if N previous items are empty
       let breakCounter = 0;
 
-      [...Array(everyN)].map((_, i) => {
-        const index = lineI - i
+      [...Array(everyN)].map((__, idx) => {
 
-        if (index < 0) return breakCounter--
+        const index = lineI - idx
+
+        if (index < 0) {
+
+          breakCounter--
+          return
+
+        }
 
         // lines[lineI - i] === '' ? breakCounter++ : breakCounter--
-        breakCounter += lines[lineI - i] === ''
+        breakCounter += lines[lineI - idx] === ''
+
       })
 
       // if breakcounter matches param
-      goToNextGroup = (breakCounter === everyN) && everyN !== 0
+      goToNextGroup = breakCounter === everyN && everyN !== 0
 
       // adds line to group item if has text
-      if (hasText) {
+      if (hasText)
         groups[groupsIndex][groupItemIndex++] = line
-      }
 
-      if (!goToNextGroup)
-        blocked = false
+
+      if (!goToNextGroup) blocked = false
 
       if (goToNextGroup && !blocked) {
+
         groupsIndex++
         groupItemIndex = 0
         blocked = true
+
       }
 
     })
 
-    return everyN !== 0 ? groups : groups[0]
+    return everyN === 0
+      ? groups[0]
+      : groups
+
   }
 
   /**
@@ -168,6 +202,7 @@ export default class Formatter {
 
       // iterates selectors
       selectors.map((selector, selectorI) => {
+
         // if selector is father selector, return
         if (selectorI === 0) return
 
@@ -177,19 +212,21 @@ export default class Formatter {
         children.map((child, childI) => {
 
           // -1 because the first is the fathers selector
-          const index = selectorI - 1 + (childI * (selectors.length - 1))
+          const multiply = childI * (selectors.length - 1)
+          const index = selectorI - 1 + multiply
 
           // if 2 dimentional array
           if (lines[0].constructor === Array)
-            child.innerHTML = marked(lines[fatherI][index])
+            child.innerHTML = this.mark(lines[fatherI][index])
           else
-            child.innerHTML = marked(lines[index])
+            child.innerHTML = this.mark(lines[index])
 
         })
 
       })
 
       this._displayFileNameToggle(file.name, father)
+
     })
 
   }
@@ -205,6 +242,7 @@ export default class Formatter {
     return Object
       .keys(triggers)
       .map(triggerName => {
+
         const triggerFunc = triggers[triggerName]
 
         if (typeof triggerFunc !== 'function')
@@ -214,17 +252,18 @@ export default class Formatter {
           name: triggerName,
           fire: triggerFunc
         }
+
       })
+
   }
 
 
   /**
    * @private
-   * @param { string } marked
    * @param { string } fileName
    * @param { Element } field
    */
-  async _displayFileNameToggle(fileName, field) {
+  _displayFileNameToggle(fileName, field) {
 
     const overlay = document.createElement('div')
     overlay.classList.add('show-file-name')
@@ -237,31 +276,40 @@ export default class Formatter {
     const click = this.onDynamicFieldClick(overlay, 2)
     let zPressed = false
 
-    window.addEventListener('keyup', (e) => {
-      if (e.key === 'z') zPressed = false
+    window.addEventListener('keyup', (ev) => {
+
+      if (ev.key === 'z') zPressed = false
+
     })
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'z') zPressed = true
+    window.addEventListener('keydown', (ev) => {
+
+      if (ev.key === 'z') zPressed = true
+
     })
 
-    field.addEventListener('click', e => {
-      if (zPressed) click(e)
+    field.addEventListener('click', ev => {
+
+      if (zPressed) click(ev)
+
     })
 
     overlay.addEventListener('click', click)
+
   }
 
   /**
    * @param { Element } overlay
-   * @param { number } [clickAmount=3]
+   * @param { number } [clickAmount = 3]
    * @returns { (e: MouseEvent) => void }
    */
   onDynamicFieldClick(overlay, clickAmount = 3) {
+
     let active = false
 
-    return e => {
-      if (e.detail < clickAmount) return
-      e.stopPropagation()
+    return ev => {
+
+      if (ev.detail < clickAmount) return
+      ev.stopPropagation()
 
       active = !active
 
@@ -271,6 +319,7 @@ export default class Formatter {
         overlay.classList.remove('active')
 
     }
+
   }
 
 
