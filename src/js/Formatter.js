@@ -31,7 +31,7 @@ export default class Formatter {
       ...this._processTriggers(optionsObj.triggers),
       {
         name: 'default',
-        fire: this._formatDefault(optionsObj.defaultCssSelector, defaultAddon)
+        fire: this._formatDefault(optionsObj.defaultCssSelector, defaultAddon).bind(this)
       },
     ]
 
@@ -51,7 +51,7 @@ export default class Formatter {
 
     if (defaultAddon) defaultAddon(fields)
 
-    return (__, file, fileIndex) => {
+    return (file, fileIndex) => {
 
       const field = fields[fileIndex]
       const defaultInfo = {
@@ -105,7 +105,7 @@ export default class Formatter {
     if (triggerName === 'default') {
 
       // Last trigger is always default
-      return this.triggers[this.triggers.length - 1].fire(this, file, ...args)
+      return this.triggers[this.triggers.length - 1].fire(file, ...args)
 
     }
 
@@ -123,7 +123,7 @@ export default class Formatter {
       })
 
 
-    return trigger ? trigger.fire(this, file, divs, ...args) : null
+    return trigger ? trigger.fire(file, divs, ...args) : null
 
   }
 
@@ -301,7 +301,7 @@ export default class Formatter {
 
         return {
           name: triggerName,
-          fire: triggerFunc
+          fire: triggerFunc.bind(this)
         }
 
       })

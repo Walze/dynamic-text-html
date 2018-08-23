@@ -7,14 +7,14 @@ declare global {
     export type fileType = { name: string, data: string }
 
     export type emitDefault = (
-        ref: Formatter,
+        this: Formatter,
         file: fileType,
         fieldIndex: number,
         ...args: any[]
     ) => any
 
     export type emitCustom = (
-        ref: Formatter,
+        this: Formatter,
         file: fileType,
         divs: Element[],
         ...args: any[]

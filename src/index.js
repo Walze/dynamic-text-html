@@ -8,14 +8,9 @@ const p1 = performance.now()
  * @type { triggerParamType }
  */
 const triggers = {
+  default: fields => console.warn('Default fields:', fields),
 
-  default: (fields) => {
-
-    console.warn('Default fields:', fields)
-
-  },
-
-  list: (formatter, file, divs) => {
+  list(file, divs) {
 
     console.warn('"list" fields:', divs)
 
@@ -24,12 +19,11 @@ const triggers = {
       '[item]'
     ]
 
-    const lines = formatter.everyNthLineBreak(file.data, 3)
+    const lines = this.everyNthLineBreak(file.data, 3)
 
-    return formatter.formatFatherChildren(lines, divs, selectors, true)
+    return this.formatFatherChildren(lines, divs, selectors, true)
 
   },
-
 }
 
 
