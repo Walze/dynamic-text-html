@@ -5,22 +5,27 @@ import marked from 'marked'
 export default class Formatter {
 
   /**
-   * @param { RegExp } flag
-   * @param { string } defaultCssSelector
-   * @param { triggerParamType } triggers
+   * @param {{ flag: RegExp, defaultCssSelector: string, triggers: triggerParamType }} options
    */
-  constructor(flag, defaultCssSelector, triggers) {
+  constructor(optionsParam) {
 
-    this.flag = flag
+    const options = optionsParam || {}
+    const optionsObj = {
+      flag: options.flag || /\[\[(.+)\]\]/u,
+      defaultCssSelector: options.defaultCssSelector || '[field]',
+      triggers: options.triggers || {}
+    }
+
+    this.flag = optionsObj.flag
 
     /**
      * @type { triggerType[] }
      */
     this.triggers = [
-      ...this._processTriggers(triggers),
+      ...this._processTriggers(optionsObj.triggers),
       {
         name: 'default',
-        fire: this._formatDefault(defaultCssSelector)
+        fire: this._formatDefault(optionsObj.defaultCssSelector)
       },
     ]
 
@@ -81,9 +86,8 @@ export default class Formatter {
    */
   pullTrigger(triggerName, file, ...args) {
 
-    return this
-      .findTrigger(triggerName)
-      .fire(this, file, ...args)
+    const trigger = this.findTrigger(triggerName)
+    return trigger ? trigger.fire(this, file, ...args) : null
 
   }
 

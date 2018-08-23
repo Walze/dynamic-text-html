@@ -18,6 +18,8 @@
         "sort-vars": "off",
         "comma-dangle": "off",
         "one-var": "off",
+        "object-curly-spacing": "off",
+        "multiline-ternary": "off",
         "class-methods-use-this": "off",
         "dot-location": "off",
         "arrow-parens": "off",
