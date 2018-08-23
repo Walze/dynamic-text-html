@@ -9,7 +9,15 @@ const p1 = performance.now()
  */
 const triggers = {
 
+  default: (fields) => {
+
+    console.warn('Default fields:', fields)
+
+  },
+
   list: (formatter, file, divs) => {
+
+    console.warn('"list" fields:', divs)
 
     const selectors = [
       '[head]',
@@ -18,7 +26,7 @@ const triggers = {
 
     const lines = formatter.everyNthLineBreak(file.data, 3)
 
-    return formatter.formatFatherChildren(file, lines, divs, ...selectors)
+    return formatter.formatFatherChildren(lines, divs, selectors, true)
 
   },
 
@@ -29,20 +37,19 @@ const files = require('./textos/**.txt')
 const formatter = new Formatter({ triggers })
 const fields = new DynamicText(formatter, files)
 
-console.log(fields)
-
 
 window.addEventListener('load', () => {
 
   const perf = performance.now() - p1
-  console.warn(`Window loaded in ${Math.round(perf)}ms`)
+  console.log(`Window loaded in ${Math.round(perf)}ms`)
+  console.log(fields)
 
 })
 
 window.addEventListener('DYNAMIC_LOADED', () => {
 
   const perf = performance.now() - p1
-  console.warn(`Files loaded in ${Math.round(perf)}ms`)
+  console.log(`Files loaded in ${Math.round(perf)}ms`)
 
 })
 

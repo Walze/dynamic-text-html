@@ -6,11 +6,6 @@ arquivo texto 2
 
 ***ambos***
 
-lista 
-* item1
-* * * * *
-* item2
-
 # teste
 
 ## teste2
@@ -19,15 +14,9 @@ lista
 
 ![](https://www.w3schools.com/w3css/img_snowtops.jpg)
 
-### blockquote
-> # Foo
+> ### Foo
 > bar  
 > baz
-
-
-### lista
-- asdf
-- asdf
 
 [REFERENCIA 1](https://spec.commonmark.org/0.28/)  
 [REFERENCIA 2](https://github.github.com/gfm/)

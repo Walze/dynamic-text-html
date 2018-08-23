@@ -18,6 +18,12 @@ export default class Formatter {
 
     this.flag = optionsObj.flag
 
+    let defaultAddon = null
+
+    if (optionsObj.triggers && optionsObj.triggers.default)
+      defaultAddon = optionsObj.triggers.default
+
+
     /**
      * @type { triggerType[] }
      */
@@ -25,7 +31,7 @@ export default class Formatter {
       ...this._processTriggers(optionsObj.triggers),
       {
         name: 'default',
-        fire: this._formatDefault(optionsObj.defaultCssSelector)
+        fire: this._formatDefault(optionsObj.defaultCssSelector, defaultAddon)
       },
     ]
 
@@ -35,11 +41,15 @@ export default class Formatter {
   /**
    * @private
    * @param {string} defaultCssSelector
+   * @param { null | (fields: Element[]) => any } defaultAddon
    * @returns { emitDefault }
    */
-  _formatDefault(defaultCssSelector) {
+  _formatDefault(defaultCssSelector, defaultAddon) {
 
-    const fields = document.querySelectorAll(defaultCssSelector)
+    // Only gets run once
+    const fields = Array.from(document.querySelectorAll(defaultCssSelector))
+
+    if (defaultAddon) defaultAddon(fields)
 
     return (__, file, fileIndex) => {
 
@@ -60,10 +70,16 @@ export default class Formatter {
 
   /**
    * @param { string } text
+   * @param { boolean } removeP
    */
-  mark(text) {
+  mark(text, removeP = false) {
 
-    return marked(text)
+    const markedText = marked(text)
+
+    if (removeP)
+      return this.removeP(markedText)
+
+    return markedText
 
   }
 
@@ -132,6 +148,18 @@ export default class Formatter {
   replaceFlag(text, replaceWith = '\n') {
 
     return text.replace(this.flag, replaceWith)
+
+  }
+
+
+  /**
+   * @param { string } text
+   */
+  removeP(text) {
+
+    return text
+      .replace(/<p>/gu, '')
+      .replace(/<\/p>/gu, '')
 
   }
 
@@ -213,11 +241,11 @@ export default class Formatter {
 
   /**
    * @param { string[] } lines
-   * @param { fileType } file
+   * @param { boolean } removeP
    * @param { Element[] } fathers
    * @param { string[] } selectors
    */
-  formatFatherChildren(file, lines, fathers, ...selectors) {
+  formatFatherChildren(lines, fathers, selectors, removeP = false) {
 
     // iterates fathers
     fathers.map((father, fatherI) => {
@@ -234,10 +262,17 @@ export default class Formatter {
           const index = selectorI + multiply
 
           // if 2 dimentional array
-          if (lines[0].constructor === Array)
-            child.innerHTML = this.mark(lines[fatherI][index])
-          else
-            child.innerHTML = this.mark(lines[index])
+          if (lines[0].constructor === Array) {
+
+            const text = this.mark(lines[fatherI][index], removeP)
+            child.innerHTML = text
+
+          } else {
+
+            const text = this.mark(lines[index], removeP)
+            child.innerHTML = text
+
+          }
 
         })
 
