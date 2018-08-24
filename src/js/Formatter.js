@@ -27,7 +27,7 @@ export default class Formatter {
     /**
      * @type { triggerType }
      */
-    this.triggers = this._processTriggers(optionsObj.triggers)
+    this.triggers = this._bindThisToTriggers(optionsObj.triggers)
     this.triggers.default = this._formatDefault(optionsObj.defaultCssSelector, defaultAddon).bind(this)
 
   }
@@ -118,9 +118,7 @@ export default class Formatter {
 
     const matched = text.match(this.flag)
 
-    return matched
-      ? matched[1]
-      : null
+    return matched ? matched[1] : null
 
   }
 
@@ -216,9 +214,7 @@ export default class Formatter {
 
     })
 
-    return everyN === 0
-      ? groups[0]
-      : groups
+    return everyN === 0 ? groups[0] : groups
 
   }
 
@@ -271,24 +267,12 @@ export default class Formatter {
    * @param { triggerParamType } triggers
    * @returns { triggerType }
    */
-  _processTriggers(triggers) {
+  _bindThisToTriggers(triggers) {
 
-    const newObj = {}
+    for (const prop in triggers)
+      triggers[prop] = triggers[prop].bind(this)
 
-    Object
-      .keys(triggers)
-      .map(triggerName => {
-
-        const triggerFunc = triggers[triggerName]
-
-        if (typeof triggerFunc !== 'function')
-          throw new Error('Trigger is not fucntion')
-
-        newObj[triggerName] = triggerFunc.bind(this)
-
-      })
-
-    return newObj
+    return triggers
 
   }
 

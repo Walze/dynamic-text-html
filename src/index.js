@@ -12,7 +12,7 @@ const triggers = {
 
   list(file, divs) {
 
-    console.warn('"list" fields:', divs)
+    console.warn('"list" fields:', divs, this)
 
     const selectors = [
       '[head]',
