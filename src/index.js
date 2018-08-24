@@ -19,9 +19,13 @@ const triggers = {
       '[item]'
     ]
 
-    const lines = this.everyNthLineBreak(file.data, 3)
+    // const lines = this.everyNthLineBreak(file.data, 3)
 
-    return this.formatFatherChildren(lines, divs, selectors, true)
+    console.log(
+      this.everyNthLineBreak(file.data, 2),
+    )
+
+    // return this.formatFatherChildren(lines, divs, selectors, true)
 
   },
 }
@@ -47,3 +51,17 @@ window.addEventListener('DYNAMIC_LOADED', () => {
 
 })
 
+
+const makeElement = (el, text, array) => {
+
+  return `<${el} class="${array.join(' ')}>${text}</${el}>`
+
+}
+
+const el = makeElement('h4', 'AAAA', [
+  'linhas',
+  'crete',
+  'center-align'
+])
+
+console.log(el)

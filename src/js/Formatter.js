@@ -11,7 +11,7 @@ export default class Formatter {
 
     const options = optionsParam || {}
     const optionsObj = {
-      flag: options.flag || /\[\[(.+)\]\]/u,
+      flag: options.flag || /\[\[(.+)\]\]\r\n|\r|\n/u,
       defaultCssSelector: options.defaultCssSelector || '[field]',
       triggers: options.triggers || {}
     }
@@ -139,6 +139,7 @@ export default class Formatter {
 
   }
 
+
   /**
    * @param { string } text
    * @returns { [] | [][] }
@@ -147,7 +148,6 @@ export default class Formatter {
 
     const lines = this
       .replaceFlag(text, '')
-      .trim()
       .split(/\r\n|\r|\n/ug)
 
     /**
@@ -155,54 +155,46 @@ export default class Formatter {
      */
     const groups = []
     let groupsIndex = 0
-    let groupItemIndex = 0
 
     /**
      * Blocks consecutive breaks
      */
     let blocked = false
+    let breakCounter = 0
+
 
     lines.map((line, lineI) => {
 
       let goToNextGroup = false
-      const hasText = line !== ''
+      const isEmpty = line === ''
 
-      // set array if undefined
-      if (!Array.isArray(groups[groupsIndex])) groups[groupsIndex] = []
+      if (!groups[groupsIndex])
+        groups[groupsIndex] = ''
 
       // checks if N previous items are empty
-      let breakCounter = 0;
 
-      [...Array(everyN)].map((__, idx) => {
+      if (isEmpty) breakCounter++
+      else breakCounter = 0
 
-        const index = lineI - idx
+      // if (breakCounter > everyN) groupsIndex--
 
-        if (index < 0) {
-
-          breakCounter--
-          return
-
-        }
-
-        // lines[lineI - i] === '' ? breakCounter++ : breakCounter--
-        breakCounter += lines[lineI - idx] === ''
-
-      })
+      console.log([line], breakCounter)
 
       // if breakcounter matches param
       goToNextGroup = breakCounter === everyN && everyN !== 0
 
-      // adds line to group item if has text
-      if (hasText)
-        groups[groupsIndex][groupItemIndex++] = line
+      //
+      if (isEmpty)
+        groups[groupsIndex] += '\n'
+      else
+        groups[groupsIndex] += line
 
-
-      if (!goToNextGroup) blocked = false
+      if (!goToNextGroup)
+        blocked = false
 
       if (goToNextGroup && !blocked) {
 
         groupsIndex++
-        groupItemIndex = 0
         blocked = true
 
       }
