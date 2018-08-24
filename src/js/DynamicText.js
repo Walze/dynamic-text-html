@@ -34,7 +34,7 @@ export default class DynamicText {
         .keys(this.fileURLs)
         .map(async name => ({
           name: `${name}.txt`,
-          data: await (await fetch(this.fileURLs[name])).text()
+          data: await fetch(this.fileURLs[name]).then(response => response.text()),
         }))
 
       this.files = Promise.all(promises)
