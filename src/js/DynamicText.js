@@ -8,24 +8,15 @@ export default class DynamicText {
    */
   constructor(formatter, fileURLs) {
 
-    this.formatter = formatter
-
-    this.fileURLs = fileURLs
-
-    if (!Object.keys(this.fileURLs).length)
-      throw new Error('Nenhum arquivo de text foi encontrado na pasta')
-
-    /**
-     * @type { fileType[] }
-     */
+    /** @type { fileType[] } */
     this.files = []
+    this.formatter = formatter
+    this.fileURLs = fileURLs
+    this._loadFiles()
+      .then(files => this.fireFiles(files))
+      .then(returns => {
 
-    this.triggersReturns = this
-      ._loadFiles()
-      .then(files => {
-
-        this.fireFiles(files)
-
+        this.triggersReturns = returns
         window.dispatchEvent(new Event('DYNAMIC_LOADED'))
 
       })
@@ -37,24 +28,23 @@ export default class DynamicText {
    */
   _loadFiles() {
 
-    const promises = Object
-      .keys(this.fileURLs)
-      .map((name) => fetch(this.fileURLs[name])
-        .then(response => response.text()
-          .then(text => ({
-            name: `${name}.txt`,
-            data: text
-          })))
-        .catch(err => {
+    try {
 
-          console.error(err)
-          throw new Error('Could not fetch text files')
-
+      const promises = Object
+        .keys(this.fileURLs)
+        .map(async name => ({
+          name: `${name}.txt`,
+          data: await (await fetch(this.fileURLs[name])).text()
         }))
 
-    this.files = Promise.all(promises)
+      this.files = Promise.all(promises)
+      return this.files
 
-    return this.files
+    } catch (err) {
+
+      throw new Error(err)
+
+    }
 
   }
 
