@@ -40,10 +40,11 @@ export default class DynamicText {
     const promises = Object
       .keys(this.fileURLs)
       .map((name) => fetch(this.fileURLs[name])
-        .then(async response => ({
-          name: `${name}.txt`,
-          data: await response.text()
-        }))
+        .then(response => response.text()
+          .then(text => ({
+            name: `${name}.txt`,
+            data: text
+          })))
         .catch(err => {
 
           console.error(err)
@@ -52,6 +53,7 @@ export default class DynamicText {
         }))
 
     this.files = Promise.all(promises)
+
     return this.files
 
   }

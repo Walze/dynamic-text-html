@@ -49,15 +49,10 @@ export default class Formatter {
     return (file, fileIndex) => {
 
       const field = fields[fileIndex]
-      const defaultInfo = {
-        marked: this.mark(file.data),
-        raw: file.data
-      }
+      const markedText = this.mark(file.data)
 
-      field.innerHTML = defaultInfo.marked
+      field.innerHTML = markedText
       this._displayFileNameToggle(file.name, field)
-
-      return defaultInfo
 
     }
 
