@@ -25,15 +25,10 @@ export default class Formatter {
 
 
     /**
-     * @type { triggerType[] }
+     * @type { triggerType }
      */
-    this.triggers = [
-      ...this._processTriggers(optionsObj.triggers),
-      {
-        name: 'default',
-        fire: this._formatDefault(optionsObj.defaultCssSelector, defaultAddon).bind(this)
-      },
-    ]
+    this.triggers = this._bindThisToTriggers(optionsObj.triggers)
+    this.triggers.default = this._formatDefault(optionsObj.defaultCssSelector, defaultAddon).bind(this)
 
   }
 
@@ -54,15 +49,10 @@ export default class Formatter {
     return (file, fileIndex) => {
 
       const field = fields[fileIndex]
-      const defaultInfo = {
-        marked: this.mark(file.data),
-        raw: file.data
-      }
+      const markedText = this.mark(file.data)
 
-      field.innerHTML = defaultInfo.marked
+      field.innerHTML = markedText
       this._displayFileNameToggle(file.name, field)
-
-      return defaultInfo
 
     }
 
@@ -83,17 +73,6 @@ export default class Formatter {
 
   }
 
-  /**
-   * @param { string } name
-   * @returns { triggerType }
-   */
-  findTrigger(name) {
-
-    return this.triggers
-      .find(trigger => trigger.name === name)
-
-  }
-
 
   /**
    * @param { string } triggerName
@@ -105,11 +84,9 @@ export default class Formatter {
     if (triggerName === 'default') {
 
       // Last trigger is always default
-      return this.triggers[this.triggers.length - 1].fire(file, ...args)
+      return this.triggers.default(file, ...args)
 
     }
-
-    const trigger = this.findTrigger(triggerName)
 
     // Takes "name" from "name.txt"
     const selector = `[${file.name.match(/(.+).txt/u)[1]}]`
@@ -122,8 +99,9 @@ export default class Formatter {
 
       })
 
+    const trigger = this.triggers[triggerName]
 
-    return trigger ? trigger.fire(file, divs, ...args) : null
+    return trigger ? trigger(file, divs, ...args) : null
 
   }
 
@@ -135,9 +113,7 @@ export default class Formatter {
 
     const matched = text.match(this.flag)
 
-    return matched
-      ? matched[1]
-      : null
+    return matched ? matched[1] : null
 
   }
 
@@ -233,9 +209,7 @@ export default class Formatter {
 
     })
 
-    return everyN === 0
-      ? groups[0]
-      : groups
+    return everyN === 0 ? groups[0] : groups
 
   }
 
@@ -286,25 +260,14 @@ export default class Formatter {
   /**
    * @private
    * @param { triggerParamType } triggers
-   * @returns { triggerType[] }
+   * @returns { triggerType }
    */
-  _processTriggers(triggers) {
+  _bindThisToTriggers(triggers) {
 
-    return Object
-      .keys(triggers)
-      .map(triggerName => {
+    for (const prop in triggers)
+      triggers[prop] = triggers[prop].bind(this)
 
-        const triggerFunc = triggers[triggerName]
-
-        if (typeof triggerFunc !== 'function')
-          throw new Error('Trigger is not fucntion')
-
-        return {
-          name: triggerName,
-          fire: triggerFunc.bind(this)
-        }
-
-      })
+    return triggers
 
   }
 

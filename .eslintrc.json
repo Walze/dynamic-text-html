@@ -17,6 +17,7 @@
         "sort-keys": "off",
         "sort-vars": "off",
         "comma-dangle": "off",
+        "guard-for-in": "off",
         "one-var": "off",
         "object-curly-spacing": "off",
         "multiline-ternary": "off",
