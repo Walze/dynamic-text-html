@@ -142,7 +142,7 @@ export default class Formatter {
 
   /**
    * @param { string } text
-   * @returns { [] | [][] }
+   * @returns { string[] }
    */
   everyNthLineBreak(text, everyN = 0) {
 
@@ -150,8 +150,11 @@ export default class Formatter {
       .replaceFlag(text, '')
       .split(/\r\n|\r|\n/ug)
 
+    if (everyN === 1)
+      return lines.filter(line => line !== '')
+
     /**
-     * @type { [][] }
+     * @type { string[] }
      */
     const groups = []
     let groupsIndex = 0
@@ -162,8 +165,7 @@ export default class Formatter {
     let blocked = false
     let breakCounter = 0
 
-
-    lines.map((line, lineI) => {
+    lines.map((line) => {
 
       let goToNextGroup = false
       const isEmpty = line === ''
@@ -178,16 +180,10 @@ export default class Formatter {
 
       // if (breakCounter > everyN) groupsIndex--
 
-      console.log([line], breakCounter)
-
       // if breakcounter matches param
       goToNextGroup = breakCounter === everyN && everyN !== 0
 
-      //
-      if (isEmpty)
-        groups[groupsIndex] += '\n'
-      else
-        groups[groupsIndex] += line
+      groups[groupsIndex] += `${line}\r\n`
 
       if (!goToNextGroup)
         blocked = false
@@ -230,13 +226,15 @@ export default class Formatter {
           // if 2 dimentional array
           if (lines[0].constructor === Array) {
 
-            const text = this.mark(lines[fatherI][index], removeP)
-            child.innerHTML = text
+            const text = lines[fatherI][index]
+            const markedText = this.mark(text, removeP)
+            child.innerHTML = markedText
 
           } else {
 
-            const text = this.mark(lines[index], removeP)
-            child.innerHTML = text
+            const text = lines[index]
+            const markedText = this.mark(text, removeP)
+            child.innerHTML = markedText
 
           }
 
