@@ -19,9 +19,11 @@ const triggers = {
       '[item]'
     ]
 
-    const lines = this.everyNthLineBreak(file.data, 3)
+    const lists = this
+      .everyNthLineBreak(file.data, 3)
+      .map(list => this.everyNthLineBreak(list, 1))
 
-    return this.formatFatherChildren(lines, divs, selectors, true)
+    return this.formatFatherChildren(lists, divs, selectors, true)
 
   },
 }
@@ -36,7 +38,6 @@ window.addEventListener('load', () => {
 
   const perf = performance.now() - p1
   console.log(`Window loaded in ${Math.round(perf)}ms`)
-  console.log(fields)
 
 })
 
@@ -44,6 +45,21 @@ window.addEventListener('DYNAMIC_LOADED', () => {
 
   const perf = performance.now() - p1
   console.log(`Files loaded in ${Math.round(perf)}ms`)
+  console.log(fields)
 
 })
 
+
+// const makeElement = (el, text, array) => {
+
+//   return `<${el} class="${array.join(' ')}">${text}</${el}>`
+
+// }
+
+/*
+ * const el = makeElement('h4', 'AAAA', [
+ *   'linhas',
+ *   'crete',
+ *   'center-align'
+ * ])
+ */

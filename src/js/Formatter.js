@@ -11,7 +11,7 @@ export default class Formatter {
 
     const options = optionsParam || {}
     const optionsObj = {
-      flag: options.flag || /\[\[(.+)\]\]/u,
+      flag: options.flag || /\[\[(.+)\]\]\r\n|\r|\n/u,
       defaultCssSelector: options.defaultCssSelector || '[field]',
       triggers: options.triggers || {}
     }
@@ -139,70 +139,58 @@ export default class Formatter {
 
   }
 
+
   /**
    * @param { string } text
-   * @returns { [] | [][] }
+   * @returns { string[] }
    */
   everyNthLineBreak(text, everyN = 0) {
 
     const lines = this
       .replaceFlag(text, '')
-      .trim()
       .split(/\r\n|\r|\n/ug)
 
+    if (everyN === 1)
+      return lines.filter(line => line !== '')
+
     /**
-     * @type { [][] }
+     * @type { string[] }
      */
     const groups = []
     let groupsIndex = 0
-    let groupItemIndex = 0
 
     /**
      * Blocks consecutive breaks
      */
     let blocked = false
+    let breakCounter = 0
 
-    lines.map((line, lineI) => {
+    lines.map((line) => {
 
       let goToNextGroup = false
-      const hasText = line !== ''
+      const isEmpty = line === ''
 
-      // set array if undefined
-      if (!Array.isArray(groups[groupsIndex])) groups[groupsIndex] = []
+      if (!groups[groupsIndex])
+        groups[groupsIndex] = ''
 
       // checks if N previous items are empty
-      let breakCounter = 0;
 
-      [...Array(everyN)].map((__, idx) => {
+      if (isEmpty) breakCounter++
+      else breakCounter = 0
 
-        const index = lineI - idx
-
-        if (index < 0) {
-
-          breakCounter--
-          return
-
-        }
-
-        // lines[lineI - i] === '' ? breakCounter++ : breakCounter--
-        breakCounter += lines[lineI - idx] === ''
-
-      })
+      // if (breakCounter > everyN) groupsIndex--
 
       // if breakcounter matches param
       goToNextGroup = breakCounter === everyN && everyN !== 0
 
-      // adds line to group item if has text
-      if (hasText)
-        groups[groupsIndex][groupItemIndex++] = line
+      groups[groupsIndex] += `${line}\r\n`
 
-
-      if (!goToNextGroup) blocked = false
+      if (!goToNextGroup)
+        blocked = false
 
       if (goToNextGroup && !blocked) {
 
         groupsIndex++
-        groupItemIndex = 0
         blocked = true
 
       }
@@ -238,13 +226,15 @@ export default class Formatter {
           // if 2 dimentional array
           if (lines[0].constructor === Array) {
 
-            const text = this.mark(lines[fatherI][index], removeP)
-            child.innerHTML = text
+            const text = lines[fatherI][index]
+            const markedText = this.mark(text, removeP)
+            child.innerHTML = markedText
 
           } else {
 
-            const text = this.mark(lines[index], removeP)
-            child.innerHTML = text
+            const text = lines[index]
+            const markedText = this.mark(text, removeP)
+            child.innerHTML = markedText
 
           }
 
