@@ -34,6 +34,35 @@ export default class Formatter {
 
 
   /**
+   * @param { fileType[] } files
+   */
+  fireFiles(files) {
+
+    let defaultFileIndex = 0
+    const firedTriggersReturns = []
+
+    for (const file of files) {
+
+      let firedTriggersReturn = null
+
+      // if didn't match, it's a default
+      const customTrigger = this.matchFlag(file.data)
+
+      if (customTrigger)
+        firedTriggersReturn = this.pullTrigger(customTrigger, file)
+      else
+        firedTriggersReturn = this.pullTrigger('default', file, defaultFileIndex++)
+
+      firedTriggersReturns.push(firedTriggersReturn)
+
+    }
+
+    return firedTriggersReturns
+
+  }
+
+
+  /**
    * @private
    * @param {string} defaultCssSelector
    * @param { null | (fields: Element[]) => any } defaultAddon
