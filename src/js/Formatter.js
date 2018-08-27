@@ -5,7 +5,7 @@ export default class Formatter {
 
 
   /**
-   * @param {{ flag: RegExp, defaultCssSelector: string, triggers: triggerParamType }} options
+   * @param {{ flag: RegExp, defaultCssSelector: string, triggers: triggerParamType }} optionsParam
    */
   constructor(optionsParam) {
 
@@ -36,7 +36,7 @@ export default class Formatter {
   /**
    * @param { fileType[] } files
    */
-  fireFiles(files) {
+  emitFiles(files) {
 
     let defaultFileIndex = 0
     const firedTriggersReturns = []
@@ -49,9 +49,9 @@ export default class Formatter {
       const customTrigger = this.matchFlag(file.data)
 
       if (customTrigger)
-        firedTriggersReturn = this.pullTrigger(customTrigger, file)
+        firedTriggersReturn = this.emit(customTrigger, file)
       else
-        firedTriggersReturn = this.pullTrigger('default', file, defaultFileIndex++)
+        firedTriggersReturn = this.emit('default', file, defaultFileIndex++)
 
       firedTriggersReturns.push(firedTriggersReturn)
 
@@ -67,11 +67,10 @@ export default class Formatter {
    * @param { fileType } file
    * @param { any[] } args
    */
-  pullTrigger(triggerName, file, ...args) {
+  emit(triggerName, file, ...args) {
 
     if (triggerName === 'default') {
 
-      // Last trigger is always default
       return this.triggers.default(file, ...args)
 
     }
@@ -130,12 +129,11 @@ export default class Formatter {
 
     /** @type { string[] } */
     const groups = []
-    let groupsIndex = 0
 
-    /**
-     * Blocks consecutive breaks
-     */
+    /** Blocks consecutive breaks */
     let blocked = false
+
+    let groupsIndex = 0
     let breakCounter = 0
 
     lines.map((line) => {
@@ -146,12 +144,8 @@ export default class Formatter {
       if (!groups[groupsIndex])
         groups[groupsIndex] = ''
 
-      // checks if N previous items are empty
-
       if (isEmpty) breakCounter++
       else breakCounter = 0
-
-      // if (breakCounter > everyN) groupsIndex--
 
       // if breakcounter matches param
       goToNextGroup = breakCounter === everyN && everyN !== 0
@@ -239,7 +233,7 @@ export default class Formatter {
     return (file, fileIndex) => {
 
       const field = fields[fileIndex]
-      const markedText = TextReplacer.mark(file.data)
+      const markedText = TextReplacer.customMarks(TextReplacer.mark(file.data))
 
       field.innerHTML = markedText
       this._displayFileNameToggle(file.name, field)
@@ -304,6 +298,7 @@ export default class Formatter {
   }
 
   /**
+   * @private
    * @param { Element } overlay
    * @param { number } [clickAmount = 3]
    * @returns { (e: MouseEvent) => void }
