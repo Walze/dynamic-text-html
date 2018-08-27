@@ -104,6 +104,48 @@ export default class Formatter {
 
 
   /**
+   * @param {string} rawText
+   */
+  customMarks(rawText) {
+
+    if (!rawText) return rawText
+
+    const split = rawText.split(' ')
+
+    const reduce = split.map(word => {
+
+      if (!word) return word
+
+      const match = word.match(/(!?)\[(\S*)\](\S+)/u)
+
+      if (!match) return word
+
+
+      const { 3: text } = match
+      const classes = match[2].split(' ')
+      const breakLine = Boolean(match[1])
+
+      const el = breakLine ? 'div' : 'span'
+
+      const newWord = this.makeElement(el, text, classes)
+
+      return newWord
+
+    })
+
+    return reduce.join(' ')
+
+  }
+
+
+  makeElement(el, text, array) {
+
+    return `<${el} class="${array.join(' ')}">${text}</${el}>`
+
+  }
+
+
+  /**
    * @param { string } triggerName
    * @param { fileType } file
    * @param { any[] } args
@@ -177,14 +219,10 @@ export default class Formatter {
 
     const lines = this
       .replaceFlag(text, '')
+      .trim()
       .split(/\r\n|\r|\n/ug)
 
-    if (everyN === 1)
-      return lines.filter(line => line !== '')
-
-    /**
-     * @type { string[] }
-     */
+    /** @type { string[] } */
     const groups = []
     let groupsIndex = 0
 
@@ -256,13 +294,15 @@ export default class Formatter {
           if (lines[0].constructor === Array) {
 
             const text = lines[fatherI][index]
-            const markedText = this.mark(text, removeP)
+            let markedText = this.customMarks(text)
+            markedText = this.mark(markedText, removeP)
             child.innerHTML = markedText
 
           } else {
 
             const text = lines[index]
-            const markedText = this.mark(text, removeP)
+            let markedText = this.customMarks(text)
+            markedText = this.mark(markedText, removeP)
             child.innerHTML = markedText
 
           }

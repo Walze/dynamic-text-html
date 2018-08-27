@@ -1,8 +1,6 @@
 
 import Formatter from './js/Formatter'
-import DynamicText from './js/DynamicText'
-
-const p1 = performance.now()
+import fetchFiles from './js/fetchFiles'
 
 /**
  * @type { triggerParamType }
@@ -20,7 +18,7 @@ const triggers = {
     ]
 
     const lists = this
-      .everyNthLineBreak(file.data, 3)
+      .everyNthLineBreak(file.data, 4)
       .map(list => this.everyNthLineBreak(list, 1))
 
     return this.formatFatherChildren(lists, divs, selectors, true)
@@ -28,33 +26,13 @@ const triggers = {
   },
 }
 
-
-const files = require('./textos/**.txt')
 const formatter = new Formatter({ triggers })
-const fields = new DynamicText(formatter, files)
 
+const filesUrls = require('./textos/**.txt')
+const filesPromises = fetchFiles(filesUrls)
 
-window.addEventListener('load', () => {
+filesPromises.then(files => formatter.fireFiles(files))
 
-  const perf = performance.now() - p1
-  console.log(`Window loaded in ${Math.round(perf)}ms`)
-
-})
-
-window.addEventListener('DYNAMIC_LOADED', () => {
-
-  const perf = performance.now() - p1
-  console.log(`Files loaded in ${Math.round(perf)}ms`)
-  console.log(fields)
-
-})
-
-
-// const makeElement = (el, text, array) => {
-
-//   return `<${el} class="${array.join(' ')}">${text}</${el}>`
-
-// }
 
 /*
  * const el = makeElement('h4', 'AAAA', [
