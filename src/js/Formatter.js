@@ -1,8 +1,8 @@
-
-import marked from 'marked'
+import TextReplacer from './TextReplacer'
 
 
 export default class Formatter {
+
 
   /**
    * @param {{ flag: RegExp, defaultCssSelector: string, triggers: triggerParamType }} options
@@ -78,69 +78,12 @@ export default class Formatter {
     return (file, fileIndex) => {
 
       const field = fields[fileIndex]
-      const markedText = this.mark(file.data)
+      const markedText = TextReplacer.mark(file.data)
 
       field.innerHTML = markedText
       this._displayFileNameToggle(file.name, field)
 
     }
-
-  }
-
-  /**
-   * @param { string } text
-   * @param { boolean } removeP
-   */
-  mark(text, removeP = false) {
-
-    const markedText = marked(text)
-
-    if (removeP)
-      return this.removeP(markedText)
-
-    return markedText
-
-  }
-
-
-  /**
-   * @param {string} rawText
-   */
-  customMarks(rawText) {
-
-    if (!rawText) return rawText
-
-    const split = rawText.split(' ')
-
-    const reduce = split.map(word => {
-
-      if (!word) return word
-
-      const match = word.match(/(!?)\[(\S*)\](\S+)/u)
-
-      if (!match) return word
-
-
-      const { 3: text } = match
-      const classes = match[2].split(' ')
-      const breakLine = Boolean(match[1])
-
-      const el = breakLine ? 'div' : 'span'
-
-      const newWord = this.makeElement(el, text, classes)
-
-      return newWord
-
-    })
-
-    return reduce.join(' ')
-
-  }
-
-
-  makeElement(el, text, array) {
-
-    return `<${el} class="${array.join(' ')}">${text}</${el}>`
 
   }
 
@@ -188,6 +131,7 @@ export default class Formatter {
 
   }
 
+
   /**
    * @param { string } text
    * @param { string } replaceWith
@@ -195,18 +139,6 @@ export default class Formatter {
   replaceFlag(text, replaceWith = '\n') {
 
     return text.replace(this.flag, replaceWith)
-
-  }
-
-
-  /**
-   * @param { string } text
-   */
-  removeP(text) {
-
-    return text
-      .replace(/<p>/gu, '')
-      .replace(/<\/p>/gu, '')
 
   }
 
@@ -268,6 +200,7 @@ export default class Formatter {
 
   }
 
+
   /**
    * @param { string[] } lines
    * @param { boolean } removeP
@@ -294,15 +227,15 @@ export default class Formatter {
           if (lines[0].constructor === Array) {
 
             const text = lines[fatherI][index]
-            let markedText = this.customMarks(text)
-            markedText = this.mark(markedText, removeP)
+            let markedText = TextReplacer.customMarks(text)
+            markedText = TextReplacer.mark(markedText, removeP)
             child.innerHTML = markedText
 
           } else {
 
             const text = lines[index]
-            let markedText = this.customMarks(text)
-            markedText = this.mark(markedText, removeP)
+            let markedText = TextReplacer.customMarks(text)
+            markedText = TextReplacer.mark(markedText, removeP)
             child.innerHTML = markedText
 
           }
@@ -394,5 +327,6 @@ export default class Formatter {
     }
 
   }
+
 
 }

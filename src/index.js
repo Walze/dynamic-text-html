@@ -32,12 +32,3 @@ const filesUrls = require('./textos/**.txt')
 const filesPromises = fetchFiles(filesUrls)
 
 filesPromises.then(files => formatter.fireFiles(files))
-
-
-/*
- * const el = makeElement('h4', 'AAAA', [
- *   'linhas',
- *   'crete',
- *   'center-align'
- * ])
- */
