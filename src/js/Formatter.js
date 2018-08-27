@@ -63,32 +63,6 @@ export default class Formatter {
 
 
   /**
-   * @private
-   * @param {string} defaultCssSelector
-   * @param { null | (fields: Element[]) => any } defaultAddon
-   * @returns { emitDefault }
-   */
-  _formatDefault(defaultCssSelector, defaultAddon) {
-
-    // Only gets run once
-    const fields = Array.from(document.querySelectorAll(defaultCssSelector))
-
-    if (defaultAddon) defaultAddon(fields)
-
-    return (file, fileIndex) => {
-
-      const field = fields[fileIndex]
-      const markedText = TextReplacer.mark(file.data)
-
-      field.innerHTML = markedText
-      this._displayFileNameToggle(file.name, field)
-
-    }
-
-  }
-
-
-  /**
    * @param { string } triggerName
    * @param { fileType } file
    * @param { any[] } args
@@ -251,6 +225,32 @@ export default class Formatter {
 
   /**
    * @private
+   * @param {string} defaultCssSelector
+   * @param { null | (fields: Element[]) => any } defaultAddon
+   * @returns { emitDefault }
+   */
+  _formatDefault(defaultCssSelector, defaultAddon) {
+
+    // Only gets run once
+    const fields = Array.from(document.querySelectorAll(defaultCssSelector))
+
+    if (defaultAddon) defaultAddon(fields)
+
+    return (file, fileIndex) => {
+
+      const field = fields[fileIndex]
+      const markedText = TextReplacer.mark(file.data)
+
+      field.innerHTML = markedText
+      this._displayFileNameToggle(file.name, field)
+
+    }
+
+  }
+
+
+  /**
+   * @private
    * @param { triggerParamType } triggers
    * @returns { triggerType }
    */
@@ -279,7 +279,7 @@ export default class Formatter {
     field.insertBefore(overlay, field.firstChild)
 
 
-    const click = this.onDynamicFieldClick(overlay, 2)
+    const click = this._onDynamicFieldClick(overlay, 2)
     let zPressed = false
 
     window.addEventListener('keyup', (ev) => {
@@ -308,7 +308,7 @@ export default class Formatter {
    * @param { number } [clickAmount = 3]
    * @returns { (e: MouseEvent) => void }
    */
-  onDynamicFieldClick(overlay, clickAmount = 3) {
+  _onDynamicFieldClick(overlay, clickAmount = 3) {
 
     let active = false
 
