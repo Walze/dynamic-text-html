@@ -43,6 +43,8 @@ export default class Formatter {
 
     for (const file of files) {
 
+      file.data = TextReplacer.removeComments(file.data)
+
       let firedTriggersReturn = null
 
       // if didn't match, it's a default
@@ -233,7 +235,7 @@ export default class Formatter {
     return (file, fileIndex) => {
 
       const field = fields[fileIndex]
-      const markedText = TextReplacer.customMarks(TextReplacer.mark(file.data))
+      const markedText = TextReplacer.removeComments(TextReplacer.customMarks(TextReplacer.mark(file.data)))
 
       field.innerHTML = markedText
       this._displayFileNameToggle(file.name, field)

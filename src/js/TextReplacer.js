@@ -17,6 +17,17 @@ export default class TextReplacer {
 
   /**
    * @param { string } text
+   */
+  static removeComments(text) {
+
+    console.log(text)
+    return text.replace(/\{\{[^]*\}\}/gu, '')
+
+  }
+
+
+  /**
+   * @param { string } text
    * @param { boolean } removeP
    */
   static mark(text, removeP = false) {
