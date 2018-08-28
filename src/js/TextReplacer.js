@@ -20,7 +20,6 @@ export default class TextReplacer {
    */
   static removeComments(text) {
 
-    console.log(text)
     return text.replace(/\{\{[^]*\}\}/gu, '')
 
   }

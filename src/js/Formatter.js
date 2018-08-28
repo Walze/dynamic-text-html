@@ -1,4 +1,5 @@
 import TextReplacer from './TextReplacer'
+import { mapObj } from './helpers';
 
 
 export default class Formatter {
@@ -252,10 +253,7 @@ export default class Formatter {
    */
   _bindThisToTriggers(triggers) {
 
-    for (const prop in triggers)
-      triggers[prop] = triggers[prop].bind(this)
-
-    return triggers
+    return mapObj(triggers, value => value.bind(this))
 
   }
 
