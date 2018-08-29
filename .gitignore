@@ -1,6 +1,7 @@
 .cache/
 build/
 dist/
+watch/
 
 # Logs
 logs
