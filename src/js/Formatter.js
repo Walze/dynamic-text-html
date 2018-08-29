@@ -1,5 +1,5 @@
 import TextReplacer from './TextReplacer'
-import { mapObj } from './helpers';
+import { mapObj } from './helpers'
 
 
 export default class Formatter {
@@ -12,7 +12,7 @@ export default class Formatter {
 
     const options = optionsParam || {}
     const optionsObj = {
-      flag: options.flag || /\[\[(.+)\]\]\r\n|\r|\n/u,
+      flag: options.flag || /<<(.+)>>/u,
       defaultCssSelector: options.defaultCssSelector || '[field]',
       triggers: options.triggers || {}
     }
@@ -35,32 +35,23 @@ export default class Formatter {
 
 
   /**
-   * @param { fileType[] } files
+   * @param { fileType } file
    */
-  emitFiles(files) {
+  emitFile(file) {
 
-    let defaultFileIndex = 0
-    const firedTriggersReturns = []
+    file.data = TextReplacer.removeComments(file.data)
 
-    for (const file of files) {
+    let firedTriggersReturn = null
 
-      file.data = TextReplacer.removeComments(file.data)
+    // if didn't match, it's a default
+    const customTrigger = this.matchFlag(file.data)
 
-      let firedTriggersReturn = null
+    if (customTrigger)
+      firedTriggersReturn = this.emit(customTrigger, file)
+    else
+      firedTriggersReturn = this.emit('default', file)
 
-      // if didn't match, it's a default
-      const customTrigger = this.matchFlag(file.data)
-
-      if (customTrigger)
-        firedTriggersReturn = this.emit(customTrigger, file)
-      else
-        firedTriggersReturn = this.emit('default', file, defaultFileIndex++)
-
-      firedTriggersReturns.push(firedTriggersReturn)
-
-    }
-
-    return firedTriggersReturns
+    return firedTriggersReturn
 
   }
 
@@ -230,12 +221,13 @@ export default class Formatter {
 
     // Only gets run once
     const fields = Array.from(document.querySelectorAll(defaultCssSelector))
+    let fieldIndex = 0
 
     if (defaultAddon) defaultAddon(fields)
 
-    return (file, fileIndex) => {
+    return file => {
 
-      const field = fields[fileIndex]
+      const field = fields[fieldIndex++]
       const markedText = TextReplacer.removeComments(TextReplacer.customMarks(TextReplacer.mark(file.data)))
 
       field.innerHTML = markedText

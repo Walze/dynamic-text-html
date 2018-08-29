@@ -1,7 +1,7 @@
 import '../styles/dynamic-files.css'
 
 /**
- * @returns { Promise<fileType[]> }
+ * @returns { Promise<fileType>[] }
  */
 export default function fetchFiles(fileURLs) {
 
@@ -15,7 +15,7 @@ export default function fetchFiles(fileURLs) {
       }))
 
 
-    return Promise.all(promises)
+    return promises
 
   } catch (err) {
 

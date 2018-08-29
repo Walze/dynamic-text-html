@@ -29,6 +29,9 @@ const triggers = {
 const formatter = new Formatter({ triggers })
 
 const filesUrls = require('./textos/**.txt')
-const filesPromises = fetchFiles(filesUrls)
+const promises = fetchFiles(filesUrls)
 
-filesPromises.then(files => formatter.emitFiles(files))
+promises
+  .map(promise => promise
+    .then(file => formatter
+      .emitFile(file)))

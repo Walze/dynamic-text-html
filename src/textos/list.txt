@@ -1,4 +1,4 @@
-﻿[[list]]
+﻿<<list>>
 
 {{
     Listas são separadas por 4 quebras de linha
