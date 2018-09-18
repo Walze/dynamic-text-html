@@ -6,14 +6,14 @@
 
 **Ophertas**
 
-dá para editar o texto ![linhas]*teste* 
+dá para editar o texto !{linhas}*teste* 
 asodifnoiasdnfoinadsasdbfiasbdf
 asodbfasodbfibasdf
 
 
 **Título 2**    
 
-taosdingoasdingoisda [linhas]*asdf2* ngoiasndgionads12 [verde]asdf
+taosdingoasdingoisda {linhas}*asdf2* ngoiasndgionads12 {verde}asdf
 
 
 **Título 3**
@@ -25,7 +25,7 @@ taosdingoasdingoisdangoiasndgionads123
 
 \\\\\\\\\\\
 
-lista2 ![]body1
+lista2 !{}body1
 
 
 \\\\\\\\\\\

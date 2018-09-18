@@ -57,7 +57,7 @@ export default class StringFormatter {
 
       if (!word) return word
 
-      const match = word.match(/(!?)\[(\S*)\](\S+)/u)
+      const match = word.match(/(!?)\{(\S*)\}(\S+)/u)
 
       if (!match) return word
 
