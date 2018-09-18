@@ -1,6 +1,13 @@
 
 import Formatter from './js/Formatter'
 import fetchFiles from './js/fetchFiles'
+import StringFormatter from './js/StringFormatter'
+
+
+const string = new StringFormatter('[red]**nice**')
+
+console.log(string)
+
 
 /**
  * @type { triggerParamType }
@@ -21,7 +28,7 @@ const triggers = {
       .everyNthLineBreak(file.data, 4)
       .map(list => this.everyNthLineBreak(list, 1))
 
-    return this.formatFatherChildren(lists, divs, selectors, true)
+    return this.formatFatherChildren(lists, divs, selectors)
 
   },
 }
