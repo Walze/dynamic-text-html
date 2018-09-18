@@ -1,35 +1,26 @@
 import { mapObj } from './helpers'
 import StringFormatter from './StringFormatter'
+import FileFormatter from './FileFormatter'
 
-
-export default class Formatter {
+export default class Formatter extends FileFormatter {
 
 
   /**
-   * @param {{ flag: RegExp, defaultCssSelector: string, triggers: triggerParamType }} optionsParam
+   * @param {{ flag: RegExp, defaultCssSelector: string, triggers: triggerParamType }} options
    */
-  constructor(optionsParam) {
+  constructor(options) {
 
-    const options = optionsParam || {}
-    const optionsObj = {
-      flag: options.flag || /<<(.+)>>/u,
-      defaultCssSelector: options.defaultCssSelector || '[field]',
-      triggers: options.triggers || {}
-    }
+    super(options.flag, options.defaultCssSelector)
 
-    this.flag = optionsObj.flag
-
-    let defaultAddon = null
-
-    if (optionsObj.triggers && optionsObj.triggers.default)
-      defaultAddon = optionsObj.triggers.default
+    // sets addon if it exists in triggers
+    const defaultAddon = options.triggers && options.triggers.default
+      ? options.triggers.default
+      : null
 
 
-    /**
-     * @type { triggerType }
-     */
-    this.triggers = this._bindThisToTriggers(optionsObj.triggers)
-    this.triggers.default = this._formatDefault(optionsObj.defaultCssSelector, defaultAddon).bind(this)
+    /** @type { triggerType } */
+    this.triggers = this._bindThisToTriggers(options.triggers)
+    this.triggers.default = this._formatDefault(this.defaultCssSelector, defaultAddon).bind(this)
 
   }
 
@@ -43,15 +34,12 @@ export default class Formatter {
 
     file.data = SF.removeComments().string()
 
-    let firedTriggersReturn = null
-
     // if didn't match, it's a default
     const customTrigger = this.matchFlag(file.data)
 
-    if (customTrigger)
-      firedTriggersReturn = this.emit(customTrigger, file)
-    else
-      firedTriggersReturn = this.emit('default', file)
+    const firedTriggersReturn = customTrigger
+      ? this.emit(customTrigger, file)
+      : this.emit('default', file)
 
     return firedTriggersReturn
 
@@ -71,6 +59,7 @@ export default class Formatter {
 
     }
 
+
     // Takes "name" from "name.txt"
     const selector = `[${file.name.match(/(.+).txt/u)[1]}]`
     const divs = Array
@@ -85,82 +74,6 @@ export default class Formatter {
     const trigger = this.triggers[triggerName]
 
     return trigger ? trigger(file, divs, ...args) : null
-
-  }
-
-
-  /**
-   * @param { string } text
-   */
-  matchFlag(text) {
-
-    const matched = text.match(this.flag)
-
-    return matched ? matched[1] : null
-
-  }
-
-
-  /**
-   * @param { string } text
-   * @param { string } replaceWith
-   */
-  replaceFlag(text, replaceWith = '\n') {
-
-    return text.replace(this.flag, replaceWith)
-
-  }
-
-
-  /**
-   * @param { string } text
-   * @returns { string[] }
-   */
-  everyNthLineBreak(text, everyN = 0) {
-
-    const lines = this
-      .replaceFlag(text, '')
-      .trim()
-      .split(/\r\n|\r|\n/ug)
-
-    /** @type { string[] } */
-    const groups = []
-
-    /** Blocks consecutive breaks */
-    let blocked = false
-
-    let groupsIndex = 0
-    let breakCounter = 0
-
-    lines.map((line) => {
-
-      let goToNextGroup = false
-      const isEmpty = line === ''
-
-      if (!groups[groupsIndex])
-        groups[groupsIndex] = ''
-
-      if (isEmpty) breakCounter++
-      else breakCounter = 0
-
-      // if breakcounter matches param
-      goToNextGroup = breakCounter === everyN && everyN !== 0
-
-      groups[groupsIndex] += `${line}\r\n`
-
-      if (!goToNextGroup)
-        blocked = false
-
-      if (goToNextGroup && !blocked) {
-
-        groupsIndex++
-        blocked = true
-
-      }
-
-    })
-
-    return everyN === 0 ? groups[0] : groups
 
   }
 
