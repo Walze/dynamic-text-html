@@ -1,12 +1,6 @@
 
-import Formatter from './js/Formatter'
+import Renderer from './js/Renderer'
 import fetchFiles from './js/fetchFiles'
-import StringFormatter from './js/StringFormatter'
-
-
-const string = new StringFormatter('[red]**nice**')
-
-console.log(string)
 
 
 /**
@@ -28,17 +22,19 @@ const triggers = {
       .everyNthLineBreak(file.data, 4)
       .map(list => this.everyNthLineBreak(list, 1))
 
-    return this.formatFatherChildren(lists, divs, selectors)
+    return this.renderFatherChildren(lists, divs, selectors)
 
   },
 }
 
-const formatter = new Formatter({ triggers })
+const renderer = new Renderer({ triggers })
 
 const filesUrls = require('./textos/**.txt')
 const promises = fetchFiles(filesUrls)
 
 promises
   .map(promise => promise
-    .then(file => formatter
-      .emitFile(file)))
+    .then(file => renderer
+      .renderFile(file)
+    )
+  )

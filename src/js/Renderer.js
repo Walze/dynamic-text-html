@@ -2,7 +2,7 @@ import { mapObj } from './helpers'
 import StringFormatter from './StringFormatter'
 import FileFormatter from './FileFormatter'
 
-export default class Formatter extends FileFormatter {
+export default class Renderer extends FileFormatter {
 
 
   /**
@@ -20,7 +20,7 @@ export default class Formatter extends FileFormatter {
 
     /** @type { triggerType } */
     this.triggers = this._bindThisToTriggers(options.triggers)
-    this.triggers.default = this._formatDefault(this.defaultCssSelector, defaultAddon).bind(this)
+    this.triggers.default = this._renderDefault(this.defaultCssSelector, defaultAddon).bind(this)
 
   }
 
@@ -28,7 +28,7 @@ export default class Formatter extends FileFormatter {
   /**
    * @param { fileType } file
    */
-  emitFile(file) {
+  renderFile(file) {
 
     const SF = new StringFormatter(file.data)
 
@@ -38,8 +38,8 @@ export default class Formatter extends FileFormatter {
     const customTrigger = this.matchFlag(file.data)
 
     const firedTriggersReturn = customTrigger
-      ? this.emit(customTrigger, file)
-      : this.emit('default', file)
+      ? this._emitTrigger(customTrigger, file)
+      : this._emitTrigger('default', file)
 
     return firedTriggersReturn
 
@@ -51,7 +51,7 @@ export default class Formatter extends FileFormatter {
    * @param { fileType } file
    * @param { any[] } args
    */
-  emit(triggerName, file, ...args) {
+  _emitTrigger(triggerName, file, ...args) {
 
     if (triggerName === 'default') {
 
@@ -84,7 +84,7 @@ export default class Formatter extends FileFormatter {
    * @param { Element[] } fathers
    * @param { string[] } selectors
    */
-  formatFatherChildren(lines, fathers, selectors) {
+  renderFatherChildren(lines, fathers, selectors) {
 
     // iterates fathers
     fathers.map((father, fatherI) => {
@@ -128,7 +128,7 @@ export default class Formatter extends FileFormatter {
    * @param { null | (fields: Element[]) => any } defaultAddon
    * @returns { emitDefault }
    */
-  _formatDefault(defaultCssSelector, defaultAddon) {
+  _renderDefault(defaultCssSelector, defaultAddon) {
 
     // Only gets run once
     const fields = Array.from(document.querySelectorAll(defaultCssSelector))

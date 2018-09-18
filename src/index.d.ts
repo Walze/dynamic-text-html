@@ -1,20 +1,20 @@
 
-import Formatter from './js/Formatter'
+import Renderer from './js/Renderer'
 
 declare global {
-    export { Formatter }
+    export { Renderer }
 
     export type fileType = { name: string, data: string }
 
     export type emitDefault = (
-        this: Formatter,
+        this: Renderer,
         file: fileType,
         fieldIndex: number,
         ...args: any[]
     ) => any
 
     export type emitCustom = (
-        this: Formatter,
+        this: Renderer,
         file: fileType,
         divs: Element[],
         ...args: any[]
