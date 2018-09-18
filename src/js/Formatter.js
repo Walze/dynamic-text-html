@@ -1,5 +1,5 @@
-import TextReplacer from './TextReplacer'
 import { mapObj } from './helpers'
+import StringFormatter from './StringFormatter'
 
 
 export default class Formatter {
@@ -39,7 +39,9 @@ export default class Formatter {
    */
   emitFile(file) {
 
-    file.data = TextReplacer.removeComments(file.data)
+    const SF = new StringFormatter(file.data)
+
+    file.data = SF.removeComments().string()
 
     let firedTriggersReturn = null
 
@@ -169,7 +171,7 @@ export default class Formatter {
    * @param { Element[] } fathers
    * @param { string[] } selectors
    */
-  formatFatherChildren(lines, fathers, selectors, removeP = false) {
+  formatFatherChildren(lines, fathers, selectors) {
 
     // iterates fathers
     fathers.map((father, fatherI) => {
@@ -185,22 +187,18 @@ export default class Formatter {
           const multiply = childI * selectors.length
           const index = selectorI + multiply
 
-          // if 2 dimentional array
-          if (lines[0].constructor === Array) {
+          // if 2 dimentional array test
+          const SF = lines[0].constructor === Array
+            ? new StringFormatter(lines[fatherI][index])
+            : new StringFormatter(lines[index])
 
-            const text = lines[fatherI][index]
-            let markedText = TextReplacer.customMarks(text)
-            markedText = TextReplacer.mark(markedText, removeP)
-            child.innerHTML = markedText
+          const markedText = SF
+            .customMarks()
+            .mark()
+            .removePTag()
+            .string()
 
-          } else {
-
-            const text = lines[index]
-            let markedText = TextReplacer.customMarks(text)
-            markedText = TextReplacer.mark(markedText, removeP)
-            child.innerHTML = markedText
-
-          }
+          child.innerHTML = markedText
 
         })
 
@@ -228,7 +226,12 @@ export default class Formatter {
     return file => {
 
       const field = fields[fieldIndex++]
-      const markedText = TextReplacer.removeComments(TextReplacer.customMarks(TextReplacer.mark(file.data)))
+
+      const markedText = new StringFormatter(file.data)
+        .removeComments()
+        .customMarks()
+        .mark()
+        .string()
 
       field.innerHTML = markedText
       this._displayFileNameToggle(file.name, field)
