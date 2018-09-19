@@ -18,6 +18,7 @@
         "sort-keys": "off",
         "function-paren-newline": "off",
         "sort-vars": "off",
+        "implicit-arrow-linebreak": "off",
         "max-classes-per-file": "off",
         "comma-dangle": "off",
         "guard-for-in": "off",

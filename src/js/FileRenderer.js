@@ -4,7 +4,7 @@ import { mapObj } from './helpers'
 import StringFormatter from './StringFormatter'
 import FileFormatter from './FileFormatter'
 
-export default class Renderer extends FileFormatter {
+export default class FileRenderer extends FileFormatter {
 
 
   /**
@@ -30,7 +30,7 @@ export default class Renderer extends FileFormatter {
   /**
    * @param { fileType } file
    */
-  renderFile(file) {
+  render(file) {
 
     const SF = new StringFormatter(file.data)
 

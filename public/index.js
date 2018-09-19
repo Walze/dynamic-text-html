@@ -1,5 +1,5 @@
 
-import Renderer from '../src/js/Renderer'
+import FileRenderer from '../src/js/FileRenderer'
 import { fetchFiles } from '../src/js/helpers'
 
 
@@ -27,11 +27,11 @@ const triggers = {
   },
 }
 
-const renderer = new Renderer({ triggers })
-
+const renderer = new FileRenderer({ triggers })
 const filesUrls = require('../public/textos/**.txt')
-const filePromises = fetchFiles(filesUrls)
 
-filePromises.map(promise => promise
-  .then(file => renderer.renderFile(file))
+fetchFiles(filesUrls).map(filePromise =>
+  filePromise.then(file =>
+    renderer.render(file)
+  )
 )
