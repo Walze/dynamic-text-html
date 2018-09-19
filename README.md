@@ -19,30 +19,40 @@ Uses markdown in .txt files to write HTML.
 
 **Title**
 
-! used for block !{red}*block* 
+! used for block !{red lighten-2}*block* 
 Inline example {red}inline  
 lorem ipsum 
 ```
 
+#### HTML result before
+```html
+<ul list class="collection">
+    <li class="collection-item">
+      <div head></div>
+      <div item></div>
+    </li>
+</ul>
+```
+
 #### HTML result after
 ```html
-<ul list="" class="collection dynamic">
+<ul list class="collection dynamic">
     <div class="show-file-name">list.txt</div>
     <li class="collection-item">
         <div head="">
             <strong>Title</strong>
         </div>
-        <div item="">
+        <div item>
             ! used for block 
-            <div id="" class="red"><em>block</em></div>
-            Inline example <span id="" class="red">inline</span>
+            <div class="red"><em>block</em></div>
+            Inline example <span class="red">inline</span>
             <br>lorem ipsum 
         </div>
     </li>
 </ul>
 ```
 
-
+### Trigger Example
 ```javascript
 
 const triggers = {
