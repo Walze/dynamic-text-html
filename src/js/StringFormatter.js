@@ -2,11 +2,15 @@ import marked from 'marked'
 
 export default class StringFormatter {
 
+  /**
+   * @param { string } string
+   */
   constructor(string) {
 
     if (typeof string !== 'string')
       throw new Error(`constructor got ${typeof string} instead of string`)
 
+    /** @type { string } */
     this._string = string
 
   }
@@ -48,44 +52,42 @@ export default class StringFormatter {
 
   }
 
+  _replaceCustomMark(...match) {
+
+    const { 3: text } = match
+    this._string = text
+
+    const classes = match[2] ? match[2].split(' ') : null
+    const breakLine = Boolean(match[1])
+
+    const el = breakLine ? 'div' : 'span'
+
+    const newWord = this.makeElement(el, classes)
+
+    return newWord
+
+  }
 
   customMarks() {
 
-    const split = this._string.split(' ')
+    const regex = /(!?)\{([^{}]+)*\}(\S+)/ug
 
-    const reduce = split.map(word => {
+    const newString = this._string
+      .replace(regex, this._replaceCustomMark.bind(this))
 
-      if (!word) return word
-
-      const match = word.match(/(!?)\{(\S*)\}(\S+)/u)
-
-      if (!match) return word
-
-
-      const { 3: text } = match
-      this._string = text
-
-      const classes = match[2].split(' ')
-      const breakLine = Boolean(match[1])
-
-      const el = breakLine ? 'div' : 'span'
-
-      const newWord = this.makeElement(el, classes)
-
-      return newWord
-
-    })
-
-    return new StringFormatter(
-      reduce.join(' ')
-    )
+    return new StringFormatter(newString)
 
   }
 
 
-  makeElement(el, classArray, id = '') {
+  makeElement(el, classArray, id = null) {
 
-    return `<${el} id="${id}" class="${classArray.join(' ')}">${this._string}</${el}>`
+    const classes = classArray ? classArray.join(' ') : null
+    const classesString = classes ? `class="${classes}"` : ''
+
+    const idString = id ? `id="${id}"` : ''
+
+    return `<${el} ${idString} ${classesString}>${this._string}</${el}>`
 
   }
 

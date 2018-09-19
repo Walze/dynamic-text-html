@@ -1,22 +1,21 @@
 ﻿<<list>>
 
 {{
-    Listas são separadas por 4 quebras de linha
+    Comments go here
 }}
 
-**Ophertas**
+**Title**
 
-dá para editar o texto !{linhas}*teste* 
-asodifnoiasdnfoinadsasdbfiasbdf
-asodbfasodbfibasdf
+! used for block !{red lighten-2}*block* 
+Inline example {red}inline  
+lorem ipsum 
+
+**Title 2**    
+
+taosdingoasdingoisda {lines}*asdf2* ngoiasndgionads12 {green}asdf
 
 
-**Título 2**    
-
-taosdingoasdingoisda {linhas}*asdf2* ngoiasndgionads12 {verde}asdf
-
-
-**Título 3**
+**Title 3**
 
 taosdingoasdingoisdangoiasndgionads123
 

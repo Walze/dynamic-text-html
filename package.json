@@ -1,7 +1,9 @@
 {
+  "main": "deploy/barrel.js",
   "scripts": {
-    "start": "parcel public/index.html --open --log-level 3 --global app",
+    "start": "parcel public/index.html --open --global app",
     "build": "parcel build public/index.html --public-url . --detailed-report --no-cache --out-dir ./build",
+    "deploy": "parcel build src/barrel.js --public-url . --detailed-report --no-cache --out-dir ./deploy --target node",
     "watch": "parcel watch public/index.html --public-url . --out-dir watch/ --no-cache"
   },
   "devDependencies": {
