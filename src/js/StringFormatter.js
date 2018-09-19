@@ -16,6 +16,7 @@ export default class StringFormatter {
   }
 
   /**
+   * Returns result string of formatting
    * @returns {string}
    */
   string() {
@@ -44,15 +45,16 @@ export default class StringFormatter {
   }
 
 
-  mark() {
+  /**
+   * adds marked.js to string
+   */
+  markdown() {
 
-    return new StringFormatter(
-      marked(this._string)
-    )
+    return new StringFormatter(marked(this._string))
 
   }
 
-  _replaceCustomMark(...match) {
+  _replaceMarkClasses(...match) {
 
     const { 3: text } = match
     this._string = text
@@ -68,18 +70,27 @@ export default class StringFormatter {
 
   }
 
-  customMarks() {
+  /**
+   * marks custom classes
+   */
+  markClasses() {
 
     const regex = /(!?)\{([^{}]+)*\}(\S+)/ug
 
     const newString = this._string
-      .replace(regex, this._replaceCustomMark.bind(this))
+      .replace(regex, this._replaceMarkClasses.bind(this))
 
     return new StringFormatter(newString)
 
   }
 
 
+  /**
+   * makes a HTML element
+   * @param { string } el
+   * @param { string[] } classArray
+   * @param { string } [id=null]
+   */
   makeElement(el, classArray, id = null) {
 
     const classes = classArray ? classArray.join(' ') : null

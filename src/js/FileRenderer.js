@@ -108,8 +108,8 @@ export default class FileRenderer extends FileFormatter {
             : new StringFormatter(lines[index])
 
           const markedText = SF
-            .customMarks()
-            .mark()
+            .markClasses()
+            .markdown()
             .removePTag()
             .string()
 
@@ -144,8 +144,8 @@ export default class FileRenderer extends FileFormatter {
 
       const markedText = new StringFormatter(file.data)
         .removeComments()
-        .customMarks()
-        .mark()
+        .markClasses()
+        .markdown()
         .string()
 
       field.innerHTML = markedText
