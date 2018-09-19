@@ -1,4 +1,6 @@
 {
+  "name": "dynamic-text-html",
+  "version": "1.0.0",
   "main": "deploy/barrel.js",
   "scripts": {
     "start": "parcel public/index.html --open --global app",
