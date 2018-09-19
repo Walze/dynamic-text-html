@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "start": "parcel src/index.html --open --log-level 3 --global app",
-    "build": "parcel build src/index.html --public-url . --detailed-report --no-cache --out-dir ./build",
-    "watch": "parcel watch src/index.html --public-url . --out-dir watch/ --no-cache"
+    "start": "parcel public/index.html --open --log-level 3 --global app",
+    "build": "parcel build public/index.html --public-url . --detailed-report --no-cache --out-dir ./build",
+    "watch": "parcel watch public/index.html --public-url . --out-dir watch/ --no-cache"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",

@@ -15,3 +15,15 @@ export const mapObj = (object, cb) => {
   return newObj
 
 }
+
+
+/**
+ * @returns { Promise<fileType>[] }
+ */
+export const fetchFiles = urls => Object.keys(urls)
+  .map(async url => ({
+    name: `${url}.txt`,
+    data: await fetch(urls[url]).then(response => response.text()),
+  }))
+
+

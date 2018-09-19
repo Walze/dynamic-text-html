@@ -1,3 +1,5 @@
+import '../styles/dynamic-files.css'
+
 import { mapObj } from './helpers'
 import StringFormatter from './StringFormatter'
 import FileFormatter from './FileFormatter'
