@@ -18,12 +18,36 @@ export const mapObj = (object, cb) => {
 
 
 /**
+ * @param { {} } object
+ * @param { (value: any, prop: string, index: number) => any } cb
+ */
+export const mapObjToArray = (object, cb) => {
+
+  const arr = []
+  let index = 0
+
+  for (const prop in object)
+    arr.push(cb(object[prop], prop, index++))
+
+  return arr
+
+}
+
+
+/**
+ * @returns { (url) => Promise<fileType> }
+ */
+const fetchMakeFile = ext =>
+  async (path, name) => ({
+    name: `${name}.${ext}`,
+    data: await fetch(path).then(response => response.text()),
+  })
+
+
+/**
  * @returns { Promise<fileType>[] }
  */
-export const fetchFiles = (urls, ext = 'md') => Object.keys(urls)
-  .map(async url => ({
-    name: `${url}.${ext}`,
-    data: await fetch(urls[url]).then(response => response.text()),
-  }))
+export const fetchFiles = (urlsObj, ext = 'md') =>
+  mapObjToArray(urlsObj, fetchMakeFile(ext))
 
 
