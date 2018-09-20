@@ -25,6 +25,7 @@ export default class FileRenderer extends FileFormatter {
     this.triggers.default = this._renderDefault(this.defaultCssSelector, defaultAddon).bind(this)
 
     this.ext = options.ext || 'md'
+
   }
 
 
