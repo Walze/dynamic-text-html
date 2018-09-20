@@ -28,7 +28,7 @@ const triggers = {
 }
 
 const renderer = new FileRenderer({ triggers })
-const filesUrls = require('../public/textos/**.txt')
+const filesUrls = require('../public/textos/**.md')
 
 fetchFiles(filesUrls).map(filePromise =>
   filePromise.then(file =>

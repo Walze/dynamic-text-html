@@ -8,9 +8,9 @@ export default class FileRenderer extends FileFormatter {
 
 
   /**
-   * @param {{ flag: RegExp, defaultCssSelector: string, triggers: triggerParamType }} options
+   * @param {{ ext?: string, flag?: RegExp, defaultCssSelector?: string, triggers?: triggerParamType }} options
    */
-  constructor(options) {
+  constructor(options = {}) {
 
     super(options.flag, options.defaultCssSelector)
 
@@ -24,6 +24,7 @@ export default class FileRenderer extends FileFormatter {
     this.triggers = this._bindThisToTriggers(options.triggers)
     this.triggers.default = this._renderDefault(this.defaultCssSelector, defaultAddon).bind(this)
 
+    this.ext = options.ext || 'md'
   }
 
 
@@ -62,8 +63,9 @@ export default class FileRenderer extends FileFormatter {
     }
 
 
-    // Takes "name" from "name.txt"
-    const selector = `[${file.name.match(/(.+).txt/u)[1]}]`
+    // Takes "name" from "name.extension"
+    const regex = new RegExp(`(.+).${this.ext}`, 'u')
+    const selector = `[${file.name.match(regex)[1]}]`
     const divs = Array
       .from(document.querySelectorAll(selector))
       .map(div => {

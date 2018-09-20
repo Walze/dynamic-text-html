@@ -1,6 +1,6 @@
 # dynamic-text-html
 
-Uses markdown in .txt files to write HTML.
+Uses markdown in .md files to write HTML.
 
 ## Syntax
 * all syntax from marked.js are available
@@ -37,7 +37,7 @@ lorem ipsum
 #### HTML result after
 ```html
 <ul list class="collection dynamic">
-    <div class="show-file-name">list.txt</div>
+    <div class="show-file-name">list.md</div>
     <li class="collection-item">
         <div head="">
             <strong>Title</strong>
@@ -77,7 +77,7 @@ const triggers = {
 }
 
 const renderer = new FileRenderer({ triggers })
-const filesUrls = require('../public/textos/**.txt')
+const filesUrls = require('../public/textos/**.md')
 
 fetchFiles(filesUrls).map(filePromise =>
   filePromise.then(file =>
