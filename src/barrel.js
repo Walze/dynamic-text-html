@@ -1,7 +1,15 @@
-///<reference path="./index.d.ts"/>
+/// <reference path="./index.d.ts"/>
 
-export * from './js/FileRenderer.js'
-export * from './js/FileFormatter.js'
-export * from './js/StringFormatter.js'
-export * from './js/helpers.js'
+import FileRenderer from './js/FileRenderer.js'
+import FileFormatter from './js/FileFormatter.js'
+import StringFormatter from './js/StringFormatter.js'
+import * as Helpers from './js/helpers.js'
+
+
+export {
+  FileRenderer,
+  FileFormatter,
+  StringFormatter,
+  Helpers
+}
 
