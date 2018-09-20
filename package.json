@@ -1,6 +1,6 @@
 {
   "name": "dynamic-text-html",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "src/barrel",
   "typings": "src/index",
   "scripts": {
