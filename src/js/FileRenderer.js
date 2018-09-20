@@ -8,7 +8,7 @@ export default class FileRenderer extends FileFormatter {
 
 
   /**
-   * @param {{ ext?: string, flag?: RegExp, defaultCssSelector?: string, triggers?: triggerParamType }} options
+   * @param { FileRendererOptions } options
    */
   constructor(options = {}) {
 
@@ -84,8 +84,7 @@ export default class FileRenderer extends FileFormatter {
 
 
   /**
-   * @param { string[] } lines
-   * @param { boolean } removeP
+   * @param { string[] | string[][] } lines
    * @param { Element[] } fathers
    * @param { string[] } selectors
    */
