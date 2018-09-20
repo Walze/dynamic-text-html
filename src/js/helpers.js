@@ -35,7 +35,8 @@ export const mapObjToArray = (object, cb) => {
 
 
 /**
- * @returns { (url) => Promise<fileType> }
+ * @param { string } ext
+ * @returns { (path: string, name: string) => Promise<fileType> }
  */
 const fetchMakeFile = ext =>
   async (path, name) => ({
