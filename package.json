@@ -1,7 +1,7 @@
 {
   "name": "dynamic-text-html",
   "version": "1.0.1",
-  "main": "deploy/barrel.js",
+  "main": "src/barrel.js",
   "scripts": {
     "start": "parcel public/index.html --open --global app",
     "build": "parcel build public/index.html --public-url . --detailed-report --no-cache --out-dir ./build",

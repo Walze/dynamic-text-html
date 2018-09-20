@@ -17,6 +17,7 @@
         "callback-return": "off",
         "sort-keys": "off",
         "function-paren-newline": "off",
+        "spaced-comment": "off",
         "sort-vars": "off",
         "implicit-arrow-linebreak": "off",
         "max-classes-per-file": "off",
