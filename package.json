@@ -1,6 +1,6 @@
 {
   "name": "dynamic-text-html",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "main": "src/barrel.js",
   "scripts": {
     "start": "parcel public/index.html --open --global app",
