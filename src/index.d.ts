@@ -2,6 +2,12 @@
 import { FileRenderer } from './js/FileRenderer'
 import { FileFormatter } from './js/FileFormatter'
 
+
+declare module "*.md" {
+    const value: any;
+    export default value;
+}
+
 declare global {
 
     interface ArrayConstructor {
@@ -25,15 +31,15 @@ declare global {
         ...args: any[]
     ) => any
 
-    type emitCustom = (
-        this: FileRenderer,
+    type emitCustom = <T>(
+        reference: FileRenderer,
         file: fileType,
         divs: Element[],
-        ...args: any[]
-    ) => any
+        ...args: T[]
+    ) => T | void
 
     type triggerType = {
-        [key: string]: emitCustom | undefined
-        default?: emitCustom
+        [key: string]: emitCustom
+        default: emitCustom
     }
 }

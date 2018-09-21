@@ -1,6 +1,5 @@
 import '../styles/dynamic-files.css'
 
-import { mapObj } from './helpers'
 import { StringFormatter } from './StringFormatter'
 import { FileFormatter } from './FileFormatter'
 
@@ -19,10 +18,11 @@ export class FileRenderer extends FileFormatter {
       : undefined
 
 
-    this.triggers = this._bindThisToTriggers(options.triggers)
-    this.triggers.default = this
-      ._renderDefault(this.defaultCssSelector, defaultAddon)
-      .bind(this)
+    this.triggers = {
+      ...options.triggers,
+      default: this._renderDefaultFactory(this.defaultCssSelector, defaultAddon)
+        .bind(this),
+    }
 
     this.ext = options.ext || 'md'
 
@@ -50,19 +50,16 @@ export class FileRenderer extends FileFormatter {
 
   private _emitTrigger<T>(triggerName: string, file: fileType, ...args: T[]) {
 
-    if (triggerName === 'default') {
-
-      return this.triggers.default(file, ...args)
-
-    }
-
-
     // Takes "name" from "name.extension"
     const regex = new RegExp(`(.+).${this.ext}`, 'u')
-    const selector = `[${file.name.match(regex)[1]}]`
+    const match = file.name.match(regex)
+
+    if (!match) throw new Error('file did not match RegEx')
+
+    const selector = `[${match[1]}]`
     const divs = Array
       .from(document.querySelectorAll(selector))
-      .map(div => {
+      .map((div) => {
 
         this._displayFileNameToggle(file.name, div)
 
@@ -70,9 +67,15 @@ export class FileRenderer extends FileFormatter {
 
       })
 
+    if (triggerName === 'default') {
+
+      return this.triggers.default(this, file, divs, ...args)
+
+    }
+
     const trigger = this.triggers[triggerName]
 
-    return trigger ? trigger(file, divs, ...args) : undefined
+    return trigger ? trigger(this, file, divs, ...args) : undefined
 
   }
 
@@ -121,20 +124,22 @@ export class FileRenderer extends FileFormatter {
   }
 
 
-  private _renderDefault(
+  private _renderDefaultFactory(
     defaultCssSelector: string,
-    defaultAddon: (<T>(fields: Element[]) => T) | null,
+    defaultAddon: emitCustom | undefined,
   ) {
 
     // Only gets run once
     const fields = Array.from(document.querySelectorAll(defaultCssSelector))
     let fieldIndex = 0
 
-    if (defaultAddon) defaultAddon(fields)
 
     return (file: fileType) => {
 
+
       const field = fields[fieldIndex++]
+
+      if (defaultAddon) defaultAddon(this, file, [field])
 
       const markedText = new StringFormatter(file.data)
         .removeComments()
@@ -146,15 +151,6 @@ export class FileRenderer extends FileFormatter {
       this._displayFileNameToggle(file.name, field)
 
     }
-
-  }
-
-
-  private _bindThisToTriggers(triggers?: triggerType) {
-
-    if (!triggers) return
-
-    return mapObj(triggers, (value) => value.bind(this))
 
   }
 

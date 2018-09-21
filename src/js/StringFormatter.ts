@@ -2,27 +2,27 @@ import marked from 'marked'
 
 export class StringFormatter {
 
-  private _string: string
+  private _STRING: string
 
   public constructor(text: string) {
 
     if (typeof text !== 'string')
       throw new Error(`constructor got ${typeof text} instead of string`)
 
-    this._string = text
+    this._STRING = text
 
   }
 
   public string() {
 
-    return this._string
+    return this._STRING
 
   }
 
   public removePTag() {
 
     return new StringFormatter(
-      this._string
+      this._STRING
         .replace(/<p>/gu, '')
         .replace(/<\/p>/gu, ''),
     )
@@ -33,7 +33,7 @@ export class StringFormatter {
   public removeComments() {
 
     return new StringFormatter(
-      this._string.replace(/\{\{[^]*\}\}/gu, ''),
+      this._STRING.replace(/\{\{[^]*\}\}/gu, ''),
     )
 
   }
@@ -44,14 +44,14 @@ export class StringFormatter {
    */
   public markdown() {
 
-    return new StringFormatter(marked(this._string))
+    return new StringFormatter(marked(this._STRING))
 
   }
 
   private _replaceMarkClasses(...match: string[]) {
 
     const { 3: text } = match
-    this._string = text
+    this._STRING = text
 
     const classes = match[2] ? match[2].split(' ') : undefined
     const breakLine = Boolean(match[1])
@@ -71,7 +71,7 @@ export class StringFormatter {
 
     const regex = /(!?)\{([^{}]+)*\}(\S+)/ug
 
-    const newString = this._string
+    const newString = this._STRING
       .replace(regex, this._replaceMarkClasses.bind(this))
 
     return new StringFormatter(newString)
@@ -86,7 +86,7 @@ export class StringFormatter {
 
     const idString = id ? `id="${id}"` : ''
 
-    return `<${el} ${idString} ${classesString}>${this._string}</${el}>`
+    return `<${el} ${idString} ${classesString}>${this._STRING}</${el}>`
 
   }
 

@@ -4,9 +4,9 @@ import { fetchFiles } from '../src/js/helpers'
 
 
 const triggers: triggerType = {
-  default: (fields) => console.warn('Default fields:', fields),
+  default: (...args) => console.warn('Default fields:', args),
 
-  list(file, divs) {
+  list(ref, file, divs) {
 
     console.warn('"list" fields:', divs)
 
@@ -15,16 +15,17 @@ const triggers: triggerType = {
       '[item]',
     ]
 
-    const lists = this
+    const lists = ref
       .everyNthLineBreak(file.data, 4)
-      .map((list) => this.everyNthLineBreak(list, 1))
+      .map((list) => ref.everyNthLineBreak(list, 1))
 
-    return this.renderFatherChildren(lists, divs, selectors)
+    ref.renderFatherChildren(lists, divs, selectors)
 
   },
 }
 
 import filesUrls from '../public/textos/**.md'
+
 const renderer = new FileRenderer({ triggers })
 
 fetchFiles(filesUrls)
