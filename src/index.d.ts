@@ -2,7 +2,24 @@
 import FileRenderer from './js/FileRenderer'
 import FileFormatter from './js/FileFormatter'
 
-declare global {
+declare module 'dynamic-text-html' {
+
+    export const mapObj = (
+        object: {},
+        cb: (value: any, prop: string, index: number) => any
+    ): {} => { }
+
+
+    export const mapObjToArray = (
+        object: {},
+        cb: (value: any, prop: string, index: number) => any
+    ): any[] => { }
+
+
+    export const fetchMakeFile = (ext: string): (path: string, name: string) => Promise<fileType> => { }
+
+
+    export const fetchFiles = (urlsObj, ext = 'md'): Promise<fileType>[] => { }
 
     export class StringFormatter {
 
@@ -38,7 +55,7 @@ declare global {
     }
 
 
-    export type FileRendererOptions = {
+    type FileRendererOptions = {
         ext?: string,
         flag?: RegExp,
         defaultCssSelector?: string,
@@ -63,28 +80,28 @@ declare global {
     }
 
 
-    export type fileType = { name: string, data: string }
+    type fileType = { name: string, data: string }
 
-    export type emitDefault = (
+    type emitDefault = (
         this: FileRenderer,
         file: fileType,
         fieldIndex: number,
         ...args: any[]
     ) => any
 
-    export type emitCustom = (
+    type emitCustom = (
         this: FileRenderer,
         file: fileType,
         divs: Element[],
         ...args: any[]
     ) => any
 
-    export type triggerType = {
+    type triggerType = {
         [key: string]: emitCustom
         default?: (fields: Element[]) => any
     }
 
-    export type triggerParamType = {
+    type triggerParamType = {
         [key: string]: emitCustom
         default?: (fields: Element[]) => any
     }
