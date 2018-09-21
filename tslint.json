@@ -1,0 +1,22 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:all"
+    ],
+    "jsRules": {},
+    "rules": {
+        "linebreak-style": false,
+        "no-consecutive-blank-lines": false,
+        "ordered-imports": false,
+        "member-ordering": false,
+        "quotemark": false,
+        "semicolon": false,
+        "file-name-casing": false,
+        "no-parameter-properties": false,
+        "typedef": false,
+        "no-import-side-effect": false,
+        "curly": false,
+        "comment-format": false
+    },
+    "rulesDirectory": []
+}

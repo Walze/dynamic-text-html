@@ -1,6 +1,6 @@
 import marked from 'marked'
 
-export default class StringFormatter {
+export class StringFormatter {
 
   /**
    * @param { string } string

@@ -1,42 +1,41 @@
 import '../styles/dynamic-files.css'
 
 import { mapObj } from './helpers'
-import StringFormatter from './StringFormatter'
-import FileFormatter from './FileFormatter'
+import { StringFormatter } from './StringFormatter'
+import { FileFormatter } from './FileFormatter'
 
-export default class FileRenderer extends FileFormatter {
+export class FileRenderer extends FileFormatter {
 
+  public triggers: triggerType
+  public ext: string | 'md'
 
-  /**
-   * @param { FileRendererOptions } options
-   */
-  constructor(options = {}) {
+  public constructor(options: FileRendererOptions = {}) {
 
     super(options.flag, options.defaultCssSelector)
 
     // sets addon if it exists in triggers
     const defaultAddon = options.triggers && options.triggers.default
       ? options.triggers.default
-      : null
+      : undefined
 
 
-    /** @type { triggerType } */
     this.triggers = this._bindThisToTriggers(options.triggers)
-    this.triggers.default = this._renderDefault(this.defaultCssSelector, defaultAddon).bind(this)
+    this.triggers.default = this
+      ._renderDefault(this.defaultCssSelector, defaultAddon)
+      .bind(this)
 
     this.ext = options.ext || 'md'
 
   }
 
 
-  /**
-   * @param { fileType } file
-   */
-  render(file) {
+  public render(file: fileType) {
 
     const SF = new StringFormatter(file.data)
 
-    file.data = SF.removeComments().string()
+    file.data = SF
+      .removeComments()
+      .string()
 
     // if didn't match, it's a default
     const customTrigger = this.matchFlag(file.data)
@@ -49,13 +48,7 @@ export default class FileRenderer extends FileFormatter {
 
   }
 
-
-  /**
-   * @param { string } triggerName
-   * @param { fileType } file
-   * @param { any[] } args
-   */
-  _emitTrigger(triggerName, file, ...args) {
+  private _emitTrigger(triggerName: string, file: fileType, ...args: any[]) {
 
     if (triggerName === 'default') {
 
@@ -72,23 +65,23 @@ export default class FileRenderer extends FileFormatter {
       .map(div => {
 
         this._displayFileNameToggle(file.name, div)
+
         return div
 
       })
 
     const trigger = this.triggers[triggerName]
 
-    return trigger ? trigger(file, divs, ...args) : null
+    return trigger ? trigger(file, divs, ...args) : undefined
 
   }
 
 
-  /**
-   * @param { string[] | string[][] } lines
-   * @param { Element[] } fathers
-   * @param { string[] } selectors
-   */
-  renderFatherChildren(lines, fathers, selectors) {
+  public renderFatherChildren = (
+    lines: string[] | string[][],
+    fathers: Element[],
+    selectors: string[],
+  ) => {
 
     // iterates fathers
     fathers.map((father, fatherI) => {
@@ -126,13 +119,10 @@ export default class FileRenderer extends FileFormatter {
   }
 
 
-  /**
-   * @private
-   * @param {string} defaultCssSelector
-   * @param { null | (fields: Element[]) => any } defaultAddon
-   * @returns { emitDefault }
-   */
-  _renderDefault(defaultCssSelector, defaultAddon) {
+  private _renderDefault(
+    defaultCssSelector: string,
+    defaultAddon: ((fields: Element[]) => any) | null,
+  ) {
 
     // Only gets run once
     const fields = Array.from(document.querySelectorAll(defaultCssSelector))
@@ -140,7 +130,7 @@ export default class FileRenderer extends FileFormatter {
 
     if (defaultAddon) defaultAddon(fields)
 
-    return file => {
+    return (file: fileType) => {
 
       const field = fields[fieldIndex++]
 
@@ -158,24 +148,13 @@ export default class FileRenderer extends FileFormatter {
   }
 
 
-  /**
-   * @private
-   * @param { triggerParamType } triggers
-   * @returns { triggerType }
-   */
-  _bindThisToTriggers(triggers) {
+  private _bindThisToTriggers(triggers: triggerParamType) {
 
     return mapObj(triggers, value => value.bind(this))
 
   }
 
-
-  /**
-   * @private
-   * @param { string } fileName
-   * @param { Element } field
-   */
-  _displayFileNameToggle(fileName, field) {
+  private _displayFileNameToggle(fileName: string, field: Element) {
 
     const overlay = document.createElement('div')
     overlay.classList.add('show-file-name')
@@ -209,13 +188,10 @@ export default class FileRenderer extends FileFormatter {
 
   }
 
-  /**
-   * @private
-   * @param { Element } overlay
-   * @param { number } [clickAmount = 3]
-   * @returns { (e: MouseEvent) => void }
-   */
-  _onDynamicFieldClick(overlay, clickAmount = 3) {
+  private _onDynamicFieldClick = (
+    overlay: Element,
+    clickAmount = 3,
+  ): ((e: MouseEvent) => void) => {
 
     let active = false
 
