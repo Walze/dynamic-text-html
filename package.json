@@ -10,8 +10,18 @@
     "@babel/cli": "^7.1.0",
     "@babel/core": "^7.1.0",
     "@babel/preset-env": "^7.1.0",
+    "@types/marked": "^0.4.1",
+    "@types/node": "^10.10.1",
+    "@types/webpack": "^4.4.12",
+    "@types/webpack-env": "^1.13.6",
+    "css-loader": "^1.0.0",
+    "raw-loader": "^0.5.1",
+    "style-loader": "^0.23.0",
+    "ts-loader": "^5.1.1",
     "tslint": "^5.11.0",
-    "typescript": "^3.0.3"
+    "typescript": "^3.0.3",
+    "webpack": "^4.19.1",
+    "webpack-cli": "^3.1.0"
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0",

@@ -1,6 +1,6 @@
 
-import { FileRenderer } from './js/FileRenderer'
-import { FileFormatter } from './js/FileFormatter'
+import { FileRenderer } from './src/js/FileRenderer'
+import { FileFormatter } from './src/js/FileFormatter'
 
 
 declare module "*.md" {

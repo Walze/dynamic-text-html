@@ -24,13 +24,25 @@ const triggers: triggerType = {
   },
 }
 
-import filesUrls from '../public/textos/**.md'
+// import filesUrls from '../public/textos/**.md'
+
+/// <reference path="./webpack.d.ts" />
+/// <reference path="./webpack-env.d.ts" />
+
+const context = require.context('./textos', true, /\.md$/)
+
+context.keys()
+  .map((fileName: string) => {
+    console.warn(fileName, context(fileName))
+
+  })
 
 const renderer = new FileRenderer({ triggers })
 
-fetchFiles(filesUrls)
-  .map((filePromise) =>
-    filePromise.then((file) =>
-      renderer.render(file),
-    ),
-  )
+
+// fetchFiles(filesUrls)
+//   .map((filePromise) =>
+//     filePromise.then((file) =>
+//       renderer.render(file),
+//     ),
+//   )
