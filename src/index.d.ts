@@ -13,7 +13,7 @@ declare global {
         ext?: string,
         flag?: RegExp,
         defaultCssSelector?: string,
-        triggers?: triggerParamType
+        triggers?: triggerType
     }
 
     type fileType = { name: string, data: string }
@@ -33,12 +33,7 @@ declare global {
     ) => any
 
     type triggerType = {
-        [key: string]: emitCustom
-        default?: (fields: Element[]) => any
-    }
-
-    type triggerParamType = {
-        [key: string]: emitCustom
-        default?: (fields: Element[]) => any
+        [key: string]: emitCustom | undefined
+        default?: emitCustom
     }
 }

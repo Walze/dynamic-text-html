@@ -48,7 +48,7 @@ export class FileRenderer extends FileFormatter {
 
   }
 
-  private _emitTrigger(triggerName: string, file: fileType, ...args: any[]) {
+  private _emitTrigger<T>(triggerName: string, file: fileType, ...args: T[]) {
 
     if (triggerName === 'default') {
 
@@ -98,9 +98,11 @@ export class FileRenderer extends FileFormatter {
           const index = selectorI + multiply
 
           // if 2 dimentional array test
-          const SF = lines[0].constructor === Array
-            ? new StringFormatter(lines[fatherI][index])
-            : new StringFormatter(lines[index])
+          const line = Array.isArray(lines[0]) ?
+            lines[fatherI][index] as string :
+            lines[index] as string
+
+          const SF = new StringFormatter(line)
 
           const markedText = SF
             .markClasses()
@@ -121,7 +123,7 @@ export class FileRenderer extends FileFormatter {
 
   private _renderDefault(
     defaultCssSelector: string,
-    defaultAddon: ((fields: Element[]) => any) | null,
+    defaultAddon: (<T>(fields: Element[]) => T) | null,
   ) {
 
     // Only gets run once
@@ -148,9 +150,11 @@ export class FileRenderer extends FileFormatter {
   }
 
 
-  private _bindThisToTriggers(triggers: triggerParamType) {
+  private _bindThisToTriggers(triggers?: triggerType) {
 
-    return mapObj(triggers, value => value.bind(this))
+    if (!triggers) return
+
+    return mapObj(triggers, (value) => value.bind(this))
 
   }
 

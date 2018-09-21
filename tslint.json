@@ -17,6 +17,7 @@
         "no-import-side-effect": false,
         "no-magic-numbers": false,
         "curly": false,
+        "no-console": false,
         "comment-format": false,
         "object-literal-sort-keys": false
     },

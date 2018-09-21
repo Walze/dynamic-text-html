@@ -66,7 +66,7 @@ export class FileFormatter {
 
     })
 
-    return everyN === 0 ? groups[0] : groups
+    return groups
 
   }
 

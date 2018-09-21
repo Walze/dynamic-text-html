@@ -2,44 +2,38 @@ import marked from 'marked'
 
 export class StringFormatter {
 
-  /**
-   * @param { string } string
-   */
-  constructor(string) {
+  private _string: string
 
-    if (typeof string !== 'string')
-      throw new Error(`constructor got ${typeof string} instead of string`)
+  public constructor(text: string) {
 
-    /** @type { string } */
-    this._string = string
+    if (typeof text !== 'string')
+      throw new Error(`constructor got ${typeof text} instead of string`)
+
+    this._string = text
 
   }
 
-  /**
-   * Returns result string of formatting
-   * @returns {string}
-   */
-  string() {
+  public string() {
 
     return this._string
 
   }
 
-  removePTag() {
+  public removePTag() {
 
     return new StringFormatter(
       this._string
         .replace(/<p>/gu, '')
-        .replace(/<\/p>/gu, '')
+        .replace(/<\/p>/gu, ''),
     )
 
   }
 
 
-  removeComments() {
+  public removeComments() {
 
     return new StringFormatter(
-      this._string.replace(/\{\{[^]*\}\}/gu, '')
+      this._string.replace(/\{\{[^]*\}\}/gu, ''),
     )
 
   }
@@ -48,18 +42,18 @@ export class StringFormatter {
   /**
    * adds marked.js to string
    */
-  markdown() {
+  public markdown() {
 
     return new StringFormatter(marked(this._string))
 
   }
 
-  _replaceMarkClasses(...match) {
+  private _replaceMarkClasses(...match: string[]) {
 
     const { 3: text } = match
     this._string = text
 
-    const classes = match[2] ? match[2].split(' ') : null
+    const classes = match[2] ? match[2].split(' ') : undefined
     const breakLine = Boolean(match[1])
 
     const el = breakLine ? 'div' : 'span'
@@ -73,7 +67,7 @@ export class StringFormatter {
   /**
    * marks custom classes
    */
-  markClasses() {
+  public markClasses() {
 
     const regex = /(!?)\{([^{}]+)*\}(\S+)/ug
 
@@ -85,15 +79,9 @@ export class StringFormatter {
   }
 
 
-  /**
-   * makes a HTML element
-   * @param { string } el
-   * @param { string[] } classArray
-   * @param { string } [id=null]
-   */
-  makeElement(el, classArray, id = null) {
+  public makeElement(el: string, classArray?: string[], id?: string | undefined) {
 
-    const classes = classArray ? classArray.join(' ') : null
+    const classes = classArray ? classArray.join(' ') : undefined
     const classesString = classes ? `class="${classes}"` : ''
 
     const idString = id ? `id="${id}"` : ''

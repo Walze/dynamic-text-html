@@ -1,11 +1,11 @@
 
 
-export const mapObj = (
-  object: { [key: string]: any },
-  cb: (value: any, prop: string, index: number) => any
+export const mapObj = <T>(
+  object: { [key: string]: T },
+  cb: (value: T, prop: string, index: number) => T,
 ) => {
 
-  const newObj: { [key: string]: any } = {}
+  const newObj: { [key: string]: T } = {}
   let index = 0
 
   for (const prop in object)
@@ -16,9 +16,9 @@ export const mapObj = (
 }
 
 
-export const mapObjToArray = (
-  object: { [key: string]: any },
-  cb: (value: any, prop: string, index: number) => any
+export const mapObjToArray = <T>(
+  object: { [key: string]: T },
+  cb: (value: T, prop: string, index: number) => T
 ) => {
 
   const arr = []
