@@ -2,6 +2,7 @@
 build/
 dist/
 watch/
+lib/
 
 # Logs
 logs
