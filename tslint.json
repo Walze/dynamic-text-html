@@ -15,8 +15,10 @@
         "no-parameter-properties": false,
         "typedef": false,
         "no-import-side-effect": false,
+        "no-magic-numbers": false,
         "curly": false,
-        "comment-format": false
+        "comment-format": false,
+        "object-literal-sort-keys": false
     },
     "rulesDirectory": []
 }

@@ -164,7 +164,7 @@ export class FileRenderer extends FileFormatter {
     field.insertBefore(overlay, field.firstChild)
 
 
-    const click = this._onDynamicFieldClick(overlay, 2)
+    const click = this._FIELD_CLICK(overlay, 2)
     let zPressed = false
 
     window.addEventListener('keyup', (ev) => {
@@ -178,7 +178,7 @@ export class FileRenderer extends FileFormatter {
 
     })
 
-    field.addEventListener('click', ev => {
+    field.addEventListener('pointerup', (ev: MouseEvent) => {
 
       if (zPressed) click(ev)
 
@@ -188,14 +188,14 @@ export class FileRenderer extends FileFormatter {
 
   }
 
-  private _onDynamicFieldClick = (
+  private _FIELD_CLICK = (
     overlay: Element,
     clickAmount = 3,
   ): ((e: MouseEvent) => void) => {
 
     let active = false
 
-    return ev => {
+    return (ev: MouseEvent) => {
 
       if (ev.detail < clickAmount) return
       ev.stopPropagation()
