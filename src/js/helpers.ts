@@ -1,3 +1,4 @@
+import { FileRenderer } from "../barrel";
 
 
 export const mapObj = <T>(
@@ -45,5 +46,15 @@ export const fetchFiles = (
   ext = 'md',
 ): Array<Promise<fileType>> =>
   mapObjToArray(urlsObj, fetchMakeFile(ext))
+
+
+export const renderParcelFiles = (filesUrls: {}, renderer: FileRenderer) =>
+  fetchFiles(filesUrls)
+    .map((filePromise) =>
+      filePromise.then((file) =>
+        renderer.render(file),
+      ),
+    );
+
 
 

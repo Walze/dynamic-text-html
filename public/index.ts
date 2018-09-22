@@ -24,22 +24,23 @@ const triggers: triggerType = {
   },
 }
 
-// import filesUrls from '../public/textos/**.md'
+const renderer = new FileRenderer({ triggers })
 
 const context = require.context('./textos', true, /\.md$/)
 
-context.keys()
-  .map((fileName: string) => {
-    console.warn(fileName, context(fileName))
+const files = context.keys()
+  .map((fileName: string): fileType =>
+    ({
+      name: fileName,
+      data: context(fileName),
+    }),
+  )
 
-  })
 
-const renderer = new FileRenderer({ triggers })
+files.map((file) => renderer.render(file))
 
 
-// fetchFiles(filesUrls)
-//   .map((filePromise) =>
-//     filePromise.then((file) =>
-//       renderer.render(file),
-//     ),
-//   )
+// import filesUrls from '../public/textos/**.md'
+// renderParcelFiles(filesUrls, renderer)
+
+

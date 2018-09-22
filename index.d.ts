@@ -2,7 +2,6 @@
 import { FileRenderer } from './src/js/FileRenderer'
 import { FileFormatter } from './src/js/FileFormatter'
 
-
 declare module "*.md" {
     const value: any;
     export default value;
