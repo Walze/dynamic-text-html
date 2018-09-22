@@ -31,11 +31,12 @@ const context = require.context('./textos', true, /\.md$/)
 const files = context.keys()
   .map((fileName: string): fileType =>
     ({
-      name: fileName,
+      name: fileName.replace(/^\.\//g, ''),
       data: context(fileName),
     }),
   )
 
+console.log(files)
 
 files.map((file) => renderer.render(file))
 
