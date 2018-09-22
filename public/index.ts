@@ -26,9 +26,6 @@ const triggers: triggerType = {
 
 // import filesUrls from '../public/textos/**.md'
 
-/// <reference path="./webpack.d.ts" />
-/// <reference path="./webpack-env.d.ts" />
-
 const context = require.context('./textos', true, /\.md$/)
 
 context.keys()
