@@ -4,7 +4,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 module.exports = {
   entry: './public/index.ts',
   devtool: 'inline-source-map',
-  mode: 'development',
   module: {
     rules: [
       {
@@ -26,8 +25,9 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js']
   },
   output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist')
+    filename: '[name].bundle.js',
+    chunkFilename: '[name].bundle.js',
+    path: path.resolve(__dirname, 'build')
   },
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
