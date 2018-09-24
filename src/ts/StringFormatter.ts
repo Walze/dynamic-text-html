@@ -16,15 +16,17 @@ export class StringFormatter {
 
   }
 
-  public string() {
+  private _newThis = (text: string) => new StringFormatter(text)
+
+  public string(): string {
 
     return this._STRING
 
   }
 
-  public removePTag() {
+  public removePTag(): StringFormatter {
 
-    return new StringFormatter(
+    return this._newThis(
       this._STRING
         .replace(/<p>/gu, '')
         .replace(/<\/p>/gu, ''),
@@ -33,9 +35,9 @@ export class StringFormatter {
   }
 
 
-  public removeComments() {
+  public removeComments(): StringFormatter {
 
-    return new StringFormatter(
+    return this._newThis(
       this._STRING.replace(/\{\{[^]*\}\}/gu, ''),
     )
 
@@ -45,13 +47,13 @@ export class StringFormatter {
   /**
    * adds marked.js to string
    */
-  public markdown() {
+  public markdown(): StringFormatter {
 
-    return new StringFormatter(marked(this._STRING))
+    return this._newThis(marked(this._STRING))
 
   }
 
-  private _replaceMarkClasses(...match: string[]) {
+  private _replaceMarkClasses(...match: string[]): string {
 
     const { 3: text } = match
     this._STRING = text
@@ -70,19 +72,23 @@ export class StringFormatter {
   /**
    * marks custom classes
    */
-  public markClasses() {
+  public markClasses(): StringFormatter {
 
     const regex = /(!?)\{([^{}]+)*\}(\S+)/ug
 
     const newString = this._STRING
       .replace(regex, this._replaceMarkClasses.bind(this))
 
-    return new StringFormatter(newString)
+    return this._newThis(newString)
 
   }
 
 
-  public makeElement(el: string, classArray?: string[], id?: string | undefined) {
+  public makeElement(
+    el: string,
+    classArray?: string[],
+    id?: string | undefined,
+  ): string {
 
     const classes = classArray ? classArray.join(' ') : undefined
     const classesString = classes ? `class="${classes}"` : ''
