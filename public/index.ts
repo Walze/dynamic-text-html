@@ -1,14 +1,13 @@
 
-import { FileRenderer } from '../src/js/FileRenderer'
-import { fetchFiles } from '../src/js/helpers'
 
+import { FileRenderer } from '../src/js/FileRenderer'
 
 const triggers: triggerType = {
-  default: (...args) => console.warn('Default fields:', args),
+  default: (ref, file, divs) => console.warn('Default Triggered', [ref, file, divs]),
 
   list(ref, file, divs) {
 
-    console.warn('"list" fields:', divs)
+    console.warn('"list" Triggered:', divs)
 
     const selectors = [
       '[head]',
@@ -28,7 +27,8 @@ const renderer = new FileRenderer({ triggers })
 
 const context = require.context('./textos', true, /\.md$/)
 
-const files = context.keys()
+const files = context
+  .keys()
   .map((fileName: string): fileType =>
     ({
       name: fileName.replace(/^\.\//g, ''),
@@ -36,12 +36,9 @@ const files = context.keys()
     }),
   )
 
-console.log(files)
-
 files.map((file) => renderer.render(file))
 
 
 // import filesUrls from '../public/textos/**.md'
 // renderParcelFiles(filesUrls, renderer)
-
 

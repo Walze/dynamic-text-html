@@ -2,6 +2,7 @@ import '../styles/dynamic-files.css'
 
 import { StringFormatter } from './StringFormatter'
 import { FileFormatter } from './FileFormatter'
+import { isString } from 'util';
 
 export class FileRenderer extends FileFormatter {
 
@@ -30,6 +31,8 @@ export class FileRenderer extends FileFormatter {
 
 
   public render(file: fileType) {
+
+    this._checkValidFile(file)
 
     const SF = new StringFormatter(file.data)
 
@@ -108,10 +111,7 @@ export class FileRenderer extends FileFormatter {
             lines[fatherI][index] as string :
             lines[index] as string
 
-          console.warn(line)
-
           const SF = new StringFormatter(line)
-
 
           const markedText = SF
             .markClasses()
@@ -139,8 +139,7 @@ export class FileRenderer extends FileFormatter {
     const fields = Array.from(document.querySelectorAll(defaultCssSelector))
     let fieldIndex = 0
 
-
-    return (file: fileType) => {
+    const renderDefault = <T>(_: FileRenderer, file: fileType, ...__: T[]) => {
 
       const field = fields[fieldIndex++]
 
@@ -156,6 +155,8 @@ export class FileRenderer extends FileFormatter {
       this._displayFileNameToggle(file.name, field)
 
     }
+
+    return renderDefault
 
   }
 
@@ -213,6 +214,22 @@ export class FileRenderer extends FileFormatter {
         overlay.classList.remove('active')
 
     }
+
+  }
+
+  private _checkValidFile = (file: fileType) => {
+
+    if (!isString(file.name))
+      throw new Error('file name is not string')
+
+    if (!isString(file.data))
+      throw new Error('file data is not string')
+
+    if (file.name === '')
+      throw new Error('file name is empty')
+
+    if (file.data === '')
+      console.warn('file name is empty')
 
   }
 

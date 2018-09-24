@@ -1,4 +1,5 @@
 import marked from 'marked';
+import { isString } from 'util';
 
 export class StringFormatter {
 
@@ -6,8 +7,10 @@ export class StringFormatter {
 
   public constructor(text: string) {
 
-    if (typeof text !== 'string')
-      throw new Error(`constructor got ${typeof text} instead of string`)
+    if (!isString(text)) {
+      console.error('String: ', text)
+      throw new Error(`constructor expected string`)
+    }
 
     this._STRING = text
 
