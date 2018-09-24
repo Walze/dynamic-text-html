@@ -1,54 +1,36 @@
 
 
-export default class FileFormatter {
+export class FileFormatter {
 
-  /**
-   * @param { flag: RegExp, defaultCssSelector: string } optionsParam
-   */
-  constructor(flag = /<<(.+)>>/u, defaultCssSelector = '[field]') {
-
-    this.flag = flag
-    this.defaultCssSelector = defaultCssSelector
+  protected constructor(
+    public flag: RegExp = /<<(.+)>>/u,
+    public defaultCssSelector: string = '[field]',
+  ) {
 
   }
 
-
-  /**
-   * @param { string } text
-   */
-  matchFlag(text) {
+  public matchFlag(text: string) {
 
     const matched = text.match(this.flag)
 
-    return matched ? matched[1] : null
+    return matched ? matched[1] : undefined
 
   }
 
-
-  /**
-   * @param { string } text
-   * @param { string } replaceWith
-   */
-  replaceFlag(text, replaceWith = '\n') {
+  public replaceFlag(text: string, replaceWith: string = '\n') {
 
     return text.replace(this.flag, replaceWith)
 
   }
 
-
-  /**
-   * @param { string } text
-   * @returns { string[] }
-   */
-  everyNthLineBreak(text, everyN = 0) {
+  public everyNthLineBreak(text: string, everyN: number = 0) {
 
     const lines = this
       .replaceFlag(text, '')
       .trim()
       .split(/\r\n|\r|\n/ug)
 
-    /** @type { string[] } */
-    const groups = []
+    const groups: string[] = []
 
     /** Blocks consecutive breaks */
     let blocked = false
@@ -84,7 +66,7 @@ export default class FileFormatter {
 
     })
 
-    return everyN === 0 ? groups[0] : groups
+    return groups
 
   }
 

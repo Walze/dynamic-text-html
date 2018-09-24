@@ -1,42 +1,43 @@
 import '../styles/dynamic-files.css'
 
-import { mapObj } from './helpers'
-import StringFormatter from './StringFormatter'
-import FileFormatter from './FileFormatter'
+import { StringFormatter } from './StringFormatter'
+import { FileFormatter } from './FileFormatter'
+import { isString } from 'util';
 
-export default class FileRenderer extends FileFormatter {
+export class FileRenderer extends FileFormatter {
 
+  public triggers: triggerType
+  public ext: string | 'md'
 
-  /**
-   * @param { FileRendererOptions } options
-   */
-  constructor(options = {}) {
+  public constructor(options: FileRendererOptions = {}) {
 
     super(options.flag, options.defaultCssSelector)
 
     // sets addon if it exists in triggers
     const defaultAddon = options.triggers && options.triggers.default
       ? options.triggers.default
-      : null
+      : undefined
 
 
-    /** @type { triggerType } */
-    this.triggers = this._bindThisToTriggers(options.triggers)
-    this.triggers.default = this._renderDefault(this.defaultCssSelector, defaultAddon).bind(this)
+    this.triggers = {
+      ...options.triggers,
+      default: this._renderDefaultFactory(this.defaultCssSelector, defaultAddon),
+    }
 
     this.ext = options.ext || 'md'
 
   }
 
 
-  /**
-   * @param { fileType } file
-   */
-  render(file) {
+  public render(file: fileType) {
+
+    this._checkValidFile(file)
 
     const SF = new StringFormatter(file.data)
 
-    file.data = SF.removeComments().string()
+    file.data = SF
+      .removeComments()
+      .string()
 
     // if didn't match, it's a default
     const customTrigger = this.matchFlag(file.data)
@@ -49,46 +50,46 @@ export default class FileRenderer extends FileFormatter {
 
   }
 
+  private _emitTrigger<T>(triggerName: string, file: fileType, ...args: T[]) {
 
-  /**
-   * @param { string } triggerName
-   * @param { fileType } file
-   * @param { any[] } args
-   */
-  _emitTrigger(triggerName, file, ...args) {
 
     if (triggerName === 'default') {
 
-      return this.triggers.default(file, ...args)
+      return this.triggers.default(this, file, [], ...args)
 
     }
 
-
     // Takes "name" from "name.extension"
     const regex = new RegExp(`(.+).${this.ext}`, 'u')
-    const selector = `[${file.name.match(regex)[1]}]`
+    const match = file.name.match(regex)
+
+    if (!match) throw new Error('file did not match RegEx')
+
+    // selects custom divs
+    const selector = `[${match[1]}]`
     const divs = Array
       .from(document.querySelectorAll(selector))
-      .map(div => {
+      .map((div) => {
 
         this._displayFileNameToggle(file.name, div)
+
         return div
 
       })
 
-    const trigger = this.triggers[triggerName]
 
-    return trigger ? trigger(file, divs, ...args) : null
+    const customTrigger = this.triggers[triggerName]
+
+    return customTrigger ? customTrigger(this, file, divs, ...args) : undefined
 
   }
 
 
-  /**
-   * @param { string[] | string[][] } lines
-   * @param { Element[] } fathers
-   * @param { string[] } selectors
-   */
-  renderFatherChildren(lines, fathers, selectors) {
+  public renderFatherChildren = (
+    lines: string[] | string[][],
+    fathers: Element[],
+    selectors: string[],
+  ) => {
 
     // iterates fathers
     fathers.map((father, fatherI) => {
@@ -105,9 +106,11 @@ export default class FileRenderer extends FileFormatter {
           const index = selectorI + multiply
 
           // if 2 dimentional array test
-          const SF = lines[0].constructor === Array
-            ? new StringFormatter(lines[fatherI][index])
-            : new StringFormatter(lines[index])
+          const line = Array.isArray(lines[0]) ?
+            lines[fatherI][index] as string :
+            lines[index] as string
+
+          const SF = new StringFormatter(line)
 
           const markedText = SF
             .markClasses()
@@ -126,23 +129,20 @@ export default class FileRenderer extends FileFormatter {
   }
 
 
-  /**
-   * @private
-   * @param {string} defaultCssSelector
-   * @param { null | (fields: Element[]) => any } defaultAddon
-   * @returns { emitDefault }
-   */
-  _renderDefault(defaultCssSelector, defaultAddon) {
+  private _renderDefaultFactory(
+    defaultCssSelector: string,
+    defaultAddon: emitCustom | undefined,
+  ) {
 
     // Only gets run once
     const fields = Array.from(document.querySelectorAll(defaultCssSelector))
     let fieldIndex = 0
 
-    if (defaultAddon) defaultAddon(fields)
-
-    return file => {
+    const renderDefault = <T>(_: FileRenderer, file: fileType, ...__: T[]) => {
 
       const field = fields[fieldIndex++]
+
+      if (defaultAddon) defaultAddon(this, file, [field])
 
       const markedText = new StringFormatter(file.data)
         .removeComments()
@@ -155,27 +155,11 @@ export default class FileRenderer extends FileFormatter {
 
     }
 
-  }
-
-
-  /**
-   * @private
-   * @param { triggerParamType } triggers
-   * @returns { triggerType }
-   */
-  _bindThisToTriggers(triggers) {
-
-    return mapObj(triggers, value => value.bind(this))
+    return renderDefault
 
   }
 
-
-  /**
-   * @private
-   * @param { string } fileName
-   * @param { Element } field
-   */
-  _displayFileNameToggle(fileName, field) {
+  private _displayFileNameToggle(fileName: string, field: Element) {
 
     const overlay = document.createElement('div')
     overlay.classList.add('show-file-name')
@@ -185,7 +169,7 @@ export default class FileRenderer extends FileFormatter {
     field.insertBefore(overlay, field.firstChild)
 
 
-    const click = this._onDynamicFieldClick(overlay, 2)
+    const click = this._FIELD_CLICK(overlay, 2)
     let zPressed = false
 
     window.addEventListener('keyup', (ev) => {
@@ -199,7 +183,7 @@ export default class FileRenderer extends FileFormatter {
 
     })
 
-    field.addEventListener('click', ev => {
+    field.addEventListener('pointerup', (ev: MouseEvent) => {
 
       if (zPressed) click(ev)
 
@@ -209,17 +193,14 @@ export default class FileRenderer extends FileFormatter {
 
   }
 
-  /**
-   * @private
-   * @param { Element } overlay
-   * @param { number } [clickAmount = 3]
-   * @returns { (e: MouseEvent) => void }
-   */
-  _onDynamicFieldClick(overlay, clickAmount = 3) {
+  private _FIELD_CLICK = (
+    overlay: Element,
+    clickAmount = 3,
+  ): ((e: MouseEvent) => void) => {
 
     let active = false
 
-    return ev => {
+    return (ev: MouseEvent) => {
 
       if (ev.detail < clickAmount) return
       ev.stopPropagation()
@@ -232,6 +213,22 @@ export default class FileRenderer extends FileFormatter {
         overlay.classList.remove('active')
 
     }
+
+  }
+
+  private _checkValidFile = (file: fileType) => {
+
+    if (!isString(file.name))
+      throw new Error('file name is not string')
+
+    if (!isString(file.data))
+      throw new Error('file data is not string')
+
+    if (file.name === '')
+      throw new Error('file name is empty')
+
+    if (file.data === '')
+      console.warn('file name is empty')
 
   }
 
