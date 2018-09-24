@@ -1,6 +1,6 @@
 
 
-import { FileRenderer } from '../src/js/FileRenderer'
+import { FileRenderer } from '../src/ts/FileRenderer'
 
 const triggers: triggerType = {
   default: (ref, file, divs) => console.warn('Default Triggered', [ref, file, divs]),

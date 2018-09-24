@@ -1,9 +1,9 @@
 
 
-import { FileRenderer } from './js/FileRenderer'
-import { FileFormatter } from './js/FileFormatter'
-import { StringFormatter } from './js/StringFormatter'
-import { fetchFiles, mapObj, mapObjToArray } from './js/helpers'
+import { FileRenderer } from './ts/FileRenderer'
+import { FileFormatter } from './ts/FileFormatter'
+import { StringFormatter } from './ts/StringFormatter'
+import { fetchFiles, mapObj, mapObjToArray } from './ts/helpers'
 
 export {
   fetchFiles,

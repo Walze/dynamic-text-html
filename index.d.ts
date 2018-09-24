@@ -1,6 +1,6 @@
 
-import { FileRenderer } from './src/js/FileRenderer'
-import { FileFormatter } from './src/js/FileFormatter'
+import { FileRenderer } from './src/ts/FileRenderer'
+import { FileFormatter } from './src/ts/FileFormatter'
 
 declare module "*.md" {
     const value: any;
