@@ -4,7 +4,7 @@
   "main": "src/barrel",
   "typings": "src/index",
   "scripts": {
-    "start": "webpack --watch",
+    "start": "webpack-dev-server",
     "build": "./node_modules/.bin/babel src --out-dir lib"
   },
   "devDependencies": {
@@ -22,7 +22,8 @@
     "tslint": "^5.11.0",
     "typescript": "^3.0.3",
     "webpack": "^4.19.1",
-    "webpack-cli": "^3.1.0"
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.8"
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0",

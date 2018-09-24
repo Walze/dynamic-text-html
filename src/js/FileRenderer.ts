@@ -50,12 +50,20 @@ export class FileRenderer extends FileFormatter {
 
   private _emitTrigger<T>(triggerName: string, file: fileType, ...args: T[]) {
 
+
+    if (triggerName === 'default') {
+
+      return this.triggers.default(this, file, [], ...args)
+
+    }
+
     // Takes "name" from "name.extension"
     const regex = new RegExp(`(.+).${this.ext}`, 'u')
     const match = file.name.match(regex)
 
     if (!match) throw new Error('file did not match RegEx')
 
+    // selects custom divs
     const selector = `[${match[1]}]`
     const divs = Array
       .from(document.querySelectorAll(selector))
@@ -67,15 +75,10 @@ export class FileRenderer extends FileFormatter {
 
       })
 
-    if (triggerName === 'default') {
 
-      return this.triggers.default(this, file, divs, ...args)
+    const customTrigger = this.triggers[triggerName]
 
-    }
-
-    const trigger = this.triggers[triggerName]
-
-    return trigger ? trigger(this, file, divs, ...args) : undefined
+    return customTrigger ? customTrigger(this, file, divs, ...args) : undefined
 
   }
 
@@ -105,7 +108,10 @@ export class FileRenderer extends FileFormatter {
             lines[fatherI][index] as string :
             lines[index] as string
 
+          console.warn(line)
+
           const SF = new StringFormatter(line)
+
 
           const markedText = SF
             .markClasses()
@@ -135,7 +141,6 @@ export class FileRenderer extends FileFormatter {
 
 
     return (file: fileType) => {
-
 
       const field = fields[fieldIndex++]
 
