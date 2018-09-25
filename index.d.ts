@@ -23,12 +23,12 @@ declare global {
 
     type fileType = { name: string, data: string }
 
-    type emitDefault = (
+    type emitDefault = <T>(
         this: FileRenderer,
         file: fileType,
         fieldIndex: number,
         ...args: any[]
-    ) => any
+    ) => T | void
 
     type emitCustom = <T>(
         reference: FileRenderer,

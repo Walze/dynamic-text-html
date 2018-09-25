@@ -1,12 +1,12 @@
 import { FileRenderer } from "../barrel";
 
 
-export const mapObj = <T>(
-  object: { [key: string]: T },
-  cb: (value: T, prop: string, index: number) => T,
+export const mapObj = <A, B>(
+  object: { [key: string]: A },
+  cb: (value: A, prop: string, index: number) => B,
 ) => {
 
-  const newObj: { [key: string]: T } = {}
+  const newObj: { [key: string]: B } = {}
   let index = 0
 
   for (const prop in object)
@@ -22,11 +22,13 @@ export const mapObjToArray = <A, B>(
   cb: (value: A, prop: string, index: number) => B,
 ) => {
 
-  const arr = []
+  const arr: B[] = []
   let index = 0
 
   for (const prop in object)
-    arr.push(cb(object[prop], prop, index++))
+    arr.push(
+      cb(object[prop], prop, index++),
+    )
 
   return arr
 
@@ -44,11 +46,11 @@ const fetchMakeFile = (ext: string) =>
 export const fetchFiles = (
   urlsObj: { [key: string]: string },
   ext = 'md',
-): Array<Promise<fileType>> =>
+) =>
   mapObjToArray(urlsObj, fetchMakeFile(ext))
 
 
-export const renderParcelFiles = (filesUrls: {}, renderer: FileRenderer) =>
+export const renderParcelFiles = (filesUrls: { [key: string]: string }, renderer: FileRenderer) =>
   fetchFiles(filesUrls)
     .map((filePromise) =>
       filePromise.then((file) =>
