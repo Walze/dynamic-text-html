@@ -1,6 +1,9 @@
 import marked from 'marked';
 import { isString } from 'util';
 
+/** Helper for using StringFormatter */
+export const SF = (text: string) => new StringFormatter(text)
+
 export class StringFormatter {
 
   private _STRING: string
@@ -21,6 +24,14 @@ export class StringFormatter {
   public string(): string {
 
     return this._STRING
+
+  }
+
+  public removeDotSlash(): StringFormatter {
+
+    return this._newThis(
+      this._STRING.replace(/^\.\//g, ''),
+    )
 
   }
 

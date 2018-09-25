@@ -1,9 +1,11 @@
+import { makeFile } from '../src/ts/helpers'
+import { SF } from '../src/ts/StringFormatter'
 
 
 const triggers: triggerType = {
   default: (ref, file, divs) => console.warn('Default Triggered', [ref, file, divs]),
 
-  list(ref, file, divs) {
+  list(ref, { data }, divs) {
 
     console.warn('"list" Triggered:', divs)
 
@@ -13,7 +15,7 @@ const triggers: triggerType = {
     ]
 
     const lists = ref
-      .everyNthLineBreak(file.data, 4)
+      .everyNthLineBreak(data, 4)
       .map((list) => ref.everyNthLineBreak(list, 1))
 
     ref.renderFatherChildren(lists, divs, selectors)
@@ -22,16 +24,15 @@ const triggers: triggerType = {
 }
 
 
-
 const requireAll = require.context('./textos', true, /\.md$/)
 const files = requireAll
   .keys()
-  .map((fileName: string): fileType =>
-    ({
-      name: fileName.replace(/^\.\//g, ''),
-      data: requireAll(fileName),
-    }),
-  )
+  .map((fileName: string): fileType => makeFile(
+    SF(fileName)
+      .removeDotSlash()
+      .string(),
+    requireAll(fileName),
+  ))
 
 
 import(/* webpackChunkName: "FileRenderer" */ '../src/ts/FileRenderer')

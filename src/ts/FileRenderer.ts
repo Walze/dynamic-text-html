@@ -1,6 +1,6 @@
 import '../styles/dynamic-files.css'
 
-import { StringFormatter } from './StringFormatter'
+import { SF } from './StringFormatter'
 import { FileFormatter } from './FileFormatter'
 import { isString } from 'util';
 
@@ -33,9 +33,7 @@ export class FileRenderer extends FileFormatter {
 
     this._checkValidFile(file)
 
-    const SF = new StringFormatter(file.data)
-
-    file.data = SF
+    file.data = SF(file.data)
       .removeComments()
       .string()
 
@@ -110,9 +108,7 @@ export class FileRenderer extends FileFormatter {
             lines[fatherI][index] as string :
             lines[index] as string
 
-          const SF = new StringFormatter(line)
-
-          const markedText = SF
+          const markedText = SF(line)
             .markClasses()
             .markdown()
             .removePTag()
@@ -144,7 +140,7 @@ export class FileRenderer extends FileFormatter {
 
       if (defaultAddon) defaultAddon(this, file, [field])
 
-      const markedText = new StringFormatter(file.data)
+      const markedText = SF(file.data)
         .removeComments()
         .markClasses()
         .markdown()

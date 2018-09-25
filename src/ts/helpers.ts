@@ -34,6 +34,12 @@ export const mapObjToArray = <A, B>(
 
 }
 
+export const makeFile = (fileName: string, fileData: string): fileType => (
+  {
+    name: fileName,
+    data: fileData,
+  }
+)
 
 const fetchMakeFile = (ext: string) =>
   async (path: string, name: string): Promise<fileType> => ({
