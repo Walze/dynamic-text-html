@@ -1,4 +1,5 @@
-import { FileRenderer } from "../barrel";
+import { FileRenderer } from "./FileRenderer"
+import { fileType } from "../../typings";
 
 
 export const mapObj = <A, B>(

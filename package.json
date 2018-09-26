@@ -1,11 +1,12 @@
 {
   "name": "dynamic-text-html",
   "version": "1.2.2",
-  "main": "src/barrel",
-  "typings": "src/index",
+  "main": "src/barrel.ts",
+  "typings": "src/typings.d.ts",
   "scripts": {
     "start": "webpack-dev-server --open --mode=development --progress --colors",
-    "build": "webpack --mode=production"
+    "build": "webpack --mode=production",
+    "deploy": "tsc ./src/barrel.ts --outDir ./deploy"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.0",

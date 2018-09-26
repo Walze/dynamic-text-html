@@ -3,6 +3,7 @@ import '../styles/dynamic-files.css'
 import { SF } from './StringFormatter'
 import { FileFormatter } from './FileFormatter'
 import { isString } from 'util';
+import { triggerType, FileRendererOptions, fileType, emitCustom } from '../../typings';
 
 export class FileRenderer extends FileFormatter {
 
