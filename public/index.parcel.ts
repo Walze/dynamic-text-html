@@ -24,27 +24,6 @@ const triggers: triggerType = {
   },
 }
 
-
-const requireAll = require.context('./textos', true, /\.md$/)
-const files = requireAll
-  .keys()
-  .map((fileName: string): fileType => makeFile(
-    SF(fileName)
-      .removeDotSlash()
-      .string(),
-    requireAll(fileName),
-  ))
-
-
-import(/* webpackChunkName: "FileRenderer" */ '../src/ts/FileRenderer')
-  .then(({ FileRenderer }) => {
-
-    const renderer = new FileRenderer({ triggers })
-    files.map((file) => renderer.render(file))
-
-  })
-
-
-// import filesUrls from '../public/textos/**.md'
-// renderParcelFiles(filesUrls, renderer)
+import filesUrls from '../public/textos/**.md'
+renderParcelFiles(filesUrls, renderer)
 

@@ -4,8 +4,10 @@
   "main": "src/barrel.ts",
   "typings": "src/typings.d.ts",
   "scripts": {
-    "start": "webpack-dev-server --open --mode=development --progress --colors",
-    "build": "webpack --mode=production",
+    "start:webpack": "webpack-dev-server --open --mode=development --progress --colors",
+    "build:webpack": "webpack --mode=production",
+    "start:parcel": "parcel public/index.parcel.html --open",
+    "build:parcel": "parcel build --public-url . --out-dir ./parcel-build",
     "deploy": "tsc ./src/barrel.ts --outDir ./deploy"
   },
   "devDependencies": {
