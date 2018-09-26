@@ -166,26 +166,16 @@ export class FileRenderer extends FileFormatter {
 
 
     const click = this._FIELD_CLICK(overlay, 2)
+    overlay.addEventListener('click', click)
+
     let zPressed = false
 
-    window.addEventListener('keyup', (ev) => {
-
-      if (ev.key === 'z') zPressed = false
-
-    })
-    window.addEventListener('keydown', (ev) => {
-
-      if (ev.key === 'z') zPressed = true
-
-    })
-
-    field.addEventListener('pointerup', (ev: MouseEvent) => {
-
-      if (zPressed) click(ev)
-
-    })
-
-    overlay.addEventListener('click', click)
+    window
+      .addEventListener('keyup', (ev) => zPressed = ev.key !== 'z')
+    window
+      .addEventListener('keydown', (ev) => zPressed = ev.key === 'z')
+    field
+      .addEventListener('pointerup', (ev: MouseEvent) => zPressed ? click(ev) : undefined)
 
   }
 
