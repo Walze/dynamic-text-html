@@ -1,66 +1,65 @@
 "use strict";
-exports.__esModule = true;
-var marked_1 = require("marked");
-var util_1 = require("util");
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const marked_1 = __importDefault(require("marked"));
+const util_1 = require("util");
 /** Helper for using StringFormatter */
-exports.SF = function (text) { return new StringFormatter(text); };
-var StringFormatter = /** @class */ (function () {
-    function StringFormatter(text) {
-        this._newThis = function (text) { return new StringFormatter(text); };
+exports.SF = (text) => new StringFormatter(text);
+class StringFormatter {
+    constructor(text) {
+        this._newThis = (text) => new StringFormatter(text);
         if (!util_1.isString(text)) {
             console.error('String: ', text);
-            throw new Error("constructor expected string");
+            throw new Error(`constructor expected string`);
         }
         this._STRING = text;
     }
-    StringFormatter.prototype.string = function () {
+    string() {
         return this._STRING;
-    };
-    StringFormatter.prototype.removeDotSlash = function () {
+    }
+    removeDotSlash() {
         return this._newThis(this._STRING.replace(/^\.\//g, ''));
-    };
-    StringFormatter.prototype.removePTag = function () {
+    }
+    removePTag() {
         return this._newThis(this._STRING
             .replace(/<p>/gu, '')
             .replace(/<\/p>/gu, ''));
-    };
-    StringFormatter.prototype.removeComments = function () {
+    }
+    removeComments() {
         return this._newThis(this._STRING.replace(/\{\{[^]*\}\}/gu, ''));
-    };
+    }
     /**
      * adds marked.js to string
      */
-    StringFormatter.prototype.markdown = function () {
-        return this._newThis(marked_1["default"](this._STRING));
-    };
-    StringFormatter.prototype._replaceMarkClasses = function () {
-        var match = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            match[_i] = arguments[_i];
-        }
-        var text = match[3];
+    markdown() {
+        return this._newThis(marked_1.default(this._STRING));
+    }
+    _replaceMarkClasses(...match) {
+        const { 3: text } = match;
         this._STRING = text;
-        var classes = match[2] ? match[2].split(' ') : undefined;
-        var breakLine = Boolean(match[1]);
-        var el = breakLine ? 'div' : 'span';
-        var newWord = this.makeElement(el, classes);
+        const classes = match[2] ? match[2].split(' ') : undefined;
+        const breakLine = Boolean(match[1]);
+        const el = breakLine ? 'div' : 'span';
+        const newWord = this.makeElement(el, classes);
         return newWord;
-    };
+    }
     /**
      * marks custom classes
      */
-    StringFormatter.prototype.markClasses = function () {
-        var regex = /(!?)\{([^{}]+)*\}(\S+)/ug;
-        var newString = this._STRING
+    markClasses() {
+        const regex = /(!?)\{([^{}]+)*\}(\S+)/ug;
+        const newString = this._STRING
             .replace(regex, this._replaceMarkClasses.bind(this));
         return this._newThis(newString);
-    };
-    StringFormatter.prototype.makeElement = function (el, classArray, id) {
-        var classes = classArray ? classArray.join(' ') : undefined;
-        var classesString = classes ? "class=\"" + classes + "\"" : '';
-        var idString = id ? "id=\"" + id + "\"" : '';
-        return "<" + el + " " + idString + " " + classesString + ">" + this._STRING + "</" + el + ">";
-    };
-    return StringFormatter;
-}());
+    }
+    makeElement(el, classArray, id) {
+        const classes = classArray ? classArray.join(' ') : undefined;
+        const classesString = classes ? `class="${classes}"` : '';
+        const idString = id ? `id="${id}"` : '';
+        return `<${el} ${idString} ${classesString}>${this._STRING}</${el}>`;
+    }
+}
 exports.StringFormatter = StringFormatter;
+//# sourceMappingURL=StringFormatter.js.map

@@ -2,15 +2,15 @@ import '../styles/dynamic-files.css'
 
 import { SF } from './StringFormatter'
 import { FileFormatter } from './FileFormatter'
-import { isString } from 'util';
-import { triggerType, FileRendererOptions, fileType, emitCustom } from '../../typings';
+import { isString } from 'util'
+import { ITriggerType, IFileRendererOptions, IFileType, emitCustom } from '../types'
 
 export class FileRenderer extends FileFormatter {
 
-  public triggers: triggerType
+  public triggers: ITriggerType
   public ext: string | 'md'
 
-  public constructor(options: FileRendererOptions = {}) {
+  public constructor(options: IFileRendererOptions = {}) {
 
     super(options.flag, options.defaultCssSelector)
 
@@ -30,7 +30,7 @@ export class FileRenderer extends FileFormatter {
   }
 
 
-  public render(file: fileType) {
+  public render(file: IFileType) {
 
     this._checkValidFile(file)
 
@@ -49,7 +49,7 @@ export class FileRenderer extends FileFormatter {
 
   }
 
-  private _emitTrigger<T>(triggerName: string, file: fileType, ...args: T[]) {
+  private _emitTrigger<T>(triggerName: string, file: IFileType, ...args: T[]) {
 
 
     if (triggerName === 'default') {
@@ -135,7 +135,7 @@ export class FileRenderer extends FileFormatter {
     const fields = Array.from(document.querySelectorAll(defaultCssSelector))
     let fieldIndex = 0
 
-    const renderDefault = <T>(_: FileRenderer, file: fileType, ...__: T[]) => {
+    const renderDefault = <T>(_: FileRenderer, file: IFileType, ...__: T[]) => {
 
       const field = fields[fieldIndex++]
 
@@ -206,7 +206,7 @@ export class FileRenderer extends FileFormatter {
 
   }
 
-  private _checkValidFile = (file: fileType) => {
+  private _checkValidFile = (file: IFileType) => {
 
     if (!isString(file.name))
       throw new Error('file name is not string')

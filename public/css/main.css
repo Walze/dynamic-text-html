@@ -1,0 +1,13 @@
+.linhas {
+  border-top: 1px black solid;
+  border-bottom: 1px black solid;
+  margin: 10px 0;
+}
+
+.verde {
+  color: green;
+}
+
+.azul {
+  color: blue;
+}

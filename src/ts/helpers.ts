@@ -1,5 +1,5 @@
 import { FileRenderer } from "./FileRenderer"
-import { fileType } from "../../typings";
+import { IFileType, IparcelGlob } from "../types";
 
 
 export const mapObj = <A, B>(
@@ -35,7 +35,7 @@ export const mapObjToArray = <A, B>(
 
 }
 
-export const makeFile = (fileName: string, fileData: string): fileType => (
+export const makeFile = (fileName: string, fileData: string): IFileType => (
   {
     name: fileName,
     data: fileData,
@@ -43,7 +43,7 @@ export const makeFile = (fileName: string, fileData: string): fileType => (
 )
 
 const fetchMakeFile = (ext: string) =>
-  async (path: string, name: string): Promise<fileType> => ({
+  async (path: string, name: string): Promise<IFileType> => ({
     name: `${name}.${ext}`,
     data: await fetch(path)
       .then((response) => response.text()),
@@ -57,13 +57,18 @@ export const fetchFiles = (
   mapObjToArray(urlsObj, fetchMakeFile(ext))
 
 
-export const renderParcelFiles = (filesUrls: { [key: string]: string }, renderer: FileRenderer) =>
-  fetchFiles(filesUrls)
+export const renderParcelFiles = (filesUrls: IparcelGlob, renderer: FileRenderer) => {
+
+  const newObj = filesUrls as { [key: string]: string }
+  delete newObj.default
+
+  return fetchFiles(newObj)
     .map((filePromise) =>
       filePromise.then((file) =>
         renderer.render(file),
       ),
     );
+}
 
 
 

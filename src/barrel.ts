@@ -1,5 +1,3 @@
-// tslint:disable-next-line:no-reference
-/// <reference path="../typings.d.ts" />
 
 import { FileRenderer } from './ts/FileRenderer'
 import { FileFormatter } from './ts/FileFormatter'

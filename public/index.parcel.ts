@@ -1,29 +1,25 @@
-import { makeFile } from '../src/ts/helpers'
-import { SF } from '../src/ts/StringFormatter'
-import { triggerType, fileType } from '../typings';
 
 
-const triggers: triggerType = {
-  default: (ref, file, divs) => console.warn('Default Triggered', [ref, file, divs]),
+import './css/main.css'
 
-  list(ref, { data }, divs) {
+// import { renderParcelFiles } from '../src/ts/helpers'
+// import { FileRenderer } from '../src/ts/FileRenderer'
+// import { triggers } from './triggers'
 
-    console.warn('"list" Triggered:', divs)
 
-    const selectors = [
-      '[head]',
-      '[item]',
-    ]
+import('./index.html')
+  .then((txt) => {
 
-    const lists = ref
-      .everyNthLineBreak(data, 4)
-      .map((list) => ref.everyNthLineBreak(list, 1))
+    console.log(txt)
 
-    ref.renderFatherChildren(lists, divs, selectors)
+  })
 
-  },
-}
 
-import filesUrls from '../public/textos/**.md'
-renderParcelFiles(filesUrls, renderer)
+// import('./textos/**.md')
+//   .then((files: IparcelGlob) =>
+//     renderParcelFiles(
+//       files,
+//       new FileRenderer({ triggers }),
+//     ),
+//   )
 
