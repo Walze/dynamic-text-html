@@ -1,4 +1,4 @@
-import '../styles/dynamic-files.css'
+import '../../public/css/dynamic-files.css'
 
 import { SF } from './StringFormatter'
 import { FileFormatter } from './FileFormatter'
