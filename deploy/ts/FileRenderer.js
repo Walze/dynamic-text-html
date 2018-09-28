@@ -13,6 +13,8 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
                 // iterates selectors
                 selectors.map((selector, selectorI) => {
                     const children = Array.from(father.querySelectorAll(selector));
+                    if (!children || children.length < 1)
+                        throw new Error('No children found');
                     // iterates children
                     children.map((child, childI) => {
                         const multiply = childI * selectors.length;
@@ -68,11 +70,11 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
         // if didn't match, it's a default
         const customTrigger = this.matchFlag(file.data);
         const firedTriggersReturn = customTrigger
-            ? this._emitTrigger(customTrigger, file)
-            : this._emitTrigger('default', file);
+            ? this._triggerRender(customTrigger, file)
+            : this._triggerRender('default', file);
         return firedTriggersReturn;
     }
-    _emitTrigger(triggerName, file, ...args) {
+    _triggerRender(triggerName, file, ...args) {
         if (triggerName === 'default') {
             return this.triggers.default(this, file, [], ...args);
         }
@@ -90,11 +92,14 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
             return div;
         });
         const customTrigger = this.triggers[triggerName];
-        return customTrigger ? customTrigger(this, file, divs, ...args) : undefined;
+        return customTrigger
+            ? customTrigger(this, file, divs, ...args)
+            : undefined;
     }
     _renderDefaultFactory(defaultCssSelector, defaultAddon) {
-        // Only gets run once
         const fields = Array.from(document.querySelectorAll(defaultCssSelector));
+        if (!fields || fields.length < 1)
+            throw new Error(`No Elements found with the selector: ${defaultCssSelector}`);
         let fieldIndex = 0;
         const renderDefault = (_, file, ...__) => {
             const field = fields[fieldIndex++];

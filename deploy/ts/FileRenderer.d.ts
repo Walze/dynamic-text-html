@@ -6,7 +6,7 @@ export declare class FileRenderer extends FileFormatter {
     ext: string | 'md';
     constructor(options?: IFileRendererOptions);
     render(file: IFileType): void | {};
-    private _emitTrigger;
+    private _triggerRender;
     renderFatherChildren: (lines: string[] | string[][], fathers: Element[], selectors: string[]) => void;
     private _renderDefaultFactory;
     private _displayFileNameToggle;
