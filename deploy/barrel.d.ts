@@ -1,5 +1,5 @@
-import { FileRenderer } from './ts/FileRenderer';
-import { FileFormatter } from './ts/FileFormatter';
-import { StringFormatter } from './ts/StringFormatter';
-import { fetchFiles, mapObj, mapObjToArray } from './ts/helpers';
-export { fetchFiles, mapObj, mapObjToArray, FileRenderer, FileFormatter, StringFormatter, };
+export * from './ts/FileRenderer';
+export * from './ts/FileFormatter';
+export * from './ts/StringFormatter';
+export * from './ts/helpers';
+export * from './types';
