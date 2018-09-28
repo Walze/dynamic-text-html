@@ -1,3 +1,5 @@
+export * from './src/barrel'
+export * from './src/types'
 
 declare module "*.md" {
     const value: any;
