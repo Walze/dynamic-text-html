@@ -42,14 +42,14 @@ export class FileRenderer extends FileFormatter {
     const customTrigger = this.matchFlag(file.data)
 
     const firedTriggersReturn = customTrigger
-      ? this._emitTrigger(customTrigger, file)
-      : this._emitTrigger('default', file)
+      ? this._triggerRender(customTrigger, file)
+      : this._triggerRender('default', file)
 
     return firedTriggersReturn
 
   }
 
-  private _emitTrigger<T>(triggerName: string, file: IFileType, ...args: T[]) {
+  private _triggerRender<T>(triggerName: string, file: IFileType, ...args: T[]) {
 
 
     if (triggerName === 'default') {
@@ -79,7 +79,9 @@ export class FileRenderer extends FileFormatter {
 
     const customTrigger = this.triggers[triggerName]
 
-    return customTrigger ? customTrigger(this, file, divs, ...args) : undefined
+    return customTrigger
+      ? customTrigger(this, file, divs, ...args)
+      : undefined
 
   }
 
@@ -97,6 +99,8 @@ export class FileRenderer extends FileFormatter {
       selectors.map((selector, selectorI) => {
 
         const children = Array.from(father.querySelectorAll(selector))
+        if (!children || children.length < 1)
+          throw new Error('No children found')
 
         // iterates children
         children.map((child, childI) => {
@@ -131,8 +135,10 @@ export class FileRenderer extends FileFormatter {
     defaultAddon: emitCustom | undefined,
   ) {
 
-    // Only gets run once
     const fields = Array.from(document.querySelectorAll(defaultCssSelector))
+    if (!fields || fields.length < 1)
+      throw new Error(`No Elements found with the selector: ${defaultCssSelector}`)
+
     let fieldIndex = 0
 
     const renderDefault = <T>(_: FileRenderer, file: IFileType, ...__: T[]) => {
