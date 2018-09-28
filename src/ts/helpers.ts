@@ -52,7 +52,7 @@ const fetchMakeFile = (ext: string) =>
 
 export const fetchFiles = (
   urlsObj: { [key: string]: string },
-  ext = 'md',
+  ext: string,
 ) =>
   mapObjToArray(urlsObj, fetchMakeFile(ext))
 
@@ -62,7 +62,7 @@ export const renderParcelFiles = (filesUrls: IparcelGlob, renderer: FileRenderer
   const newObj = filesUrls as { [key: string]: string }
   delete newObj.default
 
-  return fetchFiles(newObj)
+  return fetchFiles(newObj, renderer.ext)
     .map((filePromise) =>
       filePromise.then((file) =>
         renderer.render(file),

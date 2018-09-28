@@ -11,5 +11,5 @@ export declare const mapObjToArray: <A, B>(object: {
 export declare const makeFile: (fileName: string, fileData: string) => IFileType;
 export declare const fetchFiles: (urlsObj: {
     [key: string]: string;
-}, ext?: string) => Promise<IFileType>[];
+}, ext: string) => Promise<IFileType>[];
 export declare const renderParcelFiles: (filesUrls: IparcelGlob, renderer: FileRenderer) => Promise<void | {}>[];

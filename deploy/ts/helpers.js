@@ -23,11 +23,11 @@ const fetchMakeFile = (ext) => async (path, name) => ({
     data: await fetch(path)
         .then((response) => response.text()),
 });
-exports.fetchFiles = (urlsObj, ext = 'md') => exports.mapObjToArray(urlsObj, fetchMakeFile(ext));
+exports.fetchFiles = (urlsObj, ext) => exports.mapObjToArray(urlsObj, fetchMakeFile(ext));
 exports.renderParcelFiles = (filesUrls, renderer) => {
     const newObj = filesUrls;
     delete newObj.default;
-    return exports.fetchFiles(newObj)
+    return exports.fetchFiles(newObj, renderer.ext)
         .map((filePromise) => filePromise.then((file) => renderer.render(file)));
 };
 //# sourceMappingURL=helpers.js.map
