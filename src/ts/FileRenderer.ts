@@ -34,9 +34,13 @@ export class FileRenderer extends FileFormatter {
 
     this._checkValidFile(file)
 
+    console.log(file.data)
+
     file.data = SF(file.data)
       .removeComments()
       .string()
+
+    console.log(file.data)
 
     // if didn't match, it's a default
     const customTrigger = this.matchFlag(file.data)
@@ -100,7 +104,7 @@ export class FileRenderer extends FileFormatter {
 
         const children = Array.from(father.querySelectorAll(selector))
         if (!children || children.length < 1)
-          throw new Error('No children found')
+          return
 
         // iterates children
         children.map((child, childI) => {
@@ -186,17 +190,17 @@ export class FileRenderer extends FileFormatter {
     window.addEventListener('keydown', (ev) => zPressed = ev.key === 'z')
 
     field
-      .addEventListener('pointerup', (ev: MouseEvent) => zPressed ? click(ev) : undefined)
+      .addEventListener('pointerup', (ev) => zPressed ? click(ev) : undefined)
 
   }
 
   private _fieldClickFactory = (
     overlay: Element,
-  ): ((e: MouseEvent) => void) => {
+  ) => {
 
     let active = false
 
-    return (ev: MouseEvent) => {
+    return (ev: Event) => {
 
       ev.preventDefault()
       ev.stopPropagation()

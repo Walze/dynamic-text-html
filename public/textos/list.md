@@ -4,6 +4,9 @@
     Comments go here
 }}
 
+{{ titulos }}
+
+{{ lista 1 }}
 **Title**
 
 ! used for block !{red lighten-2}*block* 
@@ -22,6 +25,7 @@ taosdingoasdingoisdangoiasndgionads123
 
 
 
+{{ lista 2 }}
 \\\\\\\\\\\
 
 lista2 !{}body1

@@ -17,6 +17,8 @@ export const triggers: ITriggerType = {
       .everyNthLineBreak(data, 4)
       .map((list) => ref.everyNthLineBreak(list, 1))
 
+    console.log(lists)
+
     ref.renderFatherChildren(lists, divs, selectors)
 
   },

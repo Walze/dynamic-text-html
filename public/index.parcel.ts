@@ -2,24 +2,13 @@
 
 import './css/main.css'
 
-// import { renderParcelFiles } from '../src/ts/helpers'
-// import { FileRenderer } from '../src/ts/FileRenderer'
-// import { triggers } from './triggers'
+import { renderParcelFiles } from '../src/ts/helpers'
+import { FileRenderer } from '../src/ts/FileRenderer'
+import { triggers } from './triggers'
 
 
-import('./index.html')
-  .then((txt) => {
+import files from './textos/**.md'
 
-    console.log(txt)
+renderParcelFiles(files, new FileRenderer({ triggers }))
 
-  })
-
-
-// import('./textos/**.md')
-//   .then((files: IparcelGlob) =>
-//     renderParcelFiles(
-//       files,
-//       new FileRenderer({ triggers }),
-//     ),
-//   )
 

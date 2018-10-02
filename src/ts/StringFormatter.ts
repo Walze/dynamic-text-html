@@ -49,7 +49,7 @@ export class StringFormatter {
   public removeComments(): StringFormatter {
 
     return this._newThis(
-      this._STRING.replace(/\{\{[^]*\}\}/gu, ''),
+      this._STRING.replace(/\{\{[^{}]*\}\}/gu, ''),
     )
 
   }
