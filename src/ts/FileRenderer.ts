@@ -34,13 +34,9 @@ export class FileRenderer extends FileFormatter {
 
     this._checkValidFile(file)
 
-    console.log(file.data)
-
     file.data = SF(file.data)
       .removeComments()
       .string()
-
-    console.log(file.data)
 
     // if didn't match, it's a default
     const customTrigger = this.matchFlag(file.data)
@@ -118,7 +114,6 @@ export class FileRenderer extends FileFormatter {
             lines[index] as string
 
           const markedText = SF(line)
-            .markClasses()
             .markdown()
             .removePTag()
             .string()
@@ -153,7 +148,6 @@ export class FileRenderer extends FileFormatter {
 
       const markedText = SF(file.data)
         .removeComments()
-        .markClasses()
         .markdown()
         .string()
 

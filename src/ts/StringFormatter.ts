@@ -1,9 +1,12 @@
 import marked from 'marked';
 import { isString } from 'util';
 
-/** Helper for using StringFormatter */
+/** Helper for getting a StringFormatter instance */
 export const SF = (text: string) => new StringFormatter(text)
 
+/**
+ * Used to help format strings
+ */
 export class StringFormatter {
 
   private _STRING: string
@@ -15,29 +18,42 @@ export class StringFormatter {
       throw new Error(`constructor expected string`)
     }
 
+    if (text === '')
+      console.info(
+        `${this.constructor.name} got empty string in constructor`,
+        this.string(),
+      )
+
     this._STRING = text
 
   }
 
-  private _newThis = (text: string) => new StringFormatter(text)
-
+  /**
+   * return instance string
+   */
   public string(): string {
 
     return this._STRING
 
   }
 
+  /**
+   *  removes ./
+   */
   public removeDotSlash(): StringFormatter {
 
-    return this._newThis(
+    return SF(
       this._STRING.replace(/^\.\//g, ''),
     )
 
   }
 
+  /**
+   * Removes <p></p>
+   */
   public removePTag(): StringFormatter {
 
-    return this._newThis(
+    return SF(
       this._STRING
         .replace(/<p>/gu, '')
         .replace(/<\/p>/gu, ''),
@@ -48,7 +64,7 @@ export class StringFormatter {
 
   public removeComments(): StringFormatter {
 
-    return this._newThis(
+    return SF(
       this._STRING.replace(/\{\{[^{}]*\}\}/gu, ''),
     )
 
@@ -60,21 +76,27 @@ export class StringFormatter {
    */
   public markdown(): StringFormatter {
 
-    return this._newThis(marked(this._STRING))
+    return SF(
+      marked(
+        SF(this._STRING)
+          ._markClasses()
+          .string(),
+      ),
+    )
 
   }
 
-  private _replaceMarkClasses(...match: string[]): string {
+  private _replaceMarkClasses = (...match: string[]) => {
 
     const { 3: text } = match
-    this._STRING = text
 
     const classes = match[2] ? match[2].split(' ') : undefined
     const breakLine = Boolean(match[1])
 
     const el = breakLine ? 'div' : 'span'
 
-    const newWord = this.makeElement(el, classes)
+    const newWord = SF(text)
+      .makeElement(el, classes)
 
     return newWord
 
@@ -83,14 +105,15 @@ export class StringFormatter {
   /**
    * marks custom classes
    */
-  public markClasses(): StringFormatter {
+  private _markClasses(): StringFormatter {
 
     const regex = /(!?)\{([^{}]+)*\}(\S+)/ug
 
     const newString = this._STRING
       .replace(regex, this._replaceMarkClasses.bind(this))
 
-    return this._newThis(newString)
+
+    return SF(newString)
 
   }
 
@@ -104,9 +127,9 @@ export class StringFormatter {
     const classes = classArray ? classArray.join(' ') : undefined
     const classesString = classes ? `class="${classes}"` : ''
 
-    const idString = id ? ` id="${id}" ` : ''
+    const idString = id ? `id="${id}" ` : ''
 
-    return `<${el}${idString}${classesString}>${this._STRING}</${el}>`
+    return `<${el} ${idString}${classesString}>${this._STRING}</${el}>`
 
   }
 
