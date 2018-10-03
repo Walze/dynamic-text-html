@@ -99,16 +99,40 @@ export class StringFormatter {
     el: string,
     classArray?: string[],
     id?: string | undefined,
-  ): string {
+  ) {
 
     const classes = classArray ? classArray.join(' ') : undefined
     const classesString = classes ? `class="${classes}"` : ''
 
-    const idString = id ? `id="${id}"` : ''
+    const idString = id ? ` id="${id}" ` : ''
 
-    return `<${el} ${idString} ${classesString}>${this._STRING}</${el}>`
+    return `<${el}${idString}${classesString}>${this._STRING}</${el}>`
 
   }
 
 
+  public makeInlineMarkedElement(
+    el: string,
+    classArray?: string[],
+    id?: string | undefined,
+  ) {
+    return this
+      .markdown()
+      .removePTag()
+      .makeElement(el, classArray, id)
+  }
+
+  public static mapJoin<A, B>(
+    array: A[],
+    callback: (value: A, index: number, array: A[]) => B,
+    returnInstance = false,
+    join = '',
+  ) {
+
+    const arr = array
+      .map(callback)
+      .join(join)
+
+    return returnInstance ? SF(arr) : arr
+  }
 }

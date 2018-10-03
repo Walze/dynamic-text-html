@@ -13,3 +13,4 @@ export declare class FileRenderer extends FileFormatter {
     private _fieldClickFactory;
     private _checkValidFile;
 }
+//# sourceMappingURL=FileRenderer.d.ts.map

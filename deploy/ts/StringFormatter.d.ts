@@ -18,4 +18,7 @@ export declare class StringFormatter {
      */
     markClasses(): StringFormatter;
     makeElement(el: string, classArray?: string[], id?: string | undefined): string;
+    makeInlineMarkedElement(el: string, classArray?: string[], id?: string | undefined): string;
+    static mapJoin<A, B>(array: A[], callback: (value: A, index: number, array: A[]) => B, returnInstance?: boolean, join?: string): string | StringFormatter;
 }
+//# sourceMappingURL=StringFormatter.d.ts.map

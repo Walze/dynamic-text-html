@@ -13,3 +13,4 @@ export declare const fetchFiles: (urlsObj: {
     [key: string]: string;
 }, ext: string) => Promise<IFileType>[];
 export declare const renderParcelFiles: (filesUrls: IparcelGlob, renderer: FileRenderer) => Promise<void | {}>[];
+//# sourceMappingURL=helpers.d.ts.map

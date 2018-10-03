@@ -6,3 +6,4 @@ export declare class FileFormatter {
     replaceFlag(text: string, replaceWith?: string): string;
     everyNthLineBreak(text: string, everyN?: number): string[];
 }
+//# sourceMappingURL=FileFormatter.d.ts.map

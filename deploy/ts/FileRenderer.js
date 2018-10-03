@@ -14,7 +14,7 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
                 selectors.map((selector, selectorI) => {
                     const children = Array.from(father.querySelectorAll(selector));
                     if (!children || children.length < 1)
-                        throw new Error('No children found');
+                        return;
                     // iterates children
                     children.map((child, childI) => {
                         const multiply = childI * selectors.length;
@@ -64,9 +64,11 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
     }
     render(file) {
         this._checkValidFile(file);
+        console.log(file.data);
         file.data = StringFormatter_1.SF(file.data)
             .removeComments()
             .string();
+        console.log(file.data);
         // if didn't match, it's a default
         const customTrigger = this.matchFlag(file.data);
         const firedTriggersReturn = customTrigger

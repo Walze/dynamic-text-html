@@ -28,7 +28,7 @@ class StringFormatter {
             .replace(/<\/p>/gu, ''));
     }
     removeComments() {
-        return this._newThis(this._STRING.replace(/\{\{[^]*\}\}/gu, ''));
+        return this._newThis(this._STRING.replace(/\{\{[^{}]*\}\}/gu, ''));
     }
     /**
      * adds marked.js to string
@@ -57,8 +57,20 @@ class StringFormatter {
     makeElement(el, classArray, id) {
         const classes = classArray ? classArray.join(' ') : undefined;
         const classesString = classes ? `class="${classes}"` : '';
-        const idString = id ? `id="${id}"` : '';
-        return `<${el} ${idString} ${classesString}>${this._STRING}</${el}>`;
+        const idString = id ? ` id="${id}" ` : '';
+        return `<${el}${idString}${classesString}>${this._STRING}</${el}>`;
+    }
+    makeInlineMarkedElement(el, classArray, id) {
+        return this
+            .markdown()
+            .removePTag()
+            .makeElement(el, classArray, id);
+    }
+    static mapJoin(array, callback, returnInstance = false, join = '') {
+        const arr = array
+            .map(callback)
+            .join(join);
+        return returnInstance ? exports.SF(arr) : arr;
     }
 }
 exports.StringFormatter = StringFormatter;

@@ -27,3 +27,4 @@ export interface ITriggerType {
     [key: string]: emitCustom;
     default: emitCustom;
 }
+//# sourceMappingURL=types.d.ts.map
