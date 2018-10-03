@@ -71,9 +71,6 @@ export class StringFormatter {
   }
 
 
-  /**
-   * adds marked.js to string
-   */
   public markdown(): StringFormatter {
 
     return SF(
@@ -85,6 +82,7 @@ export class StringFormatter {
     )
 
   }
+
 
   private _replaceMarkClasses = (...match: string[]) => {
 
@@ -118,8 +116,15 @@ export class StringFormatter {
   }
 
 
+  /**
+   * Makes an in-line element
+   *
+   * @param tag tag name
+   * @param classArray array of css classes
+   * @param id element id
+   */
   public makeElement(
-    el: string,
+    tag: string,
     classArray?: string[],
     id?: string | undefined,
   ) {
@@ -129,22 +134,37 @@ export class StringFormatter {
 
     const idString = id ? `id="${id}" ` : ''
 
-    return `<${el} ${idString}${classesString}>${this._STRING}</${el}>`
+    return `<${tag} ${idString}${classesString}>${this._STRING}</${tag}>`
 
   }
 
 
+  /**
+   * Makes an in-line element
+   *
+   * @param tag tag name
+   * @param classArray array of css classes
+   * @param id element id
+   */
   public makeInlineMarkedElement(
-    el: string,
+    tag: string,
     classArray?: string[],
     id?: string | undefined,
   ) {
     return this
       .markdown()
       .removePTag()
-      .makeElement(el, classArray, id)
+      .makeElement(tag, classArray, id)
   }
 
+  /**
+   *  Maps array then joins it
+   *
+   * @param array initial array
+   * @param callback map callback
+   * @param returnInstance return instance of this?
+   * @param join join string
+   */
   public static mapJoin<A, B>(
     array: A[],
     callback: (value: A, index: number, array: A[]) => B,
