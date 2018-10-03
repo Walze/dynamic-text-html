@@ -12,11 +12,14 @@ class FileFormatter {
     replaceFlag(text, replaceWith = '\n') {
         return text.replace(this.flag, replaceWith);
     }
-    everyNthLineBreak(text, everyN = 0) {
+    everyNthLineBreak(text, everyN) {
+        const regex = /\r\n|\r|\n/ug;
         const lines = this
             .replaceFlag(text, '')
             .trim()
-            .split(/\r\n|\r|\n/ug);
+            .split(regex);
+        if (everyN <= 1)
+            return lines;
         const groups = [];
         /** Blocks consecutive breaks */
         let blocked = false;

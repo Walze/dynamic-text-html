@@ -23,12 +23,19 @@ export class FileFormatter {
 
   }
 
-  public everyNthLineBreak(text: string, everyN: number = 0) {
+  public everyNthLineBreak(text: string, everyN: number) {
+
+    const regex = /\r\n|\r|\n/ug
 
     const lines = this
       .replaceFlag(text, '')
       .trim()
-      .split(/\r\n|\r|\n/ug)
+      .split(regex)
+
+
+    if (everyN <= 1)
+      return lines
+
 
     const groups: string[] = []
 
