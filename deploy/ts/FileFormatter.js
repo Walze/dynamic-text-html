@@ -18,7 +18,7 @@ class FileFormatter {
             .replaceFlag(text, '')
             .trim()
             .split(regex);
-        if (everyN <= 1)
+        if (everyN <= 0)
             return lines;
         const groups = [];
         /** Blocks consecutive breaks */
