@@ -24,7 +24,6 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
                             lines[fatherI][index] :
                             lines[index];
                         const markedText = StringFormatter_1.SF(line)
-                            .markClasses()
                             .markdown()
                             .removePTag()
                             .string();
@@ -64,11 +63,9 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
     }
     render(file) {
         this._checkValidFile(file);
-        console.log(file.data);
         file.data = StringFormatter_1.SF(file.data)
             .removeComments()
             .string();
-        console.log(file.data);
         // if didn't match, it's a default
         const customTrigger = this.matchFlag(file.data);
         const firedTriggersReturn = customTrigger
@@ -109,7 +106,6 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
                 defaultAddon(this, file, [field]);
             const markedText = StringFormatter_1.SF(file.data)
                 .removeComments()
-                .markClasses()
                 .markdown()
                 .string();
             field.innerHTML = markedText;

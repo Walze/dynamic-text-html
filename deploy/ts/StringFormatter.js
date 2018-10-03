@@ -5,67 +5,101 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const marked_1 = __importDefault(require("marked"));
 const util_1 = require("util");
-/** Helper for using StringFormatter */
+/** Helper for getting a StringFormatter instance */
 exports.SF = (text) => new StringFormatter(text);
+/**
+ * Used to help format strings
+ */
 class StringFormatter {
     constructor(text) {
-        this._newThis = (text) => new StringFormatter(text);
+        this._replaceMarkClasses = (...match) => {
+            const { 3: text } = match;
+            const classes = match[2] ? match[2].split(' ') : undefined;
+            const breakLine = Boolean(match[1]);
+            const el = breakLine ? 'div' : 'span';
+            const newWord = exports.SF(text)
+                .makeElement(el, classes);
+            return newWord;
+        };
         if (!util_1.isString(text)) {
             console.error('String: ', text);
             throw new Error(`constructor expected string`);
         }
+        if (text === '')
+            console.info(`${this.constructor.name} got empty string in constructor`, this.string());
         this._STRING = text;
     }
+    /**
+     * return instance string
+     */
     string() {
         return this._STRING;
     }
+    /**
+     *  removes ./
+     */
     removeDotSlash() {
-        return this._newThis(this._STRING.replace(/^\.\//g, ''));
+        return exports.SF(this._STRING.replace(/^\.\//g, ''));
     }
+    /**
+     * Removes <p></p>
+     */
     removePTag() {
-        return this._newThis(this._STRING
+        return exports.SF(this._STRING
             .replace(/<p>/gu, '')
             .replace(/<\/p>/gu, ''));
     }
     removeComments() {
-        return this._newThis(this._STRING.replace(/\{\{[^{}]*\}\}/gu, ''));
+        return exports.SF(this._STRING.replace(/\{\{[^{}]*\}\}/gu, ''));
     }
-    /**
-     * adds marked.js to string
-     */
     markdown() {
-        return this._newThis(marked_1.default(this._STRING));
-    }
-    _replaceMarkClasses(...match) {
-        const { 3: text } = match;
-        this._STRING = text;
-        const classes = match[2] ? match[2].split(' ') : undefined;
-        const breakLine = Boolean(match[1]);
-        const el = breakLine ? 'div' : 'span';
-        const newWord = this.makeElement(el, classes);
-        return newWord;
+        return exports.SF(marked_1.default(exports.SF(this._STRING)
+            ._markClasses()
+            .string()));
     }
     /**
      * marks custom classes
      */
-    markClasses() {
+    _markClasses() {
         const regex = /(!?)\{([^{}]+)*\}(\S+)/ug;
         const newString = this._STRING
             .replace(regex, this._replaceMarkClasses.bind(this));
-        return this._newThis(newString);
+        return exports.SF(newString);
     }
-    makeElement(el, classArray, id) {
+    /**
+     * Makes an in-line element
+     *
+     * @param tag tag name
+     * @param classArray array of css classes
+     * @param id element id
+     */
+    makeElement(tag, classArray, id) {
         const classes = classArray ? classArray.join(' ') : undefined;
         const classesString = classes ? `class="${classes}"` : '';
-        const idString = id ? ` id="${id}" ` : '';
-        return `<${el}${idString}${classesString}>${this._STRING}</${el}>`;
+        const idString = id ? `id="${id}" ` : '';
+        return `<${tag} ${idString}${classesString}>${this._STRING}</${tag}>`;
     }
-    makeInlineMarkedElement(el, classArray, id) {
+    /**
+     * Makes an in-line element
+     *
+     * @param tag tag name
+     * @param classArray array of css classes
+     * @param id element id
+     */
+    makeInlineMarkedElement(tag, classArray, id) {
         return this
             .markdown()
             .removePTag()
-            .makeElement(el, classArray, id);
+            .makeElement(tag, classArray, id);
     }
+    /**
+     *  Maps array then joins it
+     *
+     * @param array initial array
+     * @param callback map callback
+     * @param returnInstance return instance of this?
+     * @param join join string
+     */
     static mapJoin(array, callback, returnInstance = false, join = '') {
         const arr = array
             .map(callback)
