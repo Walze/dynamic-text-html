@@ -7,28 +7,23 @@ const util_1 = require("util");
 class FileRenderer extends FileFormatter_1.FileFormatter {
     constructor(options = {}) {
         super(options.flag, options.defaultCssSelector);
-        this.renderFatherChildren = (lines, fathers, selectors) => {
-            // iterates fathers
-            fathers.map((father, fatherI) => {
-                // iterates selectors
-                selectors.map((selector, selectorI) => {
-                    const children = Array.from(father.querySelectorAll(selector));
-                    if (!children || children.length < 1)
-                        return;
-                    // iterates children
-                    children.map((child, childI) => {
-                        const multiply = childI * selectors.length;
-                        const index = selectorI + multiply;
-                        // if 2 dimentional array test
-                        const line = Array.isArray(lines[0]) ?
-                            lines[fatherI][index] :
-                            lines[index];
-                        const markedText = StringFormatter_1.SF(line)
-                            .markdown()
-                            .removePTag()
-                            .string();
-                        child.innerHTML = markedText;
-                    });
+        /**
+         * Renders each line to its respective selector inside of parent
+         */
+        this.renderMultipleLines = (parent, lines, selectors) => {
+            // iterates selectors
+            selectors.map((selector, selectorI) => {
+                const children = Array.from(parent.querySelectorAll(selector));
+                if (!children || children.length < 1)
+                    return;
+                // iterates children
+                children.map((child, childI) => {
+                    const multiply = childI * selectors.length;
+                    const index = selectorI + multiply;
+                    child.innerHTML = StringFormatter_1.SF(lines[index])
+                        .markdown()
+                        .removePTag()
+                        .string();
                 });
             });
         };
@@ -74,10 +69,9 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
         return firedTriggersReturn;
     }
     _triggerRender(triggerName, file, ...args) {
-        if (triggerName === 'default') {
+        if (triggerName === 'default')
             return this.triggers.default(this, file, [], ...args);
-        }
-        // Takes "name" from "name.extension"
+        // takes "name" from "name.extension"
         const regex = new RegExp(`(.+).${this.ext}`, 'u');
         const match = file.name.match(regex);
         if (!match)
@@ -91,10 +85,45 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
             return div;
         });
         const customTrigger = this.triggers[triggerName];
+        // removing flag from file data
+        file.data = this.replaceFlag(file.data, '');
         return customTrigger
             ? customTrigger(this, file, divs, ...args)
             : undefined;
     }
+    // Copy of old method
+    // /**
+    //  * Renders each line to its respective selector
+    //  */
+    // public renderMultipleLines = (
+    //   lines: string[] | string[][],
+    //   parents: Element[],
+    //   selectors: string[],
+    // ) => {
+    //   // iterates fathers
+    //   parents.map((father, fatherI) => {
+    //     // iterates selectors
+    //     selectors.map((selector, selectorI) => {
+    //       const children = Array.from(father.querySelectorAll(selector))
+    //       if (!children || children.length < 1)
+    //         return
+    //       // iterates children
+    //       children.map((child, childI) => {
+    //         const multiply = childI * selectors.length
+    //         const index = selectorI + multiply
+    //         // if 2 dimentional array test
+    //         const line = Array.isArray(lines[0]) ?
+    //           lines[fatherI][index] as string :
+    //           lines[index] as string
+    //         const markedText = SF(line)
+    //           .markdown()
+    //           .removePTag()
+    //           .string()
+    //         child.innerHTML = markedText
+    //       })
+    //     })
+    //   })
+    // }
     _renderDefaultFactory(defaultCssSelector, defaultAddon) {
         const fields = Array.from(document.querySelectorAll(defaultCssSelector));
         if (!fields || fields.length < 1)

@@ -22,7 +22,7 @@ class StringFormatter {
             return newWord;
         };
         if (!util_1.isString(text)) {
-            console.error('String: ', text);
+            console.error('Given ', text);
             throw new Error(`constructor expected string`);
         }
         if (text === '')

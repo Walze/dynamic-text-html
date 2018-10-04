@@ -18,11 +18,14 @@ exports.makeFile = (fileName, fileData) => ({
     name: fileName,
     data: fileData,
 });
-const fetchMakeFile = (ext) => async (path, name) => ({
-    name: `${name}.${ext}`,
-    data: await fetch(path)
-        .then((response) => response.text()),
-});
+// const fetchMakeFile = (ext: string) =>
+//   async (path: string, name: string): Promise<IFileType> => ({
+//     name: `${name}.${ext}`,
+//     data: await fetch(path)
+//       .then((response) => response.text()),
+//   })
+const fetchMakeFile = (ext) => async (path, name) => exports.makeFile(`${name}.${ext}`, await fetch(path)
+    .then((response) => response.text()));
 exports.fetchFiles = (urlsObj, ext) => exports.mapObjToArray(urlsObj, fetchMakeFile(ext));
 exports.renderParcelFiles = (filesUrls, renderer) => {
     const newObj = filesUrls;

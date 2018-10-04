@@ -7,7 +7,10 @@ export declare class FileRenderer extends FileFormatter {
     constructor(options?: IFileRendererOptions);
     render(file: IFileType): void | {};
     private _triggerRender;
-    renderFatherChildren: (lines: string[] | string[][], fathers: Element[], selectors: string[]) => void;
+    /**
+     * Renders each line to its respective selector inside of parent
+     */
+    renderMultipleLines: (parent: Element, lines: string[], selectors: string[]) => void;
     private _renderDefaultFactory;
     private _displayFileNameToggle;
     private _fieldClickFactory;
