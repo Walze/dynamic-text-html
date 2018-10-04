@@ -42,12 +42,20 @@ export const makeFile = (fileName: string, fileData: string): IFileType => (
   }
 )
 
+// const fetchMakeFile = (ext: string) =>
+//   async (path: string, name: string): Promise<IFileType> => ({
+//     name: `${name}.${ext}`,
+//     data: await fetch(path)
+//       .then((response) => response.text()),
+//   })
+
 const fetchMakeFile = (ext: string) =>
-  async (path: string, name: string): Promise<IFileType> => ({
-    name: `${name}.${ext}`,
-    data: await fetch(path)
-      .then((response) => response.text()),
-  })
+  async (path: string, name: string): Promise<IFileType> =>
+    makeFile(
+      `${name}.${ext}`,
+      await fetch(path)
+        .then((response) => response.text()),
+    )
 
 
 export const fetchFiles = (

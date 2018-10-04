@@ -27,7 +27,3 @@ import(/* webpackChunkName: "FileRenderer" */ '../src/ts/FileRenderer')
 
   })
 
-
-// import filesUrls from '../public/textos/**.md'
-// renderParcelFiles(filesUrls, renderer)
-

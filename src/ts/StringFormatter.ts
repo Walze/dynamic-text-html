@@ -14,7 +14,7 @@ export class StringFormatter {
   public constructor(text: string) {
 
     if (!isString(text)) {
-      console.error('String: ', text)
+      console.error('Given ', text)
       throw new Error(`constructor expected string`)
     }
 

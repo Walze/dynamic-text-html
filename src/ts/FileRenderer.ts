@@ -51,14 +51,11 @@ export class FileRenderer extends FileFormatter {
 
   private _triggerRender<T>(triggerName: string, file: IFileType, ...args: T[]) {
 
-
-    if (triggerName === 'default') {
-
+    if (triggerName === 'default')
       return this.triggers.default(this, file, [], ...args)
 
-    }
 
-    // Takes "name" from "name.extension"
+    // takes "name" from "name.extension"
     const regex = new RegExp(`(.+).${this.ext}`, 'u')
     const match = file.name.match(regex)
 
@@ -79,6 +76,10 @@ export class FileRenderer extends FileFormatter {
 
     const customTrigger = this.triggers[triggerName]
 
+
+    // removing flag from file data
+    file.data = this.replaceFlag(file.data, '')
+
     return customTrigger
       ? customTrigger(this, file, divs, ...args)
       : undefined
@@ -86,47 +87,84 @@ export class FileRenderer extends FileFormatter {
   }
 
 
-  public renderFatherChildren = (
-    lines: string[] | string[][],
-    fathers: Element[],
+  /**
+   * Renders each line to its respective selector inside of parent
+   */
+  public renderMultipleLines = (
+    parent: Element,
+    lines: string[],
     selectors: string[],
   ) => {
 
-    // iterates fathers
-    fathers.map((father, fatherI) => {
+    // iterates selectors
+    selectors.map((selector, selectorI) => {
 
-      // iterates selectors
-      selectors.map((selector, selectorI) => {
+      const children = Array.from(parent.querySelectorAll(selector))
+      if (!children || children.length < 1)
+        return
 
-        const children = Array.from(father.querySelectorAll(selector))
-        if (!children || children.length < 1)
-          return
+      // iterates children
+      children.map((child, childI) => {
 
-        // iterates children
-        children.map((child, childI) => {
+        const multiply = childI * selectors.length
+        const index = selectorI + multiply
 
-          const multiply = childI * selectors.length
-          const index = selectorI + multiply
-
-          // if 2 dimentional array test
-          const line = Array.isArray(lines[0]) ?
-            lines[fatherI][index] as string :
-            lines[index] as string
-
-          const markedText = SF(line)
-            .markdown()
-            .removePTag()
-            .string()
-
-          child.innerHTML = markedText
-
-        })
+        child.innerHTML = SF(lines[index])
+          .markdown()
+          .removePTag()
+          .string()
 
       })
 
     })
 
   }
+
+  // Copy of old method
+  // /**
+  //  * Renders each line to its respective selector
+  //  */
+  // public renderMultipleLines = (
+  //   lines: string[] | string[][],
+  //   parents: Element[],
+  //   selectors: string[],
+  // ) => {
+
+  //   // iterates fathers
+  //   parents.map((father, fatherI) => {
+
+  //     // iterates selectors
+  //     selectors.map((selector, selectorI) => {
+
+  //       const children = Array.from(father.querySelectorAll(selector))
+  //       if (!children || children.length < 1)
+  //         return
+
+  //       // iterates children
+  //       children.map((child, childI) => {
+
+  //         const multiply = childI * selectors.length
+  //         const index = selectorI + multiply
+
+  //         // if 2 dimentional array test
+  //         const line = Array.isArray(lines[0]) ?
+  //           lines[fatherI][index] as string :
+  //           lines[index] as string
+
+  //         const markedText = SF(line)
+  //           .markdown()
+  //           .removePTag()
+  //           .string()
+
+  //         child.innerHTML = markedText
+
+  //       })
+
+  //     })
+
+  //   })
+
+  // }
 
 
   private _renderDefaultFactory(
