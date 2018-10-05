@@ -39,13 +39,30 @@
 
   <div field></div>
 
-  <ul model class="collection">
+  <table model class="striped responsive-table">
+    <thead>
+      <tr>asd</tr>
+    </thead>
 
-    <li for-model class="collection-item">
-      <div item></div>
-    </li>
+    <tbody>
 
-  </ul>
+      <tr for-model>
+
+        <td>
+          {{}}
+        </td>
+        <td>{{}}</td>
+        <td>
+          <ul>
+            <li for-model>{{}}</li>
+          </ul>
+        </td>
+        <td>{{}}</td>
+
+      </tr>
+
+    </tbody>
+  </table>
 
   <!-- <script src="./main.bundle.js"></script> -->
 </body>
