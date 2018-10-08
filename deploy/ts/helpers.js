@@ -24,9 +24,9 @@ exports.makeFile = (fileName, fileData) => ({
 //     data: await fetch(path)
 //       .then((response) => response.text()),
 //   })
-const fetchMakeFile = (ext) => async (path, name) => exports.makeFile(`${name}.${ext}`, await fetch(path)
+exports.fetchMakeFile = (ext) => async (path, name) => exports.makeFile(`${name}.${ext}`, await fetch(path)
     .then((response) => response.text()));
-exports.fetchFiles = (urlsObj, ext) => exports.mapObjToArray(urlsObj, fetchMakeFile(ext));
+exports.fetchFiles = (urlsObj, ext) => exports.mapObjToArray(urlsObj, exports.fetchMakeFile(ext));
 exports.renderParcelFiles = (filesUrls, renderer) => {
     const newObj = filesUrls;
     delete newObj.default;

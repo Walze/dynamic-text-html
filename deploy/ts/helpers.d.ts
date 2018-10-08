@@ -9,6 +9,7 @@ export declare const mapObjToArray: <A, B>(object: {
     [key: string]: A;
 }, cb: (value: A, prop: string, index: number) => B) => B[];
 export declare const makeFile: (fileName: string, fileData: string) => IFileType;
+export declare const fetchMakeFile: (ext: string) => (path: string, name: string) => Promise<IFileType>;
 export declare const fetchFiles: (urlsObj: {
     [key: string]: string;
 }, ext: string) => Promise<IFileType>[];
