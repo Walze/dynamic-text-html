@@ -49,7 +49,7 @@ export const makeFile = (fileName: string, fileData: string): IFileType => (
 //       .then((response) => response.text()),
 //   })
 
-const fetchMakeFile = (ext: string) =>
+export const fetchMakeFile = (ext: string) =>
   async (path: string, name: string): Promise<IFileType> =>
     makeFile(
       `${name}.${ext}`,
