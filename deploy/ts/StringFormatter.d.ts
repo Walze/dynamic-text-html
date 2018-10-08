@@ -15,10 +15,6 @@ export declare class StringFormatter {
      */
     removeDotSlash(): StringFormatter;
     /**
-     * Splits on every line break
-     */
-    splitOnN: (text: string, trim?: boolean) => string[];
-    /**
      * Removes <p></p>
      */
     removePTag(): StringFormatter;

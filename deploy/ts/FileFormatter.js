@@ -4,6 +4,15 @@ class FileFormatter {
     constructor(flag = /<<(.+)>>/u, defaultCssSelector = '[field]') {
         this.flag = flag;
         this.defaultCssSelector = defaultCssSelector;
+        /**
+         * Splits on every line break
+         */
+        this.splitOnN = (text, trim = false) => {
+            const t1 = trim ? text.trim() : text;
+            return t1
+                .split('\n')
+                .filter((t) => t.match(/[^\s]/));
+        };
         this.everyNthLineBreak = (text, everyN) => {
             const regex = /\r\n|\r|\n/ug;
             const lines = text
