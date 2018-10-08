@@ -3,6 +3,7 @@
 import "@babel/polyfill"
 
 import { ITriggerType } from "../src/types"
+import { SF } from "../src/ts/StringFormatter";
 
 export const triggers: ITriggerType = {
   default: (...args) => console.info('Default Triggered', args),
@@ -16,10 +17,11 @@ export const triggers: ITriggerType = {
       '[item]',
     ]
 
-    const lines = ref
-      .everyNthLineBreak(data, 4)
+    const lines = SF(data)
+      .everyNthLineBreak(4)
       .map((list) =>
-        ref.everyNthLineBreak(list, 1),
+        SF(list)
+          .everyNthLineBreak(1),
       )
 
     divs.map((parent, parentI) =>

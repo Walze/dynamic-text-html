@@ -4,12 +4,17 @@ export declare const SF: (text: string) => StringFormatter;
  * Used to help format strings
  */
 export declare class StringFormatter {
-    private _STRING;
+    private _string;
     constructor(text: string);
     /**
      * return instance string
      */
     string(): string;
+    /**
+     * Splits on every line break
+     */
+    splitOnN: (trim?: boolean) => string[];
+    everyNthLineBreak: (everyN: number) => string[];
     /**
      *  removes ./
      */

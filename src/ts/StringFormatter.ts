@@ -9,7 +9,7 @@ export const SF = (text: string) => new StringFormatter(text)
  */
 export class StringFormatter {
 
-  private _STRING: string
+  private _string: string
 
   public constructor(text: string) {
 
@@ -24,7 +24,7 @@ export class StringFormatter {
         this.string(),
       )
 
-    this._STRING = text
+    this._string = text
 
   }
 
@@ -33,9 +33,77 @@ export class StringFormatter {
    */
   public string(): string {
 
-    return this._STRING
+    return this._string
 
   }
+
+
+  /**
+   * Splits on every line break
+   */
+  public splitOnN = (trim: boolean = false): string[] => {
+
+    const t1 = trim ? this._string.trim() : this._string
+
+    return t1
+      .split('\n')
+      .filter((t) => t.match(/[^\s]/))
+
+  }
+
+  public everyNthLineBreak = (everyN: number): string[] => {
+
+    const regex = /\r\n|\r|\n/ug
+
+    const lines = this._string
+      .trim()
+      .split(regex)
+
+
+    if (everyN <= 0)
+      return lines
+
+
+    const groups: string[] = []
+
+    /** Blocks consecutive breaks */
+    let blocked = false
+
+    let groupsIndex = 0
+    let breakCounter = 0
+
+    lines.map((line) => {
+
+      let goToNextGroup = false
+      const isEmpty = line === ''
+
+      if (!groups[groupsIndex])
+        groups[groupsIndex] = ''
+
+      if (isEmpty) breakCounter++
+      else breakCounter = 0
+
+      // if breakcounter matches param
+      goToNextGroup = breakCounter === everyN && everyN !== 0
+
+      groups[groupsIndex] += `${line}\r\n`
+
+      if (!goToNextGroup)
+        blocked = false
+
+      if (goToNextGroup && !blocked) {
+
+        groupsIndex++
+        blocked = true
+
+      }
+
+    })
+
+    return groups
+
+  }
+
 
   /**
    *  removes ./
@@ -43,7 +111,7 @@ export class StringFormatter {
   public removeDotSlash(): StringFormatter {
 
     return SF(
-      this._STRING.replace(/^\.\//g, ''),
+      this._string.replace(/^\.\//g, ''),
     )
 
   }
@@ -54,7 +122,7 @@ export class StringFormatter {
   public removePTag(): StringFormatter {
 
     return SF(
-      this._STRING
+      this._string
         .replace(/<p>/gu, '')
         .replace(/<\/p>/gu, ''),
     )
@@ -65,7 +133,7 @@ export class StringFormatter {
   public removeComments(): StringFormatter {
 
     return SF(
-      this._STRING.replace(/\{\{[^{}]*\}\}/gu, ''),
+      this._string.replace(/\{\{[^{}]*\}\}/gu, ''),
     )
 
   }
@@ -75,7 +143,7 @@ export class StringFormatter {
 
     return SF(
       marked(
-        SF(this._STRING)
+        SF(this._string)
           ._markClasses()
           .string(),
       ),
@@ -107,7 +175,7 @@ export class StringFormatter {
 
     const regex = /(!?)\{([^{}]+)*\}(\S+)/ug
 
-    const newString = this._STRING
+    const newString = this._string
       .replace(regex, this._replaceMarkClasses.bind(this))
 
 
@@ -134,7 +202,7 @@ export class StringFormatter {
 
     const idString = id ? `id="${id}" ` : ''
 
-    return `<${tag} ${idString}${classesString}>${this._STRING}</${tag}>`
+    return `<${tag} ${idString}${classesString}>${this._string}</${tag}>`
 
   }
 
