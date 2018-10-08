@@ -42,6 +42,10 @@ export declare class StringFormatter {
      */
     makeInlineMarkedElement(tag: string, classArray?: string[], id?: string | undefined): string;
     /**
+     * Makes an in-line string
+     */
+    makeInlineMarkedText(): string;
+    /**
      *  Maps array then joins it
      *
      * @param array initial array

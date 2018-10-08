@@ -157,6 +157,18 @@ export class StringFormatter {
       .makeElement(tag, classArray, id)
   }
 
+
+  /**
+   * Makes an in-line string
+   */
+  public makeInlineMarkedText() {
+    return this
+      .markdown()
+      .removePTag()
+      .string()
+  }
+
+
   /**
    *  Maps array then joins it
    *

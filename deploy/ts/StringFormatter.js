@@ -93,6 +93,15 @@ class StringFormatter {
             .makeElement(tag, classArray, id);
     }
     /**
+     * Makes an in-line string
+     */
+    makeInlineMarkedText() {
+        return this
+            .markdown()
+            .removePTag()
+            .string();
+    }
+    /**
      *  Maps array then joins it
      *
      * @param array initial array
