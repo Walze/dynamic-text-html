@@ -49,20 +49,6 @@ export class StringFormatter {
   }
 
   /**
-   * Splits on every line break
-   */
-  public splitOnN = (text: string, trim: boolean = false) => {
-
-    const t1 = trim ? text.trim() : text
-
-    return t1
-      .split('\n')
-      .filter((t) => t.match(/[^\s]/))
-
-  }
-
-
-  /**
    * Removes <p></p>
    */
   public removePTag(): StringFormatter {
