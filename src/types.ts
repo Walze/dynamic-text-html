@@ -1,5 +1,4 @@
 
-import { FileRenderer } from './ts/FileRenderer'
 
 declare global {
 
@@ -25,19 +24,18 @@ export interface IFileRendererOptions {
 
 export interface IFileType { name: string, data: string }
 
-export type emitDefault = <T>(
-  this: FileRenderer,
+export type triggerFunction = <T>(
   file: IFileType,
-  fieldIndex: number,
-  ...args: T[]) => T | void
-
-export type emitCustom = <T>(
-  reference: FileRenderer,
-  file: IFileType,
-  divs: Element[],
+  div: Element,
   ...args: T[]) => T | void
 
 export interface ITriggerType {
-  [key: string]: emitCustom
-  default: emitCustom
+  [key: string]: triggerFunction
+  default: triggerFunction
+}
+
+
+export interface ITriggerElements {
+  defaults: Element[];
+  custom: { [key: string]: Element[] };
 }

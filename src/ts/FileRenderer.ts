@@ -3,12 +3,33 @@ import '../../public/css/dynamic-files.css'
 import { SF } from './StringFormatter'
 import { FileFormatter } from './FileFormatter'
 import { isString } from 'util'
-import { ITriggerType, IFileRendererOptions, IFileType, emitCustom } from '../types'
+
+import {
+  ITriggerType,
+  IFileRendererOptions,
+  IFileType,
+  triggerFunction,
+  ITriggerElements,
+} from '../types'
+
+import { mapObjToArray } from './helpers'
+
 
 export class FileRenderer extends FileFormatter {
 
-  public triggers: ITriggerType
+  // public triggers: ITriggerType
+  // public triggerElements: ITriggerElements
+
+  public triggers: {
+    names: string[];
+    elements: ITriggerElements;
+    callbacks: ITriggerType;
+  }
+
   public ext: string | 'md'
+
+  private _defaultIndex = 0
+  private _customIndex = 0
 
   public constructor(options: IFileRendererOptions = {}) {
 
@@ -20,15 +41,44 @@ export class FileRenderer extends FileFormatter {
       : undefined
 
 
-    this.triggers = {
+
+    const elements = this._getTriggerElements()
+    const callbacks = {
       ...options.triggers,
-      default: this._renderDefaultFactory(this.defaultCssSelector, defaultAddon),
+      default: this._renderDefaultFactory(defaultAddon),
     }
 
-    this.ext = options.ext || 'md'
+    const names = mapObjToArray(callbacks, (_, prop) => prop)
 
+
+    this.triggers = { names, elements, callbacks }
+
+
+    this.ext = options.ext || 'md'
   }
 
+
+  private _getTriggerElements = () => {
+    const elements: ITriggerElements = { defaults: [], custom: {} }
+
+    Array
+      .from(document.querySelectorAll('[trigger]'))
+      .map((el) => {
+
+        const name = el.getAttribute('trigger') as string
+
+        if (name === '' || name === 'default')
+          elements.defaults.push(el)
+        else {
+          if (!elements.custom[name])
+            elements.custom[name] = []
+
+          elements.custom[name].push(el)
+        }
+      });
+
+    return elements
+  }
 
   public render(file: IFileType) {
 
@@ -39,49 +89,47 @@ export class FileRenderer extends FileFormatter {
       .string()
 
     // if didn't match, it's a default
-    const customTrigger = this.matchFlag(file.data)
+    const triggerName = this.matchFlag(file.data)
 
-    const firedTriggersReturn = customTrigger
-      ? this._triggerRender(customTrigger, file)
-      : this._triggerRender('default', file)
+    const isInsideNames = this.triggers.names.find((name) => triggerName === name)
+    const isDefault = triggerName === '' || triggerName === 'default' || !triggerName
 
-    return firedTriggersReturn
+    if (!isInsideNames && !isDefault)
+      return console.error('Trigger not found:', triggerName)
 
+    return this._triggerRender(triggerName, file)
   }
 
-  private _triggerRender<T>(triggerName: string, file: IFileType, ...args: T[]) {
 
-    if (triggerName === 'default')
-      return this.triggers.default(this, file, [], ...args)
+  private _triggerRender<T>(triggerName: string | undefined, file: IFileType, ...args: T[]) {
+
+    if (!triggerName) {
+
+      return this.triggers.callbacks.default(
+        file,
+        this.triggers.elements.defaults[this._defaultIndex++],
+        ...args,
+      )
+    }
 
 
     // takes "name" from "name.extension"
     const regex = new RegExp(`(.+).${this.ext}`, 'u')
     const match = file.name.match(regex)
-
     if (!match) throw new Error('file did not match RegEx')
 
-    // selects custom divs
-    const selector = `[${match[1]}]`
-    const divs = Array
-      .from(document.querySelectorAll(selector))
-      .map((div) => {
+    const div = this.triggers.elements.custom[triggerName][this._customIndex++]
 
-        this._displayFileNameToggle(file.name, div)
-
-        return div
-
-      })
+    this._displayFileNameToggle(file.name, div)
 
 
-    const customTrigger = this.triggers[triggerName]
-
+    const customTrigger = this.triggers.callbacks[triggerName]
 
     // removing flag from file data
     file.data = this.replaceFlag(file.data, '')
 
     return customTrigger
-      ? customTrigger(this, file, divs, ...args)
+      ? customTrigger(file, div, ...args)
       : undefined
 
   }
@@ -100,19 +148,15 @@ export class FileRenderer extends FileFormatter {
     selectors.map((selector, selectorI) => {
 
       const children = Array.from(parent.querySelectorAll(selector))
-      if (!children || children.length < 1)
-        return
+      if (!children || children.length < 1) return
 
-      // iterates children
       children.map((child, childI) => {
 
         const multiply = childI * selectors.length
         const index = selectorI + multiply
 
         child.innerHTML = SF(lines[index])
-          .markdown()
-          .removePTag()
-          .string()
+          .makeInlineMarkedText()
 
       })
 
@@ -120,69 +164,13 @@ export class FileRenderer extends FileFormatter {
 
   }
 
-  // Copy of old method
-  // /**
-  //  * Renders each line to its respective selector
-  //  */
-  // public renderMultipleLines = (
-  //   lines: string[] | string[][],
-  //   parents: Element[],
-  //   selectors: string[],
-  // ) => {
-
-  //   // iterates fathers
-  //   parents.map((father, fatherI) => {
-
-  //     // iterates selectors
-  //     selectors.map((selector, selectorI) => {
-
-  //       const children = Array.from(father.querySelectorAll(selector))
-  //       if (!children || children.length < 1)
-  //         return
-
-  //       // iterates children
-  //       children.map((child, childI) => {
-
-  //         const multiply = childI * selectors.length
-  //         const index = selectorI + multiply
-
-  //         // if 2 dimentional array test
-  //         const line = Array.isArray(lines[0]) ?
-  //           lines[fatherI][index] as string :
-  //           lines[index] as string
-
-  //         const markedText = SF(line)
-  //           .markdown()
-  //           .removePTag()
-  //           .string()
-
-  //         child.innerHTML = markedText
-
-  //       })
-
-  //     })
-
-  //   })
-
-  // }
-
-
   private _renderDefaultFactory(
-    defaultCssSelector: string,
-    defaultAddon: emitCustom | undefined,
+    defaultAddon: triggerFunction | undefined,
   ) {
 
-    const fields = Array.from(document.querySelectorAll(defaultCssSelector))
-    if (!fields || fields.length < 1)
-      throw new Error(`No Elements found with the selector: ${defaultCssSelector}`)
+    const renderDefault: triggerFunction = (file: IFileType, field: Element) => {
 
-    let fieldIndex = 0
-
-    const renderDefault = <T>(_: FileRenderer, file: IFileType, ...__: T[]) => {
-
-      const field = fields[fieldIndex++]
-
-      if (defaultAddon) defaultAddon(this, file, [field])
+      if (defaultAddon) defaultAddon(file, field)
 
       const markedText = SF(file.data)
         .removeComments()
@@ -260,7 +248,7 @@ export class FileRenderer extends FileFormatter {
       throw new Error('file name is empty')
 
     if (file.data === '')
-      console.warn('file name is empty')
+      console.warn('file data is empty')
 
   }
 

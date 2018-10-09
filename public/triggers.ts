@@ -4,13 +4,15 @@ import "@babel/polyfill"
 
 import { ITriggerType } from "../src/types"
 import { SF } from "../src/ts/StringFormatter";
+import { renderer } from ".";
 
+// triggers are triggered per file, not per tag
 export const triggers: ITriggerType = {
   default: (...args) => console.info('Default Triggered', args),
 
-  list(ref, { data }, divs) {
+  list({ data }, div) {
 
-    console.info('"list" Triggered', divs)
+    console.info('"list" Triggered', div)
 
     const selectors = [
       '[head]',
@@ -24,9 +26,8 @@ export const triggers: ITriggerType = {
           .everyNthLineBreak(1),
       )
 
-    divs.map((parent, parentI) =>
-      ref.renderMultipleLines(parent, lines[parentI], selectors),
-    )
+    // fix this, 0
+    renderer.renderMultipleLines(div, lines[0], selectors)
 
   },
 
