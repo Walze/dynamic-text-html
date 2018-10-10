@@ -35,7 +35,12 @@ export interface ITriggerType {
 }
 
 
+export interface ICustomTriggerObject {
+  [key: string]: Element[]
+}
+
 export interface ITriggerElements {
+  [key: string]: Element[] | ICustomTriggerObject
   defaults: Element[];
-  custom: { [key: string]: Element[] };
+  custom: ICustomTriggerObject;
 }

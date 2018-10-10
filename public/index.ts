@@ -24,6 +24,6 @@ export const renderer = new FileRenderer({ triggers })
 
 console.log(renderer)
 
-files.map((file) => renderer.render(file))
+renderer.render(files)
 
 

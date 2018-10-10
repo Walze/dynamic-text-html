@@ -2,7 +2,7 @@ import '../../public/css/dynamic-files.css'
 
 import { SF } from './StringFormatter'
 import { FileFormatter } from './FileFormatter'
-import { isString } from 'util'
+import { isString, isArray } from 'util'
 
 import {
   ITriggerType,
@@ -10,53 +10,38 @@ import {
   IFileType,
   triggerFunction,
   ITriggerElements,
+  ICustomTriggerObject,
 } from '../types'
+import { makeFile, mapObj } from './helpers';
 
-import { mapObjToArray } from './helpers'
+type map = <U>(value: Element, index: number, array: Element[]) => U | void
 
+class Triggers {
 
-export class FileRenderer extends FileFormatter {
+  public names: string[]
+  public elements: ITriggerElements
 
-  // public triggers: ITriggerType
-  // public triggerElements: ITriggerElements
+  public constructor(public callbacks: ITriggerType) {
 
-  public triggers: {
-    names: string[];
-    elements: ITriggerElements;
-    callbacks: ITriggerType;
+    this.names = Object.keys(callbacks)
+    this.elements = this._getTriggerElements()
+
   }
 
-  public ext: string | 'md'
+  public mapEls(func: (value: Element, prop: string) => void) {
 
-  private _defaultIndex = 0
-  private _customIndex = 0
+    mapObj(this.elements, (value, prop) => {
 
-  public constructor(options: IFileRendererOptions = {}) {
+      if (isArray(value))
+        value.map((el) => func(el, prop))
+      else
+        mapObj(value, (value2, prop2) =>
+          value2.map((el) => func(el, prop2)),
+        )
 
-    super(options.flag, options.defaultCssSelector)
+    })
 
-    // sets addon if it exists in triggers
-    const defaultAddon = options.triggers && options.triggers.default
-      ? options.triggers.default
-      : undefined
-
-
-
-    const elements = this._getTriggerElements()
-    const callbacks = {
-      ...options.triggers,
-      default: this._renderDefaultFactory(defaultAddon),
-    }
-
-    const names = mapObjToArray(callbacks, (_, prop) => prop)
-
-
-    this.triggers = { names, elements, callbacks }
-
-
-    this.ext = options.ext || 'md'
   }
-
 
   private _getTriggerElements = () => {
     const elements: ITriggerElements = { defaults: [], custom: {} }
@@ -80,24 +65,80 @@ export class FileRenderer extends FileFormatter {
     return elements
   }
 
-  public render(file: IFileType) {
+}
 
-    this._checkValidFile(file)
 
-    file.data = SF(file.data)
-      .removeComments()
-      .string()
+// tslint:disable-next-line:max-classes-per-file
+export class FileRenderer extends FileFormatter {
 
-    // if didn't match, it's a default
-    const triggerName = this.matchFlag(file.data)
+  // public triggers: ITriggerType
+  // public triggerElements: ITriggerElements
 
-    const isInsideNames = this.triggers.names.find((name) => triggerName === name)
-    const isDefault = triggerName === '' || triggerName === 'default' || !triggerName
+  public triggers: Triggers
 
-    if (!isInsideNames && !isDefault)
-      return console.error('Trigger not found:', triggerName)
+  public ext: string | 'md'
 
-    return this._triggerRender(triggerName, file)
+  private _defaultIndex = 0
+  private _customIndex = 0
+
+  private _files: { [key: string]: string } = {}
+
+  public constructor(options: IFileRendererOptions = {}) {
+
+    super(options.flag, options.defaultCssSelector)
+
+    // sets addon if it exists in triggers
+    const defaultAddon = options.triggers && options.triggers.default
+      ? options.triggers.default
+      : undefined
+
+
+    this.triggers = new Triggers({
+      ...options.triggers,
+      default: this._renderDefaultFactory(defaultAddon),
+    })
+
+    this.ext = options.ext || 'md'
+  }
+
+  public addFile(name: string, data: string) {
+    this._files[name] = data
+  }
+
+
+  public render(files: IFileType[]) {
+
+    this.triggers.mapEls((el, type) => {
+
+      const file = type === 'defaults'
+
+      /*
+        loop els
+        each el, look for file
+        render file
+      */
+
+      console.log(this.triggers.callbacks)
+
+      this._checkValidFile(file)
+
+      file.data = SF(file.data)
+        .removeComments()
+        .string()
+
+      // if didn't match, it's a default
+      const triggerName = this.matchFlag(file.data)
+
+      const isInsideNames = this.triggers.names.find((name) => triggerName === name)
+      const isDefault = triggerName === '' || triggerName === 'default' || !triggerName
+
+      if (!isInsideNames && !isDefault)
+        return console.error('Trigger not found:', triggerName)
+
+      return this._triggerRender(triggerName, file)
+
+    })
+
   }
 
 
