@@ -10,11 +10,10 @@ import {
   IFileType,
   triggerFunction,
   ITriggerElements,
-  ICustomTriggerObject,
 } from '../types'
-import { makeFile, mapObj } from './helpers';
+import { mapObj } from './helpers';
 
-type map = <U>(value: Element, index: number, array: Element[]) => U | void
+// type map = <U>(value: Element, index: number, array: Element[]) => U | void
 
 class Triggers {
 
