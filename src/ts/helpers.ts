@@ -1,3 +1,4 @@
+import { IParcelGlob } from './../types';
 import { FileRenderer } from "./FileRenderer"
 import { IFileType, IparcelGlob } from "../types";
 
@@ -65,17 +66,16 @@ export const fetchFiles = (
   mapObjToArray(urlsObj, fetchMakeFile(ext))
 
 
-export const renderParcelFiles = (filesUrls: IparcelGlob, renderer: FileRenderer) => {
+export const fetchFilesPromise = (filesUrls: IParcelGlob, ext: string) => {
 
   const newObj = filesUrls as { [key: string]: string }
   delete newObj.default
 
-  return fetchFiles(newObj, renderer.ext)
-    .map((filePromise) =>
-      filePromise.then((file) =>
-        renderer.render(file),
-      ),
-    );
+  const promises = fetchFiles(newObj, ext)
+
+  return (callback: (file: IFileType) => void) =>
+    promises.map((promise) => promise.then(callback))
+
 }
 
 

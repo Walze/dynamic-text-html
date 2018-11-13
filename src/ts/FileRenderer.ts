@@ -2,178 +2,68 @@ import '../../public/css/dynamic-files.css'
 
 import { SF } from './StringFormatter'
 import { FileFormatter } from './FileFormatter'
-import { isString, isArray } from 'util'
+import { isString } from 'util'
 
 import {
-  ITriggerType,
   IFileRendererOptions,
   IFileType,
+  ITriggerType,
   triggerFunction,
   ITriggerElements,
 } from '../types'
-import { mapObj } from './helpers';
-
-// type map = <U>(value: Element, index: number, array: Element[]) => U | void
-
-class Triggers {
-
-  public names: string[]
-  public elements: ITriggerElements
-
-  public constructor(public callbacks: ITriggerType) {
-
-    this.names = Object.keys(callbacks)
-    this.elements = this._getTriggerElements()
-
-  }
-
-  public mapEls(func: (value: Element, prop: string) => void) {
-
-    mapObj(this.elements, (value, prop) => {
-
-      if (isArray(value))
-        value.map((el) => func(el, prop))
-      else
-        mapObj(value, (value2, prop2) =>
-          value2.map((el) => func(el, prop2)),
-        )
-
-    })
-
-  }
-
-  private _getTriggerElements = () => {
-    const elements: ITriggerElements = { defaults: [], custom: {} }
-
-    Array
-      .from(document.querySelectorAll('[trigger]'))
-      .map((el) => {
-
-        const name = el.getAttribute('trigger') as string
-
-        if (name === '' || name === 'default')
-          elements.defaults.push(el)
-        else {
-          if (!elements.custom[name])
-            elements.custom[name] = []
-
-          elements.custom[name].push(el)
-        }
-      });
-
-    return elements
-  }
-
-}
-
 
 // tslint:disable-next-line:max-classes-per-file
+
+interface IFieldType {
+  name: string;
+  el: Element;
+}
+
 export class FileRenderer extends FileFormatter {
 
-  // public triggers: ITriggerType
-  // public triggerElements: ITriggerElements
+  public fields: IFieldType[]
+  public files: IFileType[] = []
 
-  public triggers: Triggers
+  public constructor(
+    public ext: string = 'md',
+  ) {
+    super()
 
-  public ext: string | 'md'
+    this.fields = Array
+      .from(document.querySelectorAll('[field]'))
+      .map((el) => ({
+        el,
+        name: el.getAttribute('field') as string,
+      }))
 
-  private _defaultIndex = 0
-  private _customIndex = 0
+    console.log(this)
+  }
 
-  private _files: { [key: string]: string } = {}
+  public findField(name: string) {
+    return this.fields.find((field) => `${field.name}.${this.ext}` === name) as IFieldType
+  }
 
-  public constructor(options: IFileRendererOptions = {}) {
+  public render(file: IFileType) {
+    this.files.push(file)
 
-    super(options.flag, options.defaultCssSelector)
+    const field = this.findField(file.name)
 
-    // sets addon if it exists in triggers
-    const defaultAddon = options.triggers && options.triggers.default
-      ? options.triggers.default
-      : undefined
+    if (!field)
+      return console.warn(`no field found on name '${file.name}'`)
 
+    const a = file.data.replace(/\[\[(.+)\]\]/gu, (...args) => {
+      const external = args[1]
 
-    this.triggers = new Triggers({
-      ...options.triggers,
-      default: this._renderDefaultFactory(defaultAddon),
+      const div = field.el.querySelector(`[external = ${external}]`) as Element
+
+      return div.innerHTML
     })
 
-    this.ext = options.ext || 'md'
-  }
-
-  public addFile(name: string, data: string) {
-    this._files[name] = data
-  }
-
-
-  public render(files: IFileType[]) {
-
-    this.triggers.mapEls((el, type) => {
-
-      const file = type === 'defaults'
-
-      /*
-        loop els
-        each el, look for file
-        render file
-      */
-
-      console.log(this.triggers.callbacks)
-
-      this._checkValidFile(file)
-
-      file.data = SF(file.data)
-        .removeComments()
-        .string()
-
-      // if didn't match, it's a default
-      const triggerName = this.matchFlag(file.data)
-
-      const isInsideNames = this.triggers.names.find((name) => triggerName === name)
-      const isDefault = triggerName === '' || triggerName === 'default' || !triggerName
-
-      if (!isInsideNames && !isDefault)
-        return console.error('Trigger not found:', triggerName)
-
-      return this._triggerRender(triggerName, file)
-
-    })
+    field.el.innerHTML = SF(a)
+      .markdown()
+      .string()
 
   }
-
-
-  private _triggerRender<T>(triggerName: string | undefined, file: IFileType, ...args: T[]) {
-
-    if (!triggerName) {
-
-      return this.triggers.callbacks.default(
-        file,
-        this.triggers.elements.defaults[this._defaultIndex++],
-        ...args,
-      )
-    }
-
-
-    // takes "name" from "name.extension"
-    const regex = new RegExp(`(.+).${this.ext}`, 'u')
-    const match = file.name.match(regex)
-    if (!match) throw new Error('file did not match RegEx')
-
-    const div = this.triggers.elements.custom[triggerName][this._customIndex++]
-
-    this._displayFileNameToggle(file.name, div)
-
-
-    const customTrigger = this.triggers.callbacks[triggerName]
-
-    // removing flag from file data
-    file.data = this.replaceFlag(file.data, '')
-
-    return customTrigger
-      ? customTrigger(file, div, ...args)
-      : undefined
-
-  }
-
 
   /**
    * Renders each line to its respective selector inside of parent
@@ -201,28 +91,6 @@ export class FileRenderer extends FileFormatter {
       })
 
     })
-
-  }
-
-  private _renderDefaultFactory(
-    defaultAddon: triggerFunction | undefined,
-  ) {
-
-    const renderDefault: triggerFunction = (file: IFileType, field: Element) => {
-
-      if (defaultAddon) defaultAddon(file, field)
-
-      const markedText = SF(file.data)
-        .removeComments()
-        .markdown()
-        .string()
-
-      field.innerHTML = markedText
-      this._displayFileNameToggle(file.name, field)
-
-    }
-
-    return renderDefault
 
   }
 

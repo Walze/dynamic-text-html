@@ -2,12 +2,7 @@
 
 export class FileFormatter {
 
-  protected constructor(
-    public flag: RegExp = /<<(.+)>>/u,
-    public defaultCssSelector: string = '[field]',
-  ) {
-
-  }
+  public flag: RegExp = /<<(.+)>>/u
 
   public matchFlag(text: string) {
 

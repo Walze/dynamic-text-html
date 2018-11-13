@@ -10,16 +10,13 @@ declare global {
 
 }
 
-export interface IparcelGlob {
+export interface IParcelGlob {
   [key: string]: string | {}
   default: { [key: string]: string }
 }
 
 export interface IFileRendererOptions {
   ext?: string,
-  flag?: RegExp,
-  defaultCssSelector?: string,
-  triggers?: ITriggerType
 }
 
 export interface IFileType { name: string, data: string }
@@ -35,12 +32,7 @@ export interface ITriggerType {
 }
 
 
-export interface ICustomTriggerObject {
-  [key: string]: Element[]
-}
 
 export interface ITriggerElements {
-  [key: string]: Element[] | ICustomTriggerObject
-  defaults: Element[];
-  custom: ICustomTriggerObject;
+  [key: string]: Element[]
 }

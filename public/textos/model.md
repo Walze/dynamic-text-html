@@ -1,26 +1,22 @@
-<<model>>
+aosdfmdaoisdgmndasm
+asdgpogmaopdgmaomdg
+asdmga
+smdgao
+gmd
+omdg
+posdogpmas
 
 
-asd1
+apogmdpaomdgpomaasdgpomasasodpmgmasopdg
+apm
+pdoggmaogmdapomdgpoam
+pdgopdmg
 
-asd2
-
-asd3
-asdf4
-asdf5
-adsf6
-
-asdf47
+[[cards]]
 
 
+aosifdaosdnf
+asdnfaiosnsdfp
+opsfpdmasd
 
-asd1
-
-asd2
-
-asd3
-asdf
-asdf
-adsf
-
-asdf4
+[[list]]

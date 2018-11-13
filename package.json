@@ -6,7 +6,7 @@
   "scripts": {
     "start": "webpack-dev-server --open --mode=development --progress --colors",
     "build": "webpack --mode=production",
-    "start:parcel": "parcel public/index.parcel.html --open",
+    "start:parcel": "parcel public/index.parcel.html --open --log-level 4",
     "build:parcel": "parcel build --public-url . --out-dir ./parcel-build",
     "deploy": "tsc --outDir ./deploy"
   },
@@ -15,8 +15,8 @@
     "@babel/core": "^7.1.5",
     "@babel/preset-env": "^7.1.5",
     "@types/marked": "^0.4.2",
-    "@types/node": "^10.12.3",
-    "@types/webpack": "^4.4.18",
+    "@types/node": "^10.12.6",
+    "@types/webpack": "^4.4.19",
     "@types/webpack-env": "^1.13.6",
     "css-loader": "^1.0.1",
     "html-webpack-plugin": "^3.2.0",
