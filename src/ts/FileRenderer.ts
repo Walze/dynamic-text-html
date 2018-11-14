@@ -49,20 +49,18 @@ export class FileRenderer extends FileFormatter {
     const field = this.findField(file.name)
 
     if (!field)
-      return console.warn(`no field found on name '${file.name}'`)
+      return console.warn(`No field found on name '${file.name}'`)
 
-    const a = file.data.replace(/\[\[(.+)\]\]/gu, (...args) => {
+    const replacedText = file.data.replace(/\[\[(.+)\]\]/gu, (...args) => {
       const external = args[1]
-
       const div = field.el.querySelector(`[external = ${external}]`) as Element
 
       return div.innerHTML
     })
 
-    field.el.innerHTML = SF(a)
+    field.el.innerHTML = SF(replacedText)
       .markdown()
       .string()
-
   }
 
   /**

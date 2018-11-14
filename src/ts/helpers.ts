@@ -1,6 +1,5 @@
-import { IParcelGlob } from './../types';
-import { FileRenderer } from "./FileRenderer"
-import { IFileType, IparcelGlob } from "../types";
+import { IParcelGlob } from './../types'
+import { IFileType } from "../types"
 
 
 export const mapObj = <A, B>(
