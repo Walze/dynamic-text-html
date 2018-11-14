@@ -55,7 +55,7 @@ export class FileRenderer extends FileFormatter {
       const external = args[1]
       const div = field.el.querySelector(`[external = ${external}]`) as Element
 
-      return div.innerHTML
+      return div.innerHTML.trim()
     })
 
     field.el.innerHTML = SF(replacedText)

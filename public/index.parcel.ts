@@ -11,6 +11,10 @@ import files from './textos/**.md'
 const renderer = new FileRenderer()
 
 fetchFilesPromise(files, renderer.ext)((file) => {
-    renderer.render(file)
+    try {
+        renderer.render(file)
+    } catch (error) {
+        console.trace(error)
+    }
 })
 
