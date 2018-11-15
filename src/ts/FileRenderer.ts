@@ -5,23 +5,17 @@ import { FileFormatter } from './FileFormatter'
 import { isString } from 'util'
 
 import {
-  IFileRendererOptions,
-  IFileType,
-  ITriggerType,
-  triggerFunction,
-  ITriggerElements,
+  IFileType, IElAttr,
 } from '../types'
 
 // tslint:disable-next-line:max-classes-per-file
 
-interface IFieldType {
-  name: string;
-  el: Element;
-}
 
 export class FileRenderer extends FileFormatter {
 
-  public fields: IFieldType[]
+  public fields: IElAttr[]
+  public lines: IElAttr[]
+
   public files: IFileType[] = []
 
   public constructor(
@@ -29,77 +23,90 @@ export class FileRenderer extends FileFormatter {
   ) {
     super()
 
-    this.fields = Array
-      .from(document.querySelectorAll('[field]'))
-      .map((el) => ({
-        el,
-        name: el.getAttribute('field') as string,
-      }))
-
-    console.log(this)
+    this.fields = this._getElAttr('field')
+    this.lines = this._getElAttr('lines')
   }
 
-  public findField(name: string) {
-    return this.fields.find((field) => `${field.name}.${this.ext}` === name) as IFieldType
+  private _getElAttr = (name: string) => Array
+    .from(document.querySelectorAll(`[${name}]`))
+    .map((el) => ({
+      el,
+      name: el.getAttribute(name) as string,
+    }))
+
+  public findElAttr(name: string) {
+    const field = this.fields.find((fieldI) => `${fieldI.name}.${this.ext}` === name)
+    const line = this.lines.find((lineI) => `${lineI.name}.${this.ext}` === name)
+
+    return { field, line }
   }
 
   public render(file: IFileType) {
+    this._checkValidFile(file)
     this.files.push(file)
 
-    const field = this.findField(file.name)
+    const data = SF(file.data)
+      .removeComments()
+      .string()
 
-    if (!field)
-      return console.warn(`No field found on name '${file.name}'`)
+    const { field, line } = this.findElAttr(file.name)
 
-    const replacedText = file.data.replace(/\[\[(.+)\]\]/gu, (...args) => {
-      const external = args[1]
-      const div = field.el.querySelector(`[external = ${external}]`) as Element
+    if (field) {
+      this._renderField(field, data)
+      this._displayFileNameToggle(file.name, field.el)
+    }
 
-      return div.innerHTML.trim()
-    })
+    if (line) {
+      this._renderLines(line, data)
+      this._displayFileNameToggle(file.name, line.el)
+    }
 
-    field.el.innerHTML = SF(replacedText)
+  }
+
+  private _renderField({ el }: IElAttr, data: string) {
+    const replacedText = data
+      .replace(/\[\[(.+)\]\]/gu, this._replaceExternal(el))
+      .replace(/>\s+</g, "><")
+
+    el.innerHTML = SF(replacedText)
       .markdown()
       .string()
   }
 
-  /**
-   * Renders each line to its respective selector inside of parent
-   */
-  public renderMultipleLines = (
-    parent: Element,
-    lines: string[],
-    selectors: string[],
-  ) => {
+  private _renderLines = ({ el }: IElAttr, data: string) => {
+    const linesArray = SF(data)
+      .everyNthLineBreak(1)
+      .map((line) =>
+        SF(line)
+          .markdown()
+          .removePTag()
+          .string()
+          .trim(),
+      )
 
-    // iterates selectors
-    selectors.map((selector, selectorI) => {
 
-      const children = Array.from(parent.querySelectorAll(selector))
-      if (!children || children.length < 1) return
-
-      children.map((child, childI) => {
-
-        const multiply = childI * selectors.length
-        const index = selectorI + multiply
-
-        child.innerHTML = SF(lines[index])
-          .makeInlineMarkedText()
-
-      })
-
-    })
-
+    Array
+      .from(el.querySelectorAll('[line]'))
+      .map((line, i) => line.innerHTML = linesArray[i])
   }
 
-  private _displayFileNameToggle(fileName: string, field: Element) {
+  private _replaceExternal = (el: Element) =>
+    (...args: string[]) => {
+      const [, external] = args
+      const div = el.querySelector(`[external = ${external}]`) as Element
+      const newText = div.innerHTML.trim()
+
+      return newText
+    }
+
+  private _displayFileNameToggle(fileName: string, el: Element) {
 
     const overlay = document.createElement('div')
     overlay.classList.add('show-file-name')
     overlay.innerHTML = fileName
 
-    field.classList.add('dynamic')
-    field.insertBefore(overlay, field.firstChild)
+    el.classList.add('dynamic')
+    el.insertBefore(overlay, el.firstChild)
 
 
     const click = this._fieldClickFactory(overlay)
@@ -115,7 +122,7 @@ export class FileRenderer extends FileFormatter {
     })
     window.addEventListener('keydown', (ev) => zPressed = ev.key === 'z')
 
-    field
+    el
       .addEventListener('pointerup', (ev) => zPressed ? click(ev) : undefined)
 
   }

@@ -10,6 +10,11 @@ declare global {
 
 }
 
+export interface IElAttr {
+  name: string;
+  el: Element;
+}
+
 export interface IParcelGlob {
   [key: string]: string | {}
   default: { [key: string]: string }

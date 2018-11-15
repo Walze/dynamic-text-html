@@ -7,7 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
   <!-- Compiled and minified CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css" />
 
   <title>Dynamic Text</title>
 
@@ -16,30 +16,37 @@
 <body class="container">
 
   <h2>Editavel</h2>
-
+  
   <div field='1-campo'></div>
 
   <div field='2-campo'></div>
 
-  <div field='3-campo'></div>
+  <div field='3-campo'></div> 
+ 
 
   <div field="model">
 
     <div external="cards">
-      <h1>asd</h1>
+      <h1>cards external</h1>
       <p>
-        nice
+        nice1
       </p>
     </div>
 
-    <div external="list">
-      <h1>lkist</h1>
-      <p>
-        nice
-      </p>
+    <div external="list" lines='list'>
+      <h1>list external</h1>
+      <p line> </p>
+      <p line> </p>
+      <p line> </p>
+
+      <hr>
+
+      <p line></p>
+
     </div>
 
   </div>
+
 
   <script src="./index.parcel.ts"></script>
 </body>
