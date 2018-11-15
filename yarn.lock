@@ -677,10 +677,10 @@
   resolved "https://registry.yarnpkg.com/@types/marked/-/marked-0.4.2.tgz#64a89e53ea37f61cc0f3ee1732c555c2dbf6452f"
   integrity sha512-cDB930/7MbzaGF6U3IwSQp6XBru8xWajF5PV2YZZeV8DyiliTuld11afVztGI9+yJZ29il5E+NpGA6ooV/Cjkg==
 
-"@types/node@*", "@types/node@^10.11.7", "@types/node@^10.12.7":
-  version "10.12.7"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.7.tgz#195808b2d4b2e7c33e75e7d9b24aeee88f94660d"
-  integrity sha512-Zh5Z4kACfbeE8aAOYh9mqotRxaZMro8MbBQtR8vEXOMiZo2rGEh2LayJijKdlu48YnS6y2EFU/oo2NCe5P6jGw==
+"@types/node@*", "@types/node@^10.11.7", "@types/node@^10.12.8":
+  version "10.12.8"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.8.tgz#d0a3ab5a6e61458c492304e2776ac136b81db927"
+  integrity sha512-INamyRZG4rW3lDCUmwVd5Xho/bXvQm/v1yP8V0UN1RuInU7RoWoaO570b+yLX4Ia/0szsx1wa8VzcsVlsvbWLA==
 
 "@types/semver@^5.5.0":
   version "5.5.0"
@@ -4226,9 +4226,9 @@ no-case@^2.2.0:
     lower-case "^1.1.1"
 
 node-addon-api@^1.6.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-1.6.0.tgz#bbb1a32395245fd2cddcfed8312b3dbd6511b6c4"
-  integrity sha512-HEUPBHfdH4CLR1Qq4/Ek8GT/qFSvpApjJQmcYdLCL51ADU/Y11kMuFAdIevhNrPh3ylqVGA8k6vI/oi4YUAHbA==
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-1.6.1.tgz#a9881c8dbc6400bac6ddedcb96eccf8051678536"
+  integrity sha512-GcLOYrG5/enbqH4SMsqXt6GQUQGGnDnE3FLDZzXYkCgQHuZV5UDFR+EboeY8kpG0avroyOjpFQ2qLEBosFcRIA==
 
 node-forge@0.7.5:
   version "0.7.5"
