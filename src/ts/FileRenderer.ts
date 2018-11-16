@@ -25,6 +25,39 @@ export class FileRenderer extends FileFormatter {
 
     this.fields = this._getElAttr('field')
     this.lines = this._getElAttr('lines')
+
+
+    // show div
+    const obj: { [key: string]: boolean } = {
+      z: false,
+      x: false,
+      c: false,
+    }
+
+    let showFiles: Element[] | undefined
+    let state = false
+
+    window.addEventListener('keydown', ({ key }) => {
+      if (obj.hasOwnProperty(key)) obj[key] = true
+      if (!showFiles) showFiles = Array.from(document.querySelectorAll(`.show-file-name`))
+
+      if (obj.z && obj.x && obj.c) {
+        showFiles.map(el => !state ? el.classList.add('active') : el.classList.remove('active'))
+
+        state = !state
+
+        if (obj.hasOwnProperty(key)) obj[key] = false
+      }
+
+      console.log(obj)
+    })
+
+
+    window.addEventListener('keyup', ({ key }) => {
+      if (obj.hasOwnProperty(key)) obj[key] = false
+
+      console.log(obj)
+    })
   }
 
   private _getElAttr = (name: string) => Array
@@ -94,58 +127,19 @@ export class FileRenderer extends FileFormatter {
     (...args: string[]) => {
       const [, external] = args
       const div = el.querySelector(`[external = ${external}]`) as Element
-      const newText = div.innerHTML.trim()
+      const newText = div.outerHTML.trim()
 
       return newText
     }
 
-  private _displayFileNameToggle(fileName: string, el: Element) {
+  private _displayFileNameToggle = (fileName: string, el: Element) => {
 
     const overlay = document.createElement('div')
     overlay.classList.add('show-file-name')
-    overlay.innerHTML = fileName
+    overlay.innerHTML = `<span>${fileName}</span>`
 
     el.classList.add('dynamic')
-    el.insertBefore(overlay, el.firstChild)
-
-
-    const click = this._fieldClickFactory(overlay)
-
-    let zPressed = false
-
-    window.addEventListener('keyup', (ev) => {
-      const isNotZ = ev.key !== 'z'
-
-      if (isNotZ) return
-
-      zPressed = isNotZ
-    })
-    window.addEventListener('keydown', (ev) => zPressed = ev.key === 'z')
-
-    el
-      .addEventListener('pointerup', (ev) => zPressed ? click(ev) : undefined)
-
-  }
-
-  private _fieldClickFactory = (
-    overlay: Element,
-  ) => {
-
-    let active = false
-
-    return (ev: Event) => {
-
-      ev.preventDefault()
-      ev.stopPropagation()
-
-      active = !active
-
-      if (active)
-        overlay.classList.add('active')
-      else
-        overlay.classList.remove('active')
-
-    }
+    el.appendChild(overlay)
 
   }
 
