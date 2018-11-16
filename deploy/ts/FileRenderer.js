@@ -31,20 +31,40 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
         this._replaceExternal = (el) => (...args) => {
             const [, external] = args;
             const div = el.querySelector(`[external = ${external}]`);
-            const newText = div.innerHTML.trim();
+            const newText = div.outerHTML.trim();
             return newText;
         };
-        this._fieldClickFactory = (overlay) => {
-            let active = false;
-            return (ev) => {
-                ev.preventDefault();
-                ev.stopPropagation();
-                active = !active;
-                if (active)
-                    overlay.classList.add('active');
-                else
-                    overlay.classList.remove('active');
+        this._displayFileNameToggle = (fileName, el) => {
+            const overlay = document.createElement('div');
+            overlay.classList.add('show-file-name');
+            overlay.innerHTML = `<span>${fileName}</span>`;
+            el.classList.add('dynamic');
+            el.appendChild(overlay);
+        };
+        this._listenKeysToShowFileNames = () => {
+            let obj = {
+                z: false,
+                x: false,
+                c: false,
             };
+            const objReset = obj;
+            let showFiles;
+            let state = false;
+            window.addEventListener('keydown', ({ key }) => {
+                if (obj.hasOwnProperty(key))
+                    obj[key] = true;
+                if (!showFiles)
+                    showFiles = Array.from(document.querySelectorAll(`.show-file-name`));
+                if (obj.z && obj.x && obj.c) {
+                    showFiles.map((el) => !state ? el.classList.add('active') : el.classList.remove('active'));
+                    state = !state;
+                    obj = objReset;
+                }
+            });
+            window.addEventListener('keyup', ({ key }) => {
+                if (obj.hasOwnProperty(key))
+                    obj[key] = false;
+            });
         };
         this._checkValidFile = (file) => {
             if (!util_1.isString(file.name))
@@ -58,6 +78,8 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
         };
         this.fields = this._getElAttr('field');
         this.lines = this._getElAttr('lines');
+        // show divs
+        this._listenKeysToShowFileNames();
     }
     findElAttr(name) {
         const field = this.fields.find((fieldI) => `${fieldI.name}.${this.ext}` === name);
@@ -87,24 +109,6 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
         el.innerHTML = StringFormatter_1.SF(replacedText)
             .markdown()
             .string();
-    }
-    _displayFileNameToggle(fileName, el) {
-        const overlay = document.createElement('div');
-        overlay.classList.add('show-file-name');
-        overlay.innerHTML = fileName;
-        el.classList.add('dynamic');
-        el.insertBefore(overlay, el.firstChild);
-        const click = this._fieldClickFactory(overlay);
-        let zPressed = false;
-        window.addEventListener('keyup', (ev) => {
-            const isNotZ = ev.key !== 'z';
-            if (isNotZ)
-                return;
-            zPressed = isNotZ;
-        });
-        window.addEventListener('keydown', (ev) => zPressed = ev.key === 'z');
-        el
-            .addEventListener('pointerup', (ev) => zPressed ? click(ev) : undefined);
     }
 }
 exports.FileRenderer = FileRenderer;

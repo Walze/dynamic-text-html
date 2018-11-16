@@ -27,37 +27,8 @@ export class FileRenderer extends FileFormatter {
     this.lines = this._getElAttr('lines')
 
 
-    // show div
-    const obj: { [key: string]: boolean } = {
-      z: false,
-      x: false,
-      c: false,
-    }
-
-    let showFiles: Element[] | undefined
-    let state = false
-
-    window.addEventListener('keydown', ({ key }) => {
-      if (obj.hasOwnProperty(key)) obj[key] = true
-      if (!showFiles) showFiles = Array.from(document.querySelectorAll(`.show-file-name`))
-
-      if (obj.z && obj.x && obj.c) {
-        showFiles.map(el => !state ? el.classList.add('active') : el.classList.remove('active'))
-
-        state = !state
-
-        if (obj.hasOwnProperty(key)) obj[key] = false
-      }
-
-      console.log(obj)
-    })
-
-
-    window.addEventListener('keyup', ({ key }) => {
-      if (obj.hasOwnProperty(key)) obj[key] = false
-
-      console.log(obj)
-    })
+    // show divs
+    this._listenKeysToShowFileNames()
   }
 
   private _getElAttr = (name: string) => Array
@@ -141,6 +112,34 @@ export class FileRenderer extends FileFormatter {
     el.classList.add('dynamic')
     el.appendChild(overlay)
 
+  }
+
+  private _listenKeysToShowFileNames = () => {
+    let obj: { [key: string]: boolean; } = {
+      z: false,
+      x: false,
+      c: false,
+    }
+    const objReset = obj
+
+    let showFiles: Element[] | undefined
+    let state = false
+
+    window.addEventListener('keydown', ({ key }) => {
+      if (obj.hasOwnProperty(key)) obj[key] = true
+      if (!showFiles) showFiles = Array.from(document.querySelectorAll(`.show-file-name`))
+
+      if (obj.z && obj.x && obj.c) {
+        showFiles.map((el) => !state ? el.classList.add('active') : el.classList.remove('active'))
+        state = !state
+        obj = objReset
+      }
+    })
+
+    window.addEventListener('keyup', ({ key }) => {
+      if (obj.hasOwnProperty(key))
+        obj[key] = false
+    })
   }
 
   private _checkValidFile = (file: IFileType) => {

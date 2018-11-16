@@ -17,7 +17,7 @@ export declare class FileRenderer extends FileFormatter {
     private _renderLines;
     private _replaceExternal;
     private _displayFileNameToggle;
-    private _fieldClickFactory;
+    private _listenKeysToShowFileNames;
     private _checkValidFile;
 }
 //# sourceMappingURL=FileRenderer.d.ts.map
