@@ -115,7 +115,7 @@ export class FileRenderer extends FileFormatter {
   }
 
   private _listenKeysToShowFileNames = () => {
-    let obj: { [key: string]: boolean; } = {
+    let obj: { [key: string]: boolean } = {
       z: false,
       x: false,
       c: false,
