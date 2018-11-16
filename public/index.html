@@ -7,55 +7,48 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
   <!-- Compiled and minified CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css" />
 
   <title>Dynamic Text</title>
+
 </head>
 
 <body class="container">
 
   <h2>Editavel</h2>
+  
+  <div field='1-campo'></div>
 
-  <div trigger=""></div>
+  <div field='2-campo'></div>
 
-  <div trigger></div>
+  <div field='3-campo'></div> 
+ 
 
-  <ul trigger="list" class="collection">
-    <li class="collection-item">
-      <div head></div>
-      <div item></div>
-    </li>
+  <div field="model">
 
-    <li class="collection-item">
-      <div head></div>
-      <div item></div>
-    </li>
+    <div external="cards">
+      <h1>cards external</h1>
+      <p>
+        nice1
+      </p>
+    </div>
 
-    <li class="collection-item">
-      <div head></div>
-      <div item></div>
-    </li>
-  </ul>
+    <div external="list" lines='list'>
+      <h1>list external</h1>
+      <p line> </p>
+      <p line> </p>
+      <p line> </p>
 
-  <div trigger="default"></div>
+      <hr>
 
-  <ul trigger="list" class="collection">
-    <li class="collection-item">
-      <div head></div>
-      <div item></div>
-    </li>
+      <p line></p>
 
-    <li class="collection-item">
-      <div head></div>
-      <div item></div>
-    </li>
+    </div>
 
-    <li class="collection-item">
-      <div head></div>
-      <div item></div>
-    </li>
+  </div>
 
-    <!-- <script src="./main.bundle.js"></script> -->
+
+  <script src="./index.ts"></script>
 </body>
 
 </html>

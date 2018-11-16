@@ -4,7 +4,7 @@
   "main": "deploy/barrel.js",
   "typings": "./typings.d.ts",
   "scripts": {
-    "start": "parcel public/index.parcel.html --open --log-level 4",
+    "start": "parcel public/index.html --open --log-level 4",
     "build": "webpack --mode=production --progress --colors",
     "deploy": "tsc --outDir ./deploy"
   },

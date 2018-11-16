@@ -1,4 +1,4 @@
-import '../../public/css/dynamic-files.css';
+import '../css/dynamic-files.css';
 import { FileFormatter } from './FileFormatter';
 import { IFileType, IElAttr } from '../types';
 export declare class FileRenderer extends FileFormatter {

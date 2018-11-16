@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-require("../../public/css/dynamic-files.css");
+require("../css/dynamic-files.css");
 const StringFormatter_1 = require("./StringFormatter");
 const FileFormatter_1 = require("./FileFormatter");
 const util_1 = require("util");
