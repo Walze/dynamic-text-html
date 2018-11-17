@@ -51,17 +51,18 @@ export class StringFormatter {
 
   }
 
-  public everyNthLineBreak = (everyN: number): string[] => {
+  public everyNthLineBreak = (everyN: number = 0, filterEmpty = true): string[] => {
 
     const regex = /\r\n|\r|\n/ug
 
     const lines = this._string
       .trim()
       .split(regex)
+      .map((txt) => txt.trim())
 
 
     if (everyN <= 0)
-      return lines
+      return filterEmpty ? lines.filter((txt) => txt) : lines
 
 
     const groups: string[] = []

@@ -1,9 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class FileFormatter {
-    constructor(flag = /<<(.+)>>/u, defaultCssSelector = '[field]') {
-        this.flag = flag;
-        this.defaultCssSelector = defaultCssSelector;
+    constructor() {
+        this.flag = /<<(.+)>>/u;
     }
     matchFlag(text) {
         const matched = text.match(this.flag);

@@ -1,29 +1,23 @@
 
 
+import '@babel/polyfill'
 import './css/main.css'
 
-import { makeFile } from '../src/ts/helpers'
-import { SF } from '../src/ts/StringFormatter'
-import { IFileType } from '../src/types'
-import { triggers } from './triggers'
+import { fetchFilesPromise } from '../src/ts/helpers'
+import { FileRenderer } from '../src/ts/FileRenderer'
 
+// @ts-ignore
+import files from './textos/**.md'
 
-const requireAll = require.context('./textos', true, /\.md$/)
-const files = requireAll
-  .keys()
-  .map((fileName: string): IFileType => makeFile(
-    SF(fileName)
-      .removeDotSlash()
-      .string(),
-    requireAll(fileName),
-  ))
+const renderer = new FileRenderer()
 
+console.log(renderer)
 
-import(/* webpackChunkName: "FileRenderer" */ '../src/ts/FileRenderer')
-  .then(({ FileRenderer }) => {
-
-    const renderer = new FileRenderer({ triggers })
-    files.map((file) => renderer.render(file))
-
-  })
+fetchFilesPromise(files, renderer.ext)((file) => {
+    try {
+        renderer.render(file)
+    } catch (error) {
+        console.trace(error)
+    }
+})
 

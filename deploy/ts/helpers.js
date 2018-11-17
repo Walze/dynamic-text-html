@@ -27,10 +27,10 @@ exports.makeFile = (fileName, fileData) => ({
 exports.fetchMakeFile = (ext) => async (path, name) => exports.makeFile(`${name}.${ext}`, await fetch(path)
     .then((response) => response.text()));
 exports.fetchFiles = (urlsObj, ext) => exports.mapObjToArray(urlsObj, exports.fetchMakeFile(ext));
-exports.renderParcelFiles = (filesUrls, renderer) => {
+exports.fetchFilesPromise = (filesUrls, ext) => {
     const newObj = filesUrls;
     delete newObj.default;
-    return exports.fetchFiles(newObj, renderer.ext)
-        .map((filePromise) => filePromise.then((file) => renderer.render(file)));
+    const promises = exports.fetchFiles(newObj, ext);
+    return (callback) => promises.map((promise) => promise.then(callback));
 };
 //# sourceMappingURL=helpers.js.map

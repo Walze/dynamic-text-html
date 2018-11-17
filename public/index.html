@@ -7,64 +7,47 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
   <!-- Compiled and minified CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css" />
 
   <title>Dynamic Text</title>
+
 </head>
 
 <body class="container">
 
   <h2>Editavel</h2>
 
-  <div field></div>
+  <div field='1-campo'></div>
 
-  <div field></div>
+  <div field='2-campo'></div>
 
-  <ul list class="collection">
-    <li class="collection-item">
-      <div head></div>
-      <div item></div>
-    </li>
+  <div field='3-campo'></div>
 
-    <li class="collection-item">
-      <div head></div>
-      <div item></div>
-    </li>
 
-    <li class="collection-item">
-      <div head></div>
-      <div item></div>
-    </li>
-  </ul>
+  <div field="model">
 
-  <div field></div>
+    <div external="cards">
+      <h1>cards external</h1>
+      <p>
+        nice1
+      </p>
+    </div>
 
-  <table model class="striped responsive-table">
-    <thead>
-      <tr>asd</tr>
-    </thead>
+    <div external="list" lines='list'>
+      <h1>list external</h1>
+      <div class="d-line"></div>
+      <div class="d-line"></div>
+      <div class="d-line"></div>
 
-    <tbody>
+      <hr>
 
-      <tr for-model>
+      <div class="d-line"></div>
+    </div>
 
-        <td>
-          {{}}
-        </td>
-        <td>{{}}</td>
-        <td>
-          <ul>
-            <li for-model>{{}}</li>
-          </ul>
-        </td>
-        <td>{{}}</td>
+  </div>
 
-      </tr>
 
-    </tbody>
-  </table>
-
-  <!-- <script src="./main.bundle.js"></script> -->
+  <script src="./index.ts"></script>
 </body>
 
 </html>

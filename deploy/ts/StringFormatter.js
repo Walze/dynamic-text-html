@@ -21,13 +21,14 @@ class StringFormatter {
                 .split('\n')
                 .filter((t) => t.match(/[^\s]/));
         };
-        this.everyNthLineBreak = (everyN) => {
+        this.everyNthLineBreak = (everyN = 0, filterEmpty = true) => {
             const regex = /\r\n|\r|\n/ug;
             const lines = this._string
                 .trim()
-                .split(regex);
+                .split(regex)
+                .map((txt) => txt.trim());
             if (everyN <= 0)
-                return lines;
+                return filterEmpty ? lines.filter((txt) => txt) : lines;
             const groups = [];
             /** Blocks consecutive breaks */
             let blocked = false;

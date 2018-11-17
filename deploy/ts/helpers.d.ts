@@ -1,5 +1,5 @@
-import { FileRenderer } from "./FileRenderer";
-import { IFileType, IparcelGlob } from "../types";
+import { IParcelGlob } from './../types';
+import { IFileType } from "../types";
 export declare const mapObj: <A, B>(object: {
     [key: string]: A;
 }, cb: (value: A, prop: string, index: number) => B) => {
@@ -13,5 +13,5 @@ export declare const fetchMakeFile: (ext: string) => (path: string, name: string
 export declare const fetchFiles: (urlsObj: {
     [key: string]: string;
 }, ext: string) => Promise<IFileType>[];
-export declare const renderParcelFiles: (filesUrls: IparcelGlob, renderer: FileRenderer) => Promise<void | {}>[];
+export declare const fetchFilesPromise: (filesUrls: IParcelGlob, ext: string) => (callback: (file: IFileType) => void) => Promise<void>[];
 //# sourceMappingURL=helpers.d.ts.map

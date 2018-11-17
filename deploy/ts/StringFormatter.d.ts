@@ -14,7 +14,7 @@ export declare class StringFormatter {
      * Splits on every line break
      */
     splitOnN: (trim?: boolean) => string[];
-    everyNthLineBreak: (everyN: number) => string[];
+    everyNthLineBreak: (everyN?: number, filterEmpty?: boolean) => string[];
     /**
      *  removes ./
      */
