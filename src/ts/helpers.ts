@@ -35,42 +35,24 @@ export const mapObjToArray = <A, B>(
 
 }
 
-export const makeFile = (fileName: string, fileData: string): IFileType => (
-  {
-    name: fileName,
-    data: fileData,
-  }
-)
+export const makeFile = (name: string, data: string): IFileType => ({ name, data })
 
-// const fetchMakeFile = (ext: string) =>
-//   async (path: string, name: string): Promise<IFileType> => ({
-//     name: `${name}.${ext}`,
-//     data: await fetch(path)
-//       .then((response) => response.text()),
-//   })
 
 export const fetchMakeFile = (ext: string) =>
-  async (path: string, name: string): Promise<IFileType> =>
-    makeFile(
-      `${name}.${ext}`,
-      await fetch(path)
-        .then((response) => response.text()),
-    )
+  (path: string, name: string) =>
+    fetch(path)
+      .then((response) => response.text())
+      .then((text) => makeFile(`${name}.${ext}`, text))
 
 
 export const fetchFiles = (
-  urlsObj: { [key: string]: string },
+  urlsObj: IParcelGlob,
   ext: string,
-) =>
-  mapObjToArray(urlsObj, fetchMakeFile(ext))
+) => mapObjToArray(urlsObj, fetchMakeFile(ext))
 
 
 export const fetchFilesPromise = (filesUrls: IParcelGlob, ext: string) => {
-
-  const newObj = filesUrls as { [key: string]: string }
-  delete newObj.default
-
-  const promises = fetchFiles(newObj, ext)
+  const promises = fetchFiles(filesUrls, ext)
 
   return (callback: (file: IFileType) => void) =>
     promises.map((promise) => promise.then(callback))

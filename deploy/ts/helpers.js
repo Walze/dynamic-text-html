@@ -14,23 +14,13 @@ exports.mapObjToArray = (object, cb) => {
         arr.push(cb(object[prop], prop, index++));
     return arr;
 };
-exports.makeFile = (fileName, fileData) => ({
-    name: fileName,
-    data: fileData,
-});
-// const fetchMakeFile = (ext: string) =>
-//   async (path: string, name: string): Promise<IFileType> => ({
-//     name: `${name}.${ext}`,
-//     data: await fetch(path)
-//       .then((response) => response.text()),
-//   })
-exports.fetchMakeFile = (ext) => async (path, name) => exports.makeFile(`${name}.${ext}`, await fetch(path)
-    .then((response) => response.text()));
+exports.makeFile = (name, data) => ({ name, data });
+exports.fetchMakeFile = (ext) => (path, name) => fetch(path)
+    .then((response) => response.text())
+    .then((text) => exports.makeFile(`${name}.${ext}`, text));
 exports.fetchFiles = (urlsObj, ext) => exports.mapObjToArray(urlsObj, exports.fetchMakeFile(ext));
 exports.fetchFilesPromise = (filesUrls, ext) => {
-    const newObj = filesUrls;
-    delete newObj.default;
-    const promises = exports.fetchFiles(newObj, ext);
+    const promises = exports.fetchFiles(filesUrls, ext);
     return (callback) => promises.map((promise) => promise.then(callback));
 };
 //# sourceMappingURL=helpers.js.map

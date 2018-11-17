@@ -1,18 +1,9 @@
-declare global {
-    interface IArrayConstructor {
-        from<T, U>(arrayLike: ArrayLike<T>, mapfn: (v: T, k: number) => U, thisArg?: any): U[];
-        from<T>(arrayLike: ArrayLike<T>): T[];
-    }
-}
 export interface IElAttr {
     name: string;
     el: Element;
 }
 export interface IParcelGlob {
-    [key: string]: string | {};
-    default: {
-        [key: string]: string;
-    };
+    [key: string]: string;
 }
 export interface IFileRendererOptions {
     ext?: string;
@@ -20,13 +11,5 @@ export interface IFileRendererOptions {
 export interface IFileType {
     name: string;
     data: string;
-}
-export declare type triggerFunction = <T>(file: IFileType, div: Element, ...args: T[]) => T | void;
-export interface ITriggerType {
-    [key: string]: triggerFunction;
-    default: triggerFunction;
-}
-export interface ITriggerElements {
-    [key: string]: Element[];
 }
 //# sourceMappingURL=types.d.ts.map
