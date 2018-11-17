@@ -7,6 +7,9 @@ export declare class FileRenderer extends FileFormatter {
     lines: IElAttr[];
     files: IFileType[];
     constructor(ext?: string);
+    /**
+     *  gets element by attribute and gets attributes value
+     */
     private _getElAttr;
     findElAttr(name: string): {
         field: IElAttr | undefined;
@@ -16,7 +19,7 @@ export declare class FileRenderer extends FileFormatter {
     private _renderField;
     private _renderLines;
     private _replaceExternal;
-    private _displayFileNameToggle;
+    private _setFileNameToggle;
     private _listenKeysToShowFileNames;
     private _checkValidFile;
 }

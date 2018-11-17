@@ -4,18 +4,23 @@ require("../css/dynamic-files.css");
 const StringFormatter_1 = require("./StringFormatter");
 const FileFormatter_1 = require("./FileFormatter");
 const util_1 = require("util");
-// tslint:disable-next-line:max-classes-per-file
+const selectors = {
+    field: 'field',
+    lines: 'lines',
+    line: '.d-line',
+    external: 'external',
+};
 class FileRenderer extends FileFormatter_1.FileFormatter {
     constructor(ext = 'md') {
         super();
         this.ext = ext;
         this.files = [];
+        /**
+         *  gets element by attribute and gets attributes value
+         */
         this._getElAttr = (name) => Array
             .from(document.querySelectorAll(`[${name}]`))
-            .map((el) => ({
-            el,
-            name: el.getAttribute(name),
-        }));
+            .map((el) => ({ el, name: el.getAttribute(name) }));
         this._renderLines = ({ el }, data) => {
             const linesArray = StringFormatter_1.SF(data)
                 .everyNthLineBreak(1)
@@ -25,45 +30,46 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
                 .string()
                 .trim());
             Array
-                .from(el.querySelectorAll('[line]'))
+                .from(el.querySelectorAll(selectors.line))
                 .map((line, i) => line.innerHTML = linesArray[i]);
         };
         this._replaceExternal = (el) => (...args) => {
             const [, external] = args;
-            const div = el.querySelector(`[external = ${external}]`);
+            const div = el.querySelector(`[${selectors.external} = ${external}]`);
             const newText = div.outerHTML.trim();
             return newText;
         };
-        this._displayFileNameToggle = (fileName, el) => {
+        this._setFileNameToggle = (fileName, el) => {
             const overlay = document.createElement('div');
             overlay.classList.add('show-file-name');
-            overlay.innerHTML = `<span>${fileName}</span>`;
+            overlay.innerHTML = StringFormatter_1.SF(fileName)
+                .makeElement(`span`);
             el.classList.add('dynamic');
             el.appendChild(overlay);
         };
         this._listenKeysToShowFileNames = () => {
-            let obj = {
+            let keys = {
                 z: false,
                 x: false,
                 c: false,
             };
-            const objReset = obj;
+            const keysReset = Object.assign({}, keys);
             let showFiles;
             let state = false;
             window.addEventListener('keydown', ({ key }) => {
-                if (obj.hasOwnProperty(key))
-                    obj[key] = true;
+                if (keys.hasOwnProperty(key))
+                    keys[key] = true;
                 if (!showFiles)
                     showFiles = Array.from(document.querySelectorAll(`.show-file-name`));
-                if (obj.z && obj.x && obj.c) {
+                if (keys.z && keys.x && keys.c) {
                     showFiles.map((el) => !state ? el.classList.add('active') : el.classList.remove('active'));
                     state = !state;
-                    obj = objReset;
+                    keys = keysReset;
                 }
             });
             window.addEventListener('keyup', ({ key }) => {
-                if (obj.hasOwnProperty(key))
-                    obj[key] = false;
+                if (keys.hasOwnProperty(key))
+                    keys[key] = false;
             });
         };
         this._checkValidFile = (file) => {
@@ -76,8 +82,8 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
             if (file.data === '')
                 console.warn('file data is empty');
         };
-        this.fields = this._getElAttr('field');
-        this.lines = this._getElAttr('lines');
+        this.fields = this._getElAttr(selectors.field);
+        this.lines = this._getElAttr(selectors.lines);
         // show divs
         this._listenKeysToShowFileNames();
     }
@@ -95,11 +101,11 @@ class FileRenderer extends FileFormatter_1.FileFormatter {
         const { field, line } = this.findElAttr(file.name);
         if (field) {
             this._renderField(field, data);
-            this._displayFileNameToggle(file.name, field.el);
+            this._setFileNameToggle(file.name, field.el);
         }
         if (line) {
             this._renderLines(line, data);
-            this._displayFileNameToggle(file.name, line.el);
+            this._setFileNameToggle(file.name, line.el);
         }
     }
     _renderField({ el }, data) {

@@ -11,6 +11,8 @@ import files from './textos/**.md'
 
 const renderer = new FileRenderer()
 
+console.log(renderer)
+
 fetchFilesPromise(files, renderer.ext)((file) => {
     try {
         renderer.render(file)

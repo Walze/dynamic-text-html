@@ -8,8 +8,12 @@ import {
   IFileType, IElAttr,
 } from '../types'
 
-// tslint:disable-next-line:max-classes-per-file
-
+const selectors = {
+  field: 'field',
+  lines: 'lines',
+  line: '.d-line',
+  external: 'external',
+}
 
 export class FileRenderer extends FileFormatter {
 
@@ -23,20 +27,20 @@ export class FileRenderer extends FileFormatter {
   ) {
     super()
 
-    this.fields = this._getElAttr('field')
-    this.lines = this._getElAttr('lines')
+    this.fields = this._getElAttr(selectors.field)
+    this.lines = this._getElAttr(selectors.lines)
 
 
     // show divs
     this._listenKeysToShowFileNames()
   }
 
+  /**
+   *  gets element by attribute and gets attributes value
+   */
   private _getElAttr = (name: string) => Array
     .from(document.querySelectorAll(`[${name}]`))
-    .map((el) => ({
-      el,
-      name: el.getAttribute(name) as string,
-    }))
+    .map((el) => ({ el, name: el.getAttribute(name) as string }))
 
   public findElAttr(name: string) {
     const field = this.fields.find((fieldI) => `${fieldI.name}.${this.ext}` === name)
@@ -57,12 +61,12 @@ export class FileRenderer extends FileFormatter {
 
     if (field) {
       this._renderField(field, data)
-      this._displayFileNameToggle(file.name, field.el)
+      this._setFileNameToggle(file.name, field.el)
     }
 
     if (line) {
       this._renderLines(line, data)
-      this._displayFileNameToggle(file.name, line.el)
+      this._setFileNameToggle(file.name, line.el)
     }
 
   }
@@ -90,24 +94,25 @@ export class FileRenderer extends FileFormatter {
 
 
     Array
-      .from(el.querySelectorAll('[line]'))
+      .from(el.querySelectorAll(selectors.line))
       .map((line, i) => line.innerHTML = linesArray[i])
   }
 
   private _replaceExternal = (el: Element) =>
     (...args: string[]) => {
       const [, external] = args
-      const div = el.querySelector(`[external = ${external}]`) as Element
+      const div = el.querySelector(`[${selectors.external} = ${external}]`) as Element
       const newText = div.outerHTML.trim()
 
       return newText
     }
 
-  private _displayFileNameToggle = (fileName: string, el: Element) => {
+  private _setFileNameToggle = (fileName: string, el: Element) => {
 
     const overlay = document.createElement('div')
     overlay.classList.add('show-file-name')
-    overlay.innerHTML = `<span>${fileName}</span>`
+    overlay.innerHTML = SF(fileName)
+      .makeElement(`span`)
 
     el.classList.add('dynamic')
     el.appendChild(overlay)
@@ -115,30 +120,30 @@ export class FileRenderer extends FileFormatter {
   }
 
   private _listenKeysToShowFileNames = () => {
-    let obj: { [key: string]: boolean } = {
+    let keys: { [key: string]: boolean } = {
       z: false,
       x: false,
       c: false,
     }
-    const objReset = obj
+    const keysReset = { ...keys }
 
     let showFiles: Element[] | undefined
     let state = false
 
     window.addEventListener('keydown', ({ key }) => {
-      if (obj.hasOwnProperty(key)) obj[key] = true
+      if (keys.hasOwnProperty(key)) keys[key] = true
       if (!showFiles) showFiles = Array.from(document.querySelectorAll(`.show-file-name`))
 
-      if (obj.z && obj.x && obj.c) {
+      if (keys.z && keys.x && keys.c) {
         showFiles.map((el) => !state ? el.classList.add('active') : el.classList.remove('active'))
         state = !state
-        obj = objReset
+        keys = keysReset
       }
     })
 
     window.addEventListener('keyup', ({ key }) => {
-      if (obj.hasOwnProperty(key))
-        obj[key] = false
+      if (keys.hasOwnProperty(key))
+        keys[key] = false
     })
   }
 
