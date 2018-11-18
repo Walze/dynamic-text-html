@@ -1,7 +1,6 @@
 import '../css/dynamic-files.css'
 
 import { SF } from './StringFormatter'
-import { FileFormatter } from './FileFormatter'
 import { isString } from 'util'
 
 import {
@@ -15,7 +14,7 @@ const selectors = {
   external: 'external',
 }
 
-export class FileRenderer extends FileFormatter {
+export class FileRenderer {
 
   public fields: IElAttr[]
   public lines: IElAttr[]
@@ -25,8 +24,6 @@ export class FileRenderer extends FileFormatter {
   public constructor(
     public ext: string = 'md',
   ) {
-    super()
-
     this.fields = this._getElAttr(selectors.field)
     this.lines = this._getElAttr(selectors.lines)
 

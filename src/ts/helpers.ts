@@ -37,7 +37,6 @@ export const mapObjToArray = <A, B>(
 
 export const makeFile = (name: string, data: string): IFileType => ({ name, data })
 
-
 export const fetchMakeFile = (ext: string) =>
   (path: string, name: string) =>
     fetch(path)

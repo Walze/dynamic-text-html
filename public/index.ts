@@ -3,11 +3,11 @@
 import '@babel/polyfill'
 import './css/main.css'
 
-import { fetchFilesPromise } from '../src/ts/helpers'
+import { fetchFiles } from '../src/ts/helpers'
 import { FileRenderer } from '../src/ts/FileRenderer'
 
 // tslint:disable:no-require-imports
-const files = {
+const filesURLs = {
     field1: require('./text-files/field1.md'),
     field2: require('./text-files/field2.md'),
     field3: require('./text-files/field3.md'),
@@ -19,11 +19,8 @@ const renderer = new FileRenderer()
 
 console.log(renderer)
 
-fetchFilesPromise(files, renderer.ext)((file) => {
-    try {
-        renderer.render(file)
-    } catch (error) {
-        console.trace(error)
-    }
-})
+fetchFiles(filesURLs, renderer.ext)
+    .map(async (filePromise) => {
+        renderer.render(await filePromise)
+    })
 
