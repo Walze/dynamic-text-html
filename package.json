@@ -1,7 +1,7 @@
 {
   "name": "dynamic-text-html",
   "version": "3.1.2",
-  "main": "deploy-webpack/main.bundle.js",
+  "main": "deploy/main.bundle.js",
   "typings": "./typings.d.ts",
   "scripts": {
     "start": "parcel public/index.html --open --log-level 4",
