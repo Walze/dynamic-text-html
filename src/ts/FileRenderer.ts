@@ -1,4 +1,4 @@
-import '../css/dynamic-files.css'
+import '../../css/dynamic-files.css'
 
 import { SF } from './StringFormatter'
 import { isString } from 'util'

@@ -1,4 +1,4 @@
-import '../css/dynamic-files.css';
+import '../../css/dynamic-files.css';
 import { IFileType, IElAttr } from '../types';
 export declare class FileRenderer {
     ext: string;
