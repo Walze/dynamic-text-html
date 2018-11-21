@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 require("../css/dynamic-files.css");
 const StringFormatter_1 = require("./StringFormatter");
-const FileFormatter_1 = require("./FileFormatter");
 const util_1 = require("util");
 const selectors = {
     field: 'field',
@@ -10,9 +9,8 @@ const selectors = {
     line: '.d-line',
     external: 'external',
 };
-class FileRenderer extends FileFormatter_1.FileFormatter {
+class FileRenderer {
     constructor(ext = 'md') {
-        super();
         this.ext = ext;
         this.files = [];
         /**

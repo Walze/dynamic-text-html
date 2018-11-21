@@ -1,7 +1,6 @@
 import '../css/dynamic-files.css';
-import { FileFormatter } from './FileFormatter';
 import { IFileType, IElAttr } from '../types';
-export declare class FileRenderer extends FileFormatter {
+export declare class FileRenderer {
     ext: string;
     fields: IElAttr[];
     lines: IElAttr[];

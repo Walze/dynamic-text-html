@@ -4,7 +4,6 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./ts/FileRenderer"));
-__export(require("./ts/FileFormatter"));
 __export(require("./ts/StringFormatter"));
 __export(require("./ts/helpers"));
 //# sourceMappingURL=barrel.js.map
