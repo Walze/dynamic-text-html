@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-    entry: './public/index.ts',
+    entry: './src/barrel.ts',
     devtool: 'inline-source-map',
     module: {
         rules: [
@@ -26,6 +26,6 @@ module.exports = {
     output: {
         filename: '[name].bundle.js',
         chunkFilename: '[name].bundle.js',
-        path: path.resolve(__dirname, 'deploy-webpack')
+        path: path.resolve(__dirname, 'deploy')
     }
 };

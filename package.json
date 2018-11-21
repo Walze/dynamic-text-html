@@ -6,8 +6,7 @@
   "scripts": {
     "start": "parcel public/index.html --open --log-level 4",
     "build": "webpack --mode=production --progress --colors",
-    "deploy-webpack": "webpack --mode=development --progress --colors --config deploy.config.js",
-    "deploy": "tsc --outDir ./deploy"
+    "deploy": "webpack --mode=development --progress --colors --config deploy.config.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.5",
