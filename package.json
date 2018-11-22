@@ -1,12 +1,13 @@
 {
   "name": "dynamic-text-html",
   "version": "3.3.1",
-  "main": "deploy/barrel.js",
+  "main": "dist/barrel.js",
   "typings": "./typings.d.ts",
   "scripts": {
     "start": "parcel public/index.html --open --log-level 4",
-    "build": "webpack --mode=production --progress --colors",
-    "deploy": "tsc --outDir ./deploy"
+    "build-wp": "webpack --mode=production --progress --colors",
+    "build": "tsc --outDir ./dist",
+    "deploy": "yarn build && yarn publish"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.5",
