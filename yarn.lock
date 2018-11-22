@@ -951,9 +951,9 @@ ansi-styles@^3.2.1:
     color-convert "^1.9.0"
 
 ansi-to-html@^0.6.4:
-  version "0.6.8"
-  resolved "https://registry.yarnpkg.com/ansi-to-html/-/ansi-to-html-0.6.8.tgz#2a4468b45a5d2a2c1a51eb1a1175eda8acb4f07a"
-  integrity sha512-wXwNl185AIu1QXuNApBiYNaWx0q+Ma1tLDVgc0HbA43GFWG8p1gcWLKKIBjQqamKe3rUkEILb6QMu9G/V14mzQ==
+  version "0.6.9"
+  resolved "https://registry.yarnpkg.com/ansi-to-html/-/ansi-to-html-0.6.9.tgz#f4f2e2361792269cc62da85944f39759fc71b1e2"
+  integrity sha512-hwNdg2DNgCzsrvaNc+LDqSxJkpxf9oEt4R7KE0IeURXhEOlontEqNpXNiGeFBpSes8TZF+ZZ9sjB85QzjPsI6A==
   dependencies:
     entities "^1.1.1"
 
