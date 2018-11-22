@@ -15,6 +15,7 @@ exports.mapObjToArray = (object, cb) => {
     return arr;
 };
 exports.makeFile = (name, data) => ({ name, data });
+exports.makesFiles = (obj, ext) => exports.mapObjToArray(obj, (text, name) => exports.makeFile(`${name}.${ext}`, text));
 exports.fetchMakeFile = (ext) => (path, name) => fetch(path)
     .then((response) => response.text())
     .then((text) => exports.makeFile(`${name}.${ext}`, text));

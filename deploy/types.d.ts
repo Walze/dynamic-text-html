@@ -2,7 +2,7 @@ export interface IElAttr {
     name: string;
     el: Element;
 }
-export interface IParcelGlob {
+export interface IFileObject {
     [key: string]: string;
 }
 export interface IFileRendererOptions {
