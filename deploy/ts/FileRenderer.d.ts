@@ -2,10 +2,11 @@ import '../../css/dynamic-files.css';
 import { IFileType, IElAttr } from '../types';
 export declare class FileRenderer {
     ext: string;
+    selectorReference: Element | Document;
     fields: IElAttr[];
     lines: IElAttr[];
     files: IFileType[];
-    constructor(ext?: string);
+    constructor(ext?: string, selectorReference?: Element | Document);
     /**
      *  gets element by attribute and gets attributes value
      */

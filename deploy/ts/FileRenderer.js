@@ -10,14 +10,15 @@ const selectors = {
     external: 'external',
 };
 class FileRenderer {
-    constructor(ext = 'md') {
+    constructor(ext = 'md', selectorReference = document) {
         this.ext = ext;
+        this.selectorReference = selectorReference;
         this.files = [];
         /**
          *  gets element by attribute and gets attributes value
          */
         this._getElAttr = (name) => Array
-            .from(document.querySelectorAll(`[${name}]`))
+            .from(this.selectorReference.querySelectorAll(`[${name}]`))
             .map((el) => ({ el, name: el.getAttribute(name) }));
         this._renderLines = ({ el }, data) => {
             const linesArray = StringFormatter_1.SF(data)
@@ -58,7 +59,7 @@ class FileRenderer {
                 if (keys.hasOwnProperty(key))
                     keys[key] = true;
                 if (!showFiles)
-                    showFiles = Array.from(document.querySelectorAll(`.show-file-name`));
+                    showFiles = Array.from(this.selectorReference.querySelectorAll(`.show-file-name`));
                 if (keys.z && keys.x && keys.c) {
                     showFiles.map((el) => !state ? el.classList.add('active') : el.classList.remove('active'));
                     state = !state;

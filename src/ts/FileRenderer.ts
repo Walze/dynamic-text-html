@@ -23,6 +23,7 @@ export class FileRenderer {
 
   public constructor(
     public ext: string = 'md',
+    public selectorReference: Element | Document = document,
   ) {
     this.fields = this._getElAttr(selectors.field)
     this.lines = this._getElAttr(selectors.lines)
@@ -36,7 +37,7 @@ export class FileRenderer {
    *  gets element by attribute and gets attributes value
    */
   private _getElAttr = (name: string) => Array
-    .from(document.querySelectorAll(`[${name}]`))
+    .from(this.selectorReference.querySelectorAll(`[${name}]`))
     .map((el) => ({ el, name: el.getAttribute(name) as string }))
 
   public findElAttr(name: string) {
@@ -129,7 +130,7 @@ export class FileRenderer {
 
     window.addEventListener('keydown', ({ key }) => {
       if (keys.hasOwnProperty(key)) keys[key] = true
-      if (!showFiles) showFiles = Array.from(document.querySelectorAll(`.show-file-name`))
+      if (!showFiles) showFiles = Array.from(this.selectorReference.querySelectorAll(`.show-file-name`))
 
       if (keys.z && keys.x && keys.c) {
         showFiles.map((el) => !state ? el.classList.add('active') : el.classList.remove('active'))
