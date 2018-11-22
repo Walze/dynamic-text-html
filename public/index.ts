@@ -1,7 +1,6 @@
 
 
-import '@babel/polyfill'
-import './css/main.css'
+// import '@babel/polyfill'
 
 import { fetchFiles } from '../src/ts/helpers'
 import { FileRenderer } from '../src/ts/FileRenderer'

@@ -4,7 +4,7 @@ export interface IElAttr {
   el: Element;
 }
 
-export interface IParcelGlob {
+export interface IFileObject {
   [key: string]: string
 }
 

@@ -1,4 +1,4 @@
-import { IParcelGlob } from './../types'
+import { IFileObject } from './../types'
 import { IFileType } from "../types"
 
 
@@ -37,6 +37,11 @@ export const mapObjToArray = <A, B>(
 
 export const makeFile = (name: string, data: string): IFileType => ({ name, data })
 
+
+export const makesFiles = (obj: IFileObject, ext: string) =>
+  mapObjToArray(obj, (text, name) => makeFile(`${name}.${ext}`, text))
+
+
 export const fetchMakeFile = (ext: string) =>
   (path: string, name: string) =>
     fetch(path)
@@ -45,12 +50,12 @@ export const fetchMakeFile = (ext: string) =>
 
 
 export const fetchFiles = (
-  urlsObj: IParcelGlob,
+  urlsObj: IFileObject,
   ext: string,
 ) => mapObjToArray(urlsObj, fetchMakeFile(ext))
 
 
-export const fetchFilesPromise = (filesUrls: IParcelGlob, ext: string) => {
+export const fetchFilesPromise = (filesUrls: IFileObject, ext: string) => {
   const promises = fetchFiles(filesUrls, ext)
 
   return (callback: (file: IFileType) => void) =>
