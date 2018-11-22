@@ -11,6 +11,7 @@ export declare class FileRenderer {
      *  gets element by attribute and gets attributes value
      */
     private _getElAttr;
+    updateFieldAndLines(): void;
     findElAttr(name: string): {
         field: IElAttr | undefined;
         line: IElAttr | undefined;
@@ -22,5 +23,6 @@ export declare class FileRenderer {
     private _setFileNameToggle;
     private _listenKeysToShowFileNames;
     private _checkValidFile;
+    private _checkElementInBody;
 }
 //# sourceMappingURL=FileRenderer.d.ts.map

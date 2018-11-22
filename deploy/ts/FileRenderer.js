@@ -13,6 +13,8 @@ class FileRenderer {
     constructor(ext = 'md', selectorReference = document) {
         this.ext = ext;
         this.selectorReference = selectorReference;
+        this.fields = [];
+        this.lines = [];
         this.files = [];
         /**
          *  gets element by attribute and gets attributes value
@@ -28,8 +30,9 @@ class FileRenderer {
                 .removePTag()
                 .string()
                 .trim());
-            Array
-                .from(el.querySelectorAll(selectors.line))
+            const lines = Array
+                .from(el.querySelectorAll(selectors.line));
+            lines
                 .map((line, i) => line.innerHTML = linesArray[i]);
         };
         this._replaceExternal = (el) => (...args) => {
@@ -81,10 +84,12 @@ class FileRenderer {
             if (file.data === '')
                 console.warn('file data is empty');
         };
+        this.updateFieldAndLines();
+        this._listenKeysToShowFileNames();
+    }
+    updateFieldAndLines() {
         this.fields = this._getElAttr(selectors.field);
         this.lines = this._getElAttr(selectors.lines);
-        // show divs
-        this._listenKeysToShowFileNames();
     }
     findElAttr(name) {
         const field = this.fields.find((fieldI) => `${fieldI.name}.${this.ext}` === name);
@@ -97,12 +102,18 @@ class FileRenderer {
         const data = StringFormatter_1.SF(file.data)
             .removeComments()
             .string();
-        const { field, line } = this.findElAttr(file.name);
+        let { field, line } = this.findElAttr(file.name);
         if (field) {
+            const pass = this._checkElementInBody(field.el);
+            if (!pass)
+                field = this.findElAttr(file.name).field;
             this._renderField(field, data);
             this._setFileNameToggle(file.name, field.el);
         }
         if (line) {
+            const pass = this._checkElementInBody(line.el);
+            if (!pass)
+                line = this.findElAttr(file.name).line;
             this._renderLines(line, data);
             this._setFileNameToggle(file.name, line.el);
         }
@@ -114,6 +125,15 @@ class FileRenderer {
         el.innerHTML = StringFormatter_1.SF(replacedText)
             .markdown()
             .string();
+    }
+    _checkElementInBody(el) {
+        if (!document.body.contains(el)) {
+            console.warn('element is not on body, probably lost reference');
+            console.warn('getting fields and lines again, this may cause performance decrease');
+            this.updateFieldAndLines();
+            return false;
+        }
+        return true;
     }
 }
 exports.FileRenderer = FileRenderer;

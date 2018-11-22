@@ -16,8 +16,8 @@ const selectors = {
 
 export class FileRenderer {
 
-  public fields: IElAttr[]
-  public lines: IElAttr[]
+  public fields: IElAttr[] = []
+  public lines: IElAttr[] = []
 
   public files: IFileType[] = []
 
@@ -25,11 +25,7 @@ export class FileRenderer {
     public ext: string = 'md',
     public selectorReference: Element | Document = document,
   ) {
-    this.fields = this._getElAttr(selectors.field)
-    this.lines = this._getElAttr(selectors.lines)
-
-
-    // show divs
+    this.updateFieldAndLines()
     this._listenKeysToShowFileNames()
   }
 
@@ -39,6 +35,11 @@ export class FileRenderer {
   private _getElAttr = (name: string) => Array
     .from(this.selectorReference.querySelectorAll(`[${name}]`))
     .map((el) => ({ el, name: el.getAttribute(name) as string }))
+
+  public updateFieldAndLines() {
+    this.fields = this._getElAttr(selectors.field)
+    this.lines = this._getElAttr(selectors.lines)
+  }
 
   public findElAttr(name: string) {
     const field = this.fields.find((fieldI) => `${fieldI.name}.${this.ext}` === name)
@@ -55,14 +56,20 @@ export class FileRenderer {
       .removeComments()
       .string()
 
-    const { field, line } = this.findElAttr(file.name)
+    let { field, line } = this.findElAttr(file.name)
 
     if (field) {
+      const pass = this._checkElementInBody(field.el)
+      if (!pass) field = this.findElAttr(file.name).field as IElAttr
+
       this._renderField(field, data)
       this._setFileNameToggle(file.name, field.el)
     }
 
     if (line) {
+      const pass = this._checkElementInBody(line.el)
+      if (!pass) line = this.findElAttr(file.name).line as IElAttr
+
       this._renderLines(line, data)
       this._setFileNameToggle(file.name, line.el)
     }
@@ -91,8 +98,10 @@ export class FileRenderer {
       )
 
 
-    Array
+    const lines = Array
       .from(el.querySelectorAll(selectors.line))
+
+    lines
       .map((line, i) => line.innerHTML = linesArray[i])
   }
 
@@ -162,4 +171,16 @@ export class FileRenderer {
   }
 
 
+
+  private _checkElementInBody(el: Element) {
+    if (!document.body.contains(el)) {
+      console.warn('element is not on body, probably lost reference')
+      console.warn('getting fields and lines again, this may cause performance decrease')
+      this.updateFieldAndLines()
+
+      return false
+    }
+
+    return true
+  }
 }
