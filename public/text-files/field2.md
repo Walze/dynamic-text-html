@@ -34,6 +34,7 @@ That's it.  Pretty simple.  There's also a drop-down option in the upper right t
 Why Markdown?
 -------------
 
+{[vermelho-bg azul]}
 Ready to start writing?  Either start changing stuff on the left or
 [clear everything](?text=) with a simple click.
 

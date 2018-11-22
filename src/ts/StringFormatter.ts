@@ -146,6 +146,7 @@ export class StringFormatter {
       marked(
         SF(this._string)
           ._markClasses()
+          ._markBlockClasses()
           .string(),
       ),
     )
@@ -157,7 +158,7 @@ export class StringFormatter {
 
     const { 3: text } = match
 
-    const classes = match[2] ? match[2].split(' ') : undefined
+    const classes = match[2] ? match[2].split(/,\s?/) : undefined
     const breakLine = Boolean(match[1])
 
     const el = breakLine ? 'div' : 'span'
@@ -182,6 +183,46 @@ export class StringFormatter {
 
     return SF(newString)
 
+  }
+
+  private _markBlockClasses() {
+
+    const regex = /\{\[(.+)\]\}/ug
+    const matches = this._string.match(regex)
+    if (!matches) return this
+
+    matches.map((match) => {
+
+      const text = this._string
+      const replace = match
+
+      const classes = match
+        .replace('{[', '')
+        .replace(']}', '')
+        .split(' ')
+
+      const startI = text.indexOf(replace)
+      const endI = text.indexOf('\n\r', startI)
+
+      const start = text.substring(0, startI)
+      const end = text.substring(endI, text.length)
+
+      const innerText = text
+        .substring(startI, endI)
+        .replace(replace, '')
+        .trim()
+
+      const newHTML = SF(innerText)
+        .markdown()
+        .makeElement('div', classes)
+
+      this._string = start + newHTML + end
+
+    })
+
+    console.log(this._string)
+
+    return SF(this._string)
   }
 
 

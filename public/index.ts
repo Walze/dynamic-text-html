@@ -1,6 +1,8 @@
 
 
+// tslint:disable-next-line:no-implicit-dependencies
 import '@babel/polyfill'
+import './css/main.css'
 
 import { fetchFiles } from '../src/ts/helpers'
 import { FileRenderer } from '../src/ts/FileRenderer'
