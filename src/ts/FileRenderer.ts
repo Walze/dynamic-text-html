@@ -134,7 +134,7 @@ export class FileRenderer {
       if (keys.z && keys.x && keys.c) {
         showFiles.map((el) => !state ? el.classList.add('active') : el.classList.remove('active'))
         state = !state
-        keys = keysReset
+        keys = { ...keysReset }
       }
     })
 
