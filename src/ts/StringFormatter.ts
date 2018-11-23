@@ -183,32 +183,38 @@ export class StringFormatter {
 
   }
 
-  private _blockClassReplacer(match: string) {
-    const text = this._string
-    const replace = match
-    const classes = match
-      .replace('{[', '')
-      .replace(']}', '')
-      .split(' ')
+  private _blockClassReplacer = () => {
+    let previousText = this._string
 
-    const startI = text.indexOf(replace)
-    const endI = text.indexOf('\n\r', startI)
+    return (match: string) => {
 
-    const start = text.substring(0, startI)
-    const end = text.substring(endI, text.length)
+      const replace = match
+      const classes = match
+        .replace('{[', '')
+        .replace(']}', '')
+        .split(' ')
 
-    const innerText = text
-      .substring(startI, endI)
-      .replace(replace, '')
-      .trim()
+      const startI = previousText.indexOf(replace)
+      const endI = previousText.indexOf('\n\r', startI)
 
-    const newHTML = SF(innerText)
-      .markdown()
-      .makeElement('div', classes)
+      const start = previousText.substring(0, startI)
+      const end = previousText.substring(endI, previousText.length)
 
-    const newText = start + newHTML + end
+      const innerText = previousText
+        .substring(startI, endI)
+        .replace(replace, '')
+        .trim()
 
-    return newText
+      const newHTML = SF(innerText)
+        .markdown()
+        .makeElement('div', classes)
+
+      const newText = start + newHTML + end
+
+      previousText = newText
+
+      return previousText
+    }
   }
 
   private _markBlockClasses(): StringFormatter {
@@ -217,7 +223,7 @@ export class StringFormatter {
     const matches = this._string.match(regex)
     if (!matches) return this
 
-    const replaced = matches.map(this._blockClassReplacer.bind(this)) as string[]
+    const replaced = matches.map(this._blockClassReplacer()) as string[]
 
     return SF(replaced[replaced.length - 1])
   }
