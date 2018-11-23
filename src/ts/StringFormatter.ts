@@ -73,7 +73,7 @@ export class StringFormatter {
     let groupsIndex = 0
     let breakCounter = 0
 
-    lines.map((line) => {
+    const lineBreaker = (line: string) => {
 
       let goToNextGroup = false
       const isEmpty = line === ''
@@ -81,28 +81,28 @@ export class StringFormatter {
       if (!groups[groupsIndex])
         groups[groupsIndex] = ''
 
-      if (isEmpty) breakCounter++
-      else breakCounter = 0
+      if (isEmpty)
+        breakCounter++
+      else
+        breakCounter = 0
 
       // if breakcounter matches param
       goToNextGroup = breakCounter === everyN && everyN !== 0
-
       groups[groupsIndex] += `${line}\r\n`
 
       if (!goToNextGroup)
         blocked = false
 
       if (goToNextGroup && !blocked) {
-
         groupsIndex++
         blocked = true
-
       }
 
-    })
+    }
+
+    lines.map(lineBreaker)
 
     return groups
-
   }
 
 
@@ -123,9 +123,7 @@ export class StringFormatter {
   public removePTag(): StringFormatter {
 
     return SF(
-      this._string
-        .replace(/<p>/gu, '')
-        .replace(/<\/p>/gu, ''),
+      this._string.replace(/<\/?p>/gu, ''),
     )
 
   }
@@ -186,29 +184,29 @@ export class StringFormatter {
   }
 
   private _blockClassReplacer(match: string) {
-    const text = this._string;
-    const replace = match;
+    const text = this._string
+    const replace = match
     const classes = match
       .replace('{[', '')
       .replace(']}', '')
-      .split(' ');
+      .split(' ')
 
-    const startI = text.indexOf(replace);
-    const endI = text.indexOf('\n\r', startI);
+    const startI = text.indexOf(replace)
+    const endI = text.indexOf('\n\r', startI)
 
-    const start = text.substring(0, startI);
-    const end = text.substring(endI, text.length);
+    const start = text.substring(0, startI)
+    const end = text.substring(endI, text.length)
 
     const innerText = text
       .substring(startI, endI)
       .replace(replace, '')
-      .trim();
+      .trim()
 
     const newHTML = SF(innerText)
       .markdown()
-      .makeElement('div', classes);
+      .makeElement('div', classes)
 
-    const newText = start + newHTML + end;
+    const newText = start + newHTML + end
 
     return newText
   }
