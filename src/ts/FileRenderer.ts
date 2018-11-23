@@ -53,7 +53,6 @@ export class FileRenderer {
     this.files.push(file)
 
     const data = SF(file.data)
-      .removeComments()
       .string()
 
     let { field, line } = this.findElAttr(file.name)

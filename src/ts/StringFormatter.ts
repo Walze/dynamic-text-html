@@ -112,7 +112,7 @@ export class StringFormatter {
   public removeDotSlash(): StringFormatter {
 
     return SF(
-      this._string.replace(/^\.\//g, ''),
+      this._string.replace(/^\.\//gu, ''),
     )
 
   }
@@ -124,15 +124,6 @@ export class StringFormatter {
 
     return SF(
       this._string.replace(/<\/?p>/gu, ''),
-    )
-
-  }
-
-
-  public removeComments(): StringFormatter {
-
-    return SF(
-      this._string.replace(/\{\{[^{}]*\}\}/gu, ''),
     )
 
   }
@@ -190,8 +181,7 @@ export class StringFormatter {
 
       const replace = match
       const classes = match
-        .replace('{[', '')
-        .replace(']}', '')
+        .replace(/\{\[(.*)\]\}/gu, '$1')
         .split(' ')
 
       const startI = previousText.indexOf(replace)
@@ -219,8 +209,8 @@ export class StringFormatter {
 
   private _markBlockClasses(): StringFormatter {
 
-    const regex = /\{\[(.+)\]\}/ug
-    const matches = this._string.match(regex)
+    const regex = /\{\[(.+)\]\}/gu
+    const matches = regex.exec(this._string)
     if (!matches) return this
 
     const replaced = matches.map(this._blockClassReplacer()) as string[]
