@@ -173,7 +173,7 @@ export class StringFormatter {
    */
   private _markClasses(): StringFormatter {
 
-    const regex = /(!?)\{([^{}]+)*\}(\S+)/ug
+    const regex = /(!?)\{([^{}]+)\}(\S+)/ug
     if (!regex.test(this._string)) return this
 
     const newString = this._string
