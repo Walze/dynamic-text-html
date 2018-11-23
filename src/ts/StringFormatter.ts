@@ -219,7 +219,7 @@ export class StringFormatter {
     const matches = this._string.match(regex)
     if (!matches) return this
 
-    const replaced = matches.map(this._blockClassReplacer)
+    const replaced = matches.map(this._blockClassReplacer.bind(this)) as string[]
 
     return SF(replaced[replaced.length - 1])
   }
