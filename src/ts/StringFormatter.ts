@@ -220,8 +220,6 @@ export class StringFormatter {
 
     })
 
-    console.log(this._string)
-
     return SF(this._string)
   }
 

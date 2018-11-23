@@ -9,6 +9,7 @@ import { FileRenderer } from '../src/ts/FileRenderer'
 
 // tslint:disable:no-require-imports
 const filesURLs = {
+    // model at wrong order just to show warning, it should be last or after list.md
     model: require('./text-files/model.md'),
     field1: require('./text-files/field1.md'),
     field2: require('./text-files/field2.md'),
