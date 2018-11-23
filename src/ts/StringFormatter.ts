@@ -9,7 +9,7 @@ export const SF = (text: string) => new StringFormatter(text)
  */
 export class StringFormatter {
 
-  private _string: string
+  private readonly _string: string
 
   public constructor(text: string) {
 
@@ -154,7 +154,7 @@ export class StringFormatter {
   }
 
 
-  private _replaceMarkClasses = (...match: string[]) => {
+  private _inlineClassReplacer = (...match: string[]) => {
 
     const { 3: text } = match
 
@@ -176,51 +176,52 @@ export class StringFormatter {
   private _markClasses(): StringFormatter {
 
     const regex = /(!?)\{([^{}]+)*\}(\S+)/ug
+    if (!regex.test(this._string)) return this
 
     const newString = this._string
-      .replace(regex, this._replaceMarkClasses.bind(this))
-
+      .replace(regex, this._inlineClassReplacer.bind(this))
 
     return SF(newString)
 
   }
 
-  private _markBlockClasses() {
+  private _blockClassReplacer(match: string) {
+    const text = this._string;
+    const replace = match;
+    const classes = match
+      .replace('{[', '')
+      .replace(']}', '')
+      .split(' ');
+
+    const startI = text.indexOf(replace);
+    const endI = text.indexOf('\n\r', startI);
+
+    const start = text.substring(0, startI);
+    const end = text.substring(endI, text.length);
+
+    const innerText = text
+      .substring(startI, endI)
+      .replace(replace, '')
+      .trim();
+
+    const newHTML = SF(innerText)
+      .markdown()
+      .makeElement('div', classes);
+
+    const newText = start + newHTML + end;
+
+    return newText
+  }
+
+  private _markBlockClasses(): StringFormatter {
 
     const regex = /\{\[(.+)\]\}/ug
     const matches = this._string.match(regex)
     if (!matches) return this
 
-    matches.map((match) => {
+    const replaced = matches.map(this._blockClassReplacer)
 
-      const text = this._string
-      const replace = match
-
-      const classes = match
-        .replace('{[', '')
-        .replace(']}', '')
-        .split(' ')
-
-      const startI = text.indexOf(replace)
-      const endI = text.indexOf('\n\r', startI)
-
-      const start = text.substring(0, startI)
-      const end = text.substring(endI, text.length)
-
-      const innerText = text
-        .substring(startI, endI)
-        .replace(replace, '')
-        .trim()
-
-      const newHTML = SF(innerText)
-        .markdown()
-        .makeElement('div', classes)
-
-      this._string = start + newHTML + end
-
-    })
-
-    return SF(this._string)
+    return SF(replaced[replaced.length - 1])
   }
 
 

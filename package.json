@@ -7,7 +7,7 @@
     "start": "parcel public/index.html --open --log-level 4",
     "build-wp": "webpack --mode=production --progress --colors",
     "build": "tsc --outDir ./dist",
-    "deploy": "yarn build && yarn version && npm publish"
+    "deploy": "yarn build && yarn version"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.5",
