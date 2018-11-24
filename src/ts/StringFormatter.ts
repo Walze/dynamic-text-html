@@ -181,8 +181,9 @@ export class StringFormatter {
     return (match: RegExpExecArray) => {
 
       const replace = match[0]
-      const classes = match[1].split(/\s+/)
-      const { 0: tag, 1: display } = match[2].split(/\s+/)
+      const removeP = !!match[1]
+      const classes = match[2].split(/\s+/)
+      const { 0: tag } = match[3].split(/\s+/)
 
       const startI = previousText.indexOf(replace)
       const endI = previousText.indexOf('\n\r', startI)
@@ -195,10 +196,11 @@ export class StringFormatter {
         .replace(replace, '')
         .trim()
 
-      const newHTMLSF = SF(innerText)
+      let newHTMLSF = SF(innerText)
         .markdown()
 
-      if (display) newHTMLSF.removePTag()
+      if (removeP)
+        newHTMLSF = newHTMLSF.removePTag()
 
       const newHTML = newHTMLSF
         .makeElement(tag || 'div', classes)
@@ -213,7 +215,7 @@ export class StringFormatter {
 
   private _markBlockClasses(): StringFormatter {
 
-    const regex = /\{\[([^\]]+)\]([^\}]*)\}/gu
+    const regex = /(!?)\{\[([^\]]+)\]([^\}]*)\}/gu
     const matches = globalMatch(regex, this._string)
     if (!matches) return this
 
