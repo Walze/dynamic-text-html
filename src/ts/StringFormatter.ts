@@ -1,5 +1,6 @@
 import marked from 'marked';
 import { isString } from 'util';
+import { globalMatch } from './helpers';
 
 /** Helper for getting a StringFormatter instance */
 export const SF = (text: string) => new StringFormatter(text)
@@ -177,12 +178,11 @@ export class StringFormatter {
   private _blockClassReplacer = () => {
     let previousText = this._string
 
-    return (match: string) => {
+    return (match: RegExpExecArray) => {
 
-      const replace = match
-      const classes = match
-        .replace(/\{\[(.*)\]\}/gu, '$1')
-        .split(' ')
+      const replace = match[0]
+      const classes = match[1].split(/\s+/)
+      const { 0: tag, 1: display } = match[2].split(/\s+/)
 
       const startI = previousText.indexOf(replace)
       const endI = previousText.indexOf('\n\r', startI)
@@ -195,9 +195,13 @@ export class StringFormatter {
         .replace(replace, '')
         .trim()
 
-      const newHTML = SF(innerText)
+      const newHTMLSF = SF(innerText)
         .markdown()
-        .makeElement('div', classes)
+
+      if (display) newHTMLSF.removePTag()
+
+      const newHTML = newHTMLSF
+        .makeElement(tag || 'div', classes)
 
       const newText = start + newHTML + end
 
@@ -209,8 +213,8 @@ export class StringFormatter {
 
   private _markBlockClasses(): StringFormatter {
 
-    const regex = /\{\[(.+)\]\}/gu
-    const matches = regex.exec(this._string)
+    const regex = /\{\[([^\]]+)\]([^\}]*)\}/gu
+    const matches = globalMatch(regex, this._string)
     if (!matches) return this
 
     const replaced = matches.map(this._blockClassReplacer()) as string[]
