@@ -1,6 +1,6 @@
 {
   "name": "dynamic-text-html",
-  "version": "3.5.4",
+  "version": "3.5.5",
   "main": "dist/barrel.js",
   "typings": "./typings.d.ts",
   "scripts": {

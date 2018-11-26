@@ -28,9 +28,7 @@ export class StringFormatter {
   }
 
   public removeComments() {
-    const newString = this.string.replace(/\{\{[^\}]*\}\}/gu, '\n')
-
-    console.log([newString, this.string])
+    const newString = this.string.replace(/\{\{[.\s\n\r\S]*\}\}/gu, '\n')
 
     return SF(newString)
   }
