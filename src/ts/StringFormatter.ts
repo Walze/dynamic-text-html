@@ -136,14 +136,12 @@ export class StringFormatter {
 
   public markdown(): StringFormatter {
 
-    return SF(
-      marked(
-        SF(this._string)
-          ._markClasses()
-          ._markBlockClasses()
-          .string,
-      ),
-    )
+    const markedClasses = SF(this._string)
+      ._markClasses()
+      ._markBlockClasses()
+      .string
+
+    return SF(marked(markedClasses))
 
   }
 
@@ -182,7 +180,7 @@ export class StringFormatter {
   private _blockClassReplacer = () => {
     let previousText = this._string
 
-    return (match: RegExpExecArray) => {
+    const replaceFunction = (match: RegExpExecArray) => {
 
       const replace = match[0]
       const removeP = !!match[1]
@@ -218,6 +216,8 @@ export class StringFormatter {
 
       return previousText
     }
+
+    return replaceFunction
   }
 
   private _markBlockClasses(): StringFormatter {
