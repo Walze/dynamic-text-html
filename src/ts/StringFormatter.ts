@@ -186,7 +186,10 @@ export class StringFormatter {
       const { 0: tag } = match[3].split(/\s+/)
 
       const startI = previousText.indexOf(replace)
-      const endI = previousText.indexOf('\n\r', startI)
+      if (startI === -1) console.warn('replacer not found')
+
+      let endI = previousText.indexOf('\n\r', startI)
+      if (endI === -1) endI = previousText.length
 
       const start = previousText.substring(0, startI)
       const end = previousText.substring(endI, previousText.length)
