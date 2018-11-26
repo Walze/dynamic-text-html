@@ -1,5 +1,4 @@
 import marked from 'marked';
-import { isString } from 'util';
 import { globalMatch } from './helpers';
 
 /** Helper for getting a StringFormatter instance */
@@ -14,7 +13,7 @@ export class StringFormatter {
 
   public constructor(text: string) {
 
-    if (!isString(text)) {
+    if (typeof text !== 'string') {
       console.error('Given ', text)
       throw new Error(`constructor expected string`)
     }
@@ -22,17 +21,24 @@ export class StringFormatter {
     if (text === '')
       console.info(
         `${this.constructor.name} got empty string in constructor`,
-        this.string(),
       )
 
     this._string = text
 
   }
 
+  public removeComments() {
+    const newString = this.string.replace(/\{\{[^\}]*\}\}/gu, '\n')
+
+    console.log([newString, this.string])
+
+    return SF(newString)
+  }
+
   /**
    * return instance string
    */
-  public string(): string {
+  public get string(): string {
 
     return this._string
 
@@ -137,7 +143,7 @@ export class StringFormatter {
         SF(this._string)
           ._markClasses()
           ._markBlockClasses()
-          .string(),
+          .string,
       ),
     )
 
@@ -277,7 +283,7 @@ export class StringFormatter {
     return this
       .markdown()
       .removePTag()
-      .string()
+      .string
   }
 
 

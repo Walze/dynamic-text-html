@@ -53,7 +53,8 @@ export class FileRenderer {
     this.files.push(file)
 
     const data = SF(file.data)
-      .string()
+      .removeComments()
+      .string
 
     let { field, line } = this.findElAttr(file.name)
 
@@ -81,8 +82,7 @@ export class FileRenderer {
       .replace(/>\s+</g, "><")
 
     el.innerHTML = SF(replacedText)
-      .markdown()
-      .string()
+      .markdown().string
   }
 
   private _renderLines = ({ el }: IElAttr, data: string) => {
@@ -92,7 +92,7 @@ export class FileRenderer {
         SF(line)
           .markdown()
           .removePTag()
-          .string()
+          .string
           .trim(),
       )
 
