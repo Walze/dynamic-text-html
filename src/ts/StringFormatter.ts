@@ -18,11 +18,6 @@ export class StringFormatter {
       throw new Error(`constructor expected string`)
     }
 
-    if (text === '')
-      console.info(
-        `${this.constructor.name} got empty string in constructor`,
-      )
-
     this._string = text
 
   }
@@ -135,6 +130,9 @@ export class StringFormatter {
 
 
   public markdown(): StringFormatter {
+    const string = this._string.trim()
+
+    if (!string || string !== string) return SF('')
 
     const markedClasses = SF(this._string)
       ._markClasses()
@@ -188,7 +186,9 @@ export class StringFormatter {
       const { 0: tag } = match[3].split(/\s+/)
 
       const startI = previousText.indexOf(replace)
-      if (startI === -1) console.warn('replacer not found')
+      if (startI === -1) {
+        return previousText
+      }
 
       let endI = previousText.indexOf('\n\r', startI)
       if (endI === -1) endI = previousText.length
@@ -201,11 +201,15 @@ export class StringFormatter {
         .replace(replace, '')
         .trim()
 
-      let newHTMLSF = SF(innerText)
-        .markdown()
 
-      if (removeP)
-        newHTMLSF = newHTMLSF.removePTag()
+      let newHTMLSF = SF(innerText)
+
+      if (innerText && innerText !== '') {
+        newHTMLSF = newHTMLSF.markdown()
+
+        if (removeP)
+          newHTMLSF = newHTMLSF.removePTag()
+      }
 
       const newHTML = newHTMLSF
         .makeElement(tag || 'div', classes)

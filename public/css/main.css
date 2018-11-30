@@ -1,17 +1,21 @@
 .linhas {
-  border-top: 1px black solid;
-  border-bottom: 1px black solid;
-  margin: 10px 0;
+    border-top: 1px black solid;
+    border-bottom: 1px black solid;
+    margin: 10px 0;
 }
 
 .vermelho-bg {
-  background: red;
+    background: red;
 }
 
 .verde {
-  color: green;
+    color: green;
 }
 
 .azul {
-  color: blue;
+    color: blue;
+}
+
+.margin {
+    height: 1rem;
 }
