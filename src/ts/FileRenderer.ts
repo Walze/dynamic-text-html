@@ -59,7 +59,7 @@ export class FileRenderer {
     let { field, line } = this.findElAttr(file.name)
 
     if (field) {
-      const pass = this._checkElementInBody(field.el)
+      const pass = this._checkElementInBody(field.el, file)
       if (!pass) field = this.findElAttr(file.name).field as IElAttr
 
       this._renderField(field, data)
@@ -67,7 +67,7 @@ export class FileRenderer {
     }
 
     if (line) {
-      const pass = this._checkElementInBody(line.el)
+      const pass = this._checkElementInBody(line.el, file)
       if (!pass) line = this.findElAttr(file.name).line as IElAttr
 
       this._renderLines(line, data)
@@ -171,9 +171,9 @@ export class FileRenderer {
 
 
 
-  private _checkElementInBody(el: Element) {
+  private _checkElementInBody(el: Element, file: IFileType) {
     if (!document.body.contains(el)) {
-      console.warn('element is not on body, probably lost reference')
+      console.warn('element is not on body, probably lost reference. On file:', file.name)
       console.warn('getting fields and lines again, this may cause performance decrease')
       this.updateFieldAndLines()
 
