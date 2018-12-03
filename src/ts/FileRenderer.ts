@@ -28,12 +28,12 @@ export class FileRenderer {
     public ext: string = 'md',
     public selectorReference: Element | Document = document,
   ) {
-    this.attributes = this.updateElements()
+    this.attributes = this.getElements()
     this._listenKeysToShowFileNames()
   }
 
   /**
-   *  gets element by attribute and gets attributes value
+   *  Gets element by attribute and gets attributes value
    */
   private _getElAttr = (name: ElAttrType): IElAttr[] => Array
     .from(this.selectorReference.querySelectorAll(`[${name}]`))
@@ -43,7 +43,7 @@ export class FileRenderer {
       name: el.getAttribute(name) as string,
     }))
 
-  public updateElements(): IAttributes {
+  public getElements(): IAttributes {
     const field = this._getElAttr(selectors.field)
     const lines = this._getElAttr(selectors.lines)
     const loop = this._getElAttr(selectors.loops)
@@ -52,18 +52,21 @@ export class FileRenderer {
   }
 
   public updateElement(type: ElAttrType) {
-
     return this._getElAttr(type)
   }
 
-  public findElAttr(file: IFileType) {
+  public getAttributes(file: IFileType) {
     const compare = ({ name }: IElAttr) => `${name}.${this.ext}` === file.name
 
     const field = this.attributes.field.find(compare)
     const line = this.attributes.lines.find(compare)
     const loop = this.attributes.loop.find(compare)
 
-    const arr = [field, line, loop]
+    const arr = [
+      field,
+      line,
+      loop,
+    ]
 
     return arr
       .filter((item) => item)
@@ -85,7 +88,7 @@ export class FileRenderer {
       .removeComments()
       .string
 
-    const elAttrs = this.findElAttr(file)
+    const elAttrs = this.getAttributes(file)
 
     elAttrs.map((elAttr) => {
 
@@ -112,12 +115,18 @@ export class FileRenderer {
 
   }
 
+  /**
+   *  Renders field attribute
+   */
   private _renderField = ({ el }: IElAttr, data: string) => {
     el.innerHTML = SF(data)
       .markdown()
       .string
   }
 
+  /**
+   *  Renders lines attribute
+   */
   private _renderLines = ({ el }: IElAttr, data: string) => {
     const linesArray = SF(data)
       .everyNthLineBreak(1)
@@ -137,6 +146,9 @@ export class FileRenderer {
       .map((line, i) => line.innerHTML = linesArray[i])
   }
 
+  /**
+   *  Renders the loop attribute
+   */
   private _renderLoops = ({ el }: IElAttr, data: string) => {
     const linesArray = SF(data)
       .everyNthLineBreak(1)
@@ -161,6 +173,7 @@ export class FileRenderer {
       const line = div.querySelector('.model-line') as Element
 
       line.innerHTML = SF(lineTxt)
+        .markdown()
         .string
 
       newHTML += div.outerHTML
@@ -170,6 +183,9 @@ export class FileRenderer {
   }
 
 
+  /**
+   *  Function generator that replaces the [[external]] tag
+   */
   private _replaceExternal = (el: Element) =>
     (...args: string[]) => {
       const [, external] = args
@@ -184,6 +200,45 @@ export class FileRenderer {
 
       return newText
     }
+
+  /**
+   *  Checks is the file is valid
+   */
+  private _checkValidFile = (file: IFileType) => {
+
+    if (typeof file.name !== 'string')
+      throw new Error('file name is not string')
+
+    if (typeof file.data !== 'string')
+      throw new Error('file data is not string')
+
+    if (file.name === '')
+      throw new Error('file name is empty')
+
+    if (file.data === '')
+      console.warn('file data is empty')
+
+  }
+
+  /**
+   *  Checks if the elAttr still has a reference to an element in the document body
+   */
+  private _checkElementInBody(elAttr: IElAttr, file: IFileType) {
+
+    if (!document.body.contains(elAttr.el)) {
+      console.warn(
+        'Element is not on body, probably lost reference.',
+        'Getting fields and lines again, this may cause performance decrease.',
+        'On file:', file.name,
+      )
+
+      this.attributes[elAttr.type] = this.updateElement(elAttr.type)
+
+      return false
+    }
+
+    return true
+  }
 
   private _setFileNameToggle = (fileName: string, el: Element) => {
 
@@ -225,38 +280,4 @@ export class FileRenderer {
     })
   }
 
-  private _checkValidFile = (file: IFileType) => {
-
-    if (typeof file.name !== 'string')
-      throw new Error('file name is not string')
-
-    if (typeof file.data !== 'string')
-      throw new Error('file data is not string')
-
-    if (file.name === '')
-      throw new Error('file name is empty')
-
-    if (file.data === '')
-      console.warn('file data is empty')
-
-  }
-
-
-
-  private _checkElementInBody(elAttr: IElAttr, file: IFileType) {
-
-    if (!document.body.contains(elAttr.el)) {
-      console.warn(
-        'Element is not on body, probably lost reference.',
-        'Getting fields and lines again, this may cause performance decrease.',
-        'On file:', file.name,
-      )
-
-      this.attributes[elAttr.type] = this.updateElement(elAttr.type)
-
-      return false
-    }
-
-    return true
-  }
 }
