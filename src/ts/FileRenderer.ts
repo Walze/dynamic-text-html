@@ -6,6 +6,10 @@ import {
   IFileType, IElAttr, ElAttrType,
 } from '../types'
 
+export type IAttributes = {
+  [key in ElAttrType]: IElAttr[]
+}
+
 const selectors = {
   field: ElAttrType.field,
   lines: ElAttrType.lines,
@@ -16,9 +20,7 @@ const selectors = {
 
 export class FileRenderer {
 
-  public fields: IElAttr[] = []
-  public lines: IElAttr[] = []
-  public loops: IElAttr[] = []
+  public attributes: IAttributes
 
   public files: IFileType[] = []
 
@@ -26,7 +28,7 @@ export class FileRenderer {
     public ext: string = 'md',
     public selectorReference: Element | Document = document,
   ) {
-    this.updateElements()
+    this.attributes = this.updateElements()
     this._listenKeysToShowFileNames()
   }
 
@@ -41,21 +43,38 @@ export class FileRenderer {
       name: el.getAttribute(name) as string,
     }))
 
-  public updateElements() {
-    this.fields = this._getElAttr(selectors.field)
-    this.lines = this._getElAttr(selectors.lines)
-    this.loops = this._getElAttr(selectors.loops)
+  public updateElements(): IAttributes {
+    const field = this._getElAttr(selectors.field)
+    const lines = this._getElAttr(selectors.lines)
+    const loop = this._getElAttr(selectors.loops)
+
+    return { field, lines, loop }
   }
 
-  public findElAttr(file: IFileType): IElAttr | undefined {
-    const field = this.fields.find((fieldI) => `${fieldI.name}.${this.ext}` === file.name)
-    const line = this.lines.find((lineI) => `${lineI.name}.${this.ext}` === file.name)
-    const loop = this.loops.find((loopI) => `${loopI.name}.${this.ext}` === file.name)
+  public updateElement(type: ElAttrType) {
 
-    const found = [field, line, loop].find((e) => !!e)
-    if (!found) return undefined
+    return this._getElAttr(type)
+  }
 
-    return this._checkElementInBody(found, file)
+  public findElAttr(file: IFileType) {
+    const compare = ({ name }: IElAttr) => `${name}.${this.ext}` === file.name
+
+    const field = this.attributes.field.find(compare)
+    const line = this.attributes.lines.find(compare)
+    const loop = this.attributes.loop.find(compare)
+
+    const arr = [field, line, loop]
+
+    return arr
+      .filter((item) => item)
+      .map((item) => {
+        const elAttr = item as IElAttr
+        const passed = this._checkElementInBody(elAttr, file)
+
+        return passed
+          ? elAttr
+          : this.attributes[elAttr.type].find(compare) as IElAttr
+      })
   }
 
   public render(file: IFileType) {
@@ -66,34 +85,37 @@ export class FileRenderer {
       .removeComments()
       .string
 
-    const elAttr = this.findElAttr(file)
-    if (!elAttr) return console.warn('element not found with file', file.name)
+    const elAttrs = this.findElAttr(file)
 
-    const replacedText = data
-      .replace(/\[\[(.+)\]\]/gu, this._replaceExternal(elAttr.el))
-      .replace(/>\s+</g, "><")
+    elAttrs.map((elAttr) => {
 
-    // tslint:disable-next-line:switch-default
-    switch (elAttr.type) {
-      case ElAttrType.field:
-        this._renderField(elAttr, replacedText)
-        break
+      const replacedText = data
+        .replace(/\[\[(.+)\]\]/gu, this._replaceExternal(elAttr.el))
+        .replace(/>\s+</g, "><")
 
-      case ElAttrType.lines:
-        this._renderLines(elAttr, replacedText)
-        break
+      // tslint:disable-next-line:switch-default
+      switch (elAttr.type) {
+        case ElAttrType.field:
+          this._renderField(elAttr, replacedText)
+          break
 
-      case ElAttrType.loop:
-        this._renderLoops(elAttr, replacedText)
-    }
+        case ElAttrType.lines:
+          this._renderLines(elAttr, replacedText)
+          break
 
-    this._setFileNameToggle(file.name, elAttr.el)
+        case ElAttrType.loop:
+          this._renderLoops(elAttr, replacedText)
+      }
+
+      this._setFileNameToggle(file.name, elAttr.el)
+    })
 
   }
 
   private _renderField = ({ el }: IElAttr, data: string) => {
     el.innerHTML = SF(data)
-      .markdown().string
+      .markdown()
+      .string
   }
 
   private _renderLines = ({ el }: IElAttr, data: string) => {
@@ -222,19 +244,19 @@ export class FileRenderer {
 
 
   private _checkElementInBody(elAttr: IElAttr, file: IFileType) {
+
     if (!document.body.contains(elAttr.el)) {
       console.warn(
-        'element is not on body, probably lost reference.',
+        'Element is not on body, probably lost reference.',
         'Getting fields and lines again, this may cause performance decrease.',
-        'On file:',
-        file.name,
+        'On file:', file.name,
       )
 
-      this.updateElements()
+      this.attributes[elAttr.type] = this.updateElement(elAttr.type)
 
-      return this.findElAttr(file)
+      return false
     }
 
-    return elAttr
+    return true
   }
 }
