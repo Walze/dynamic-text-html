@@ -10,6 +10,7 @@ import {
 const selectors = {
   field: 'field',
   lines: 'lines',
+  loops: 'loop',
   line: '.d-line',
   external: 'external',
 }
@@ -18,6 +19,7 @@ export class FileRenderer {
 
   public fields: IElAttr[] = []
   public lines: IElAttr[] = []
+  public loops: IElAttr[] = []
 
   public files: IFileType[] = []
 
@@ -25,7 +27,7 @@ export class FileRenderer {
     public ext: string = 'md',
     public selectorReference: Element | Document = document,
   ) {
-    this.updateFieldAndLines()
+    this.updateElements()
     this._listenKeysToShowFileNames()
   }
 
@@ -34,18 +36,23 @@ export class FileRenderer {
    */
   private _getElAttr = (name: string) => Array
     .from(this.selectorReference.querySelectorAll(`[${name}]`))
-    .map((el) => ({ el, name: el.getAttribute(name) as string }))
+    .map((el) => ({
+      el,
+      name: el.getAttribute(name) as string,
+    }))
 
-  public updateFieldAndLines() {
+  public updateElements() {
     this.fields = this._getElAttr(selectors.field)
     this.lines = this._getElAttr(selectors.lines)
+    this.loops = this._getElAttr(selectors.loops)
   }
 
   public findElAttr(name: string) {
     const field = this.fields.find((fieldI) => `${fieldI.name}.${this.ext}` === name)
     const line = this.lines.find((lineI) => `${lineI.name}.${this.ext}` === name)
+    const loop = this.loops.find((loopI) => `${loopI.name}.${this.ext}` === name)
 
-    return { field, line }
+    return { field, line, loop }
   }
 
   public render(file: IFileType) {
@@ -56,7 +63,7 @@ export class FileRenderer {
       .removeComments()
       .string
 
-    let { field, line } = this.findElAttr(file.name)
+    let { field, line, loop } = this.findElAttr(file.name)
 
     if (field) {
       const pass = this._checkElementInBody(field.el, file)
@@ -72,6 +79,14 @@ export class FileRenderer {
 
       this._renderLines(line, data)
       this._setFileNameToggle(file.name, line.el)
+    }
+
+    if (loop) {
+      const pass = this._checkElementInBody(loop.el, file)
+      if (!pass) loop = this.findElAttr(file.name).loop as IElAttr
+
+      this._renderLoops(loop, data)
+      this._setFileNameToggle(file.name, loop.el)
     }
 
   }
@@ -104,10 +119,49 @@ export class FileRenderer {
       .map((line, i) => line.innerHTML = linesArray[i])
   }
 
+  private _renderLoops = ({ el }: IElAttr, data: string) => {
+    const linesArray = SF(data)
+      .everyNthLineBreak(1)
+      .map((lineTxt) =>
+        SF(lineTxt)
+          .markdown()
+          .removePTag()
+          .string
+          .trim(),
+      )
+
+    const model = el.querySelector('.model')
+    if (!model) throw new Error('model not found')
+
+    const modelLineDiv = el.querySelector('.model-line')
+    if (!modelLineDiv) throw new Error('model-line not found')
+
+    let newHTML = ''
+
+    linesArray.map((lineTxt) => {
+      const div = model.cloneNode(true) as Element
+      const line = div.querySelector('.model-line') as Element
+
+      line.innerHTML = SF(lineTxt)
+        .string
+
+      newHTML += div.outerHTML
+    })
+
+    model.outerHTML = newHTML
+  }
+
+
   private _replaceExternal = (el: Element) =>
     (...args: string[]) => {
       const [, external] = args
       const div = el.querySelector(`[${selectors.external} = ${external}]`) as Element
+      if (!div) {
+        console.warn(`[${selectors.external} = ${external}] not found`)
+
+        return ''
+      }
+
       const newText = div.outerHTML.trim()
 
       return newText
@@ -175,7 +229,7 @@ export class FileRenderer {
     if (!document.body.contains(el)) {
       console.warn('element is not on body, probably lost reference. On file:', file.name)
       console.warn('getting fields and lines again, this may cause performance decrease')
-      this.updateFieldAndLines()
+      this.updateElements()
 
       return false
     }
