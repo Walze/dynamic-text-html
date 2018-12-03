@@ -223,8 +223,13 @@ export class FileRenderer {
 
   private _checkElementInBody(elAttr: IElAttr, file: IFileType) {
     if (!document.body.contains(elAttr.el)) {
-      console.warn('element is not on body, probably lost reference. On file:', file.name)
-      console.warn('getting fields and lines again, this may cause performance decrease')
+      console.warn(
+        'element is not on body, probably lost reference.',
+        'Getting fields and lines again, this may cause performance decrease.',
+        'On file:',
+        file.name,
+      )
+
       this.updateElements()
 
       return this.findElAttr(file)
