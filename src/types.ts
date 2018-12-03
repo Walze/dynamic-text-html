@@ -1,7 +1,14 @@
 
+export enum ElAttrType {
+  field = 'field',
+  lines = 'lines',
+  loop = 'loop',
+}
+
 export interface IElAttr {
-  name: string;
   el: Element;
+  name: string;
+  type: ElAttrType;
 }
 
 export interface IFileObject {

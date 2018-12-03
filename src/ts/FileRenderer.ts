@@ -1,16 +1,15 @@
 import '../../css/dynamic-files.css'
 
 import { SF } from './StringFormatter'
-import { isString } from 'util'
 
 import {
-  IFileType, IElAttr,
+  IFileType, IElAttr, ElAttrType,
 } from '../types'
 
 const selectors = {
-  field: 'field',
-  lines: 'lines',
-  loops: 'loop',
+  field: ElAttrType.field,
+  lines: ElAttrType.lines,
+  loops: ElAttrType.loop,
   line: '.d-line',
   external: 'external',
 }
@@ -34,10 +33,11 @@ export class FileRenderer {
   /**
    *  gets element by attribute and gets attributes value
    */
-  private _getElAttr = (name: string) => Array
+  private _getElAttr = (name: ElAttrType): IElAttr[] => Array
     .from(this.selectorReference.querySelectorAll(`[${name}]`))
     .map((el) => ({
       el,
+      type: name,
       name: el.getAttribute(name) as string,
     }))
 
@@ -47,12 +47,15 @@ export class FileRenderer {
     this.loops = this._getElAttr(selectors.loops)
   }
 
-  public findElAttr(name: string) {
-    const field = this.fields.find((fieldI) => `${fieldI.name}.${this.ext}` === name)
-    const line = this.lines.find((lineI) => `${lineI.name}.${this.ext}` === name)
-    const loop = this.loops.find((loopI) => `${loopI.name}.${this.ext}` === name)
+  public findElAttr(file: IFileType): IElAttr | undefined {
+    const field = this.fields.find((fieldI) => `${fieldI.name}.${this.ext}` === file.name)
+    const line = this.lines.find((lineI) => `${lineI.name}.${this.ext}` === file.name)
+    const loop = this.loops.find((loopI) => `${loopI.name}.${this.ext}` === file.name)
 
-    return { field, line, loop }
+    const found = [field, line, loop].find((e) => !!e)
+    if (!found) return undefined
+
+    return this._checkElementInBody(found, file)
   }
 
   public render(file: IFileType) {
@@ -63,43 +66,28 @@ export class FileRenderer {
       .removeComments()
       .string
 
-    let { field, line, loop } = this.findElAttr(file.name)
+    const elAttr = this.findElAttr(file)
+    if (!elAttr) return console.warn('element not found with file', file.name)
 
-    if (loop) {
-      const pass = this._checkElementInBody(loop.el, file)
-      if (!pass) loop = this.findElAttr(file.name).loop as IElAttr
+    const replacedText = data
+      .replace(/\[\[(.+)\]\]/gu, this._replaceExternal(elAttr.el))
+      .replace(/>\s+</g, "><")
 
-      const replacedText = data
-        .replace(/\[\[(.+)\]\]/gu, this._replaceExternal(loop.el))
-        .replace(/>\s+</g, "><")
+    // tslint:disable-next-line:switch-default
+    switch (elAttr.type) {
+      case ElAttrType.field:
+        this._renderField(elAttr, replacedText)
+        break
 
-      this._renderLoops(loop, replacedText)
-      this._setFileNameToggle(file.name, loop.el)
+      case ElAttrType.lines:
+        this._renderLines(elAttr, replacedText)
+        break
+
+      case ElAttrType.loop:
+        this._renderLoops(elAttr, replacedText)
     }
 
-    if (field) {
-      const pass = this._checkElementInBody(field.el, file)
-      if (!pass) field = this.findElAttr(file.name).field as IElAttr
-
-      const replacedText = data
-        .replace(/\[\[(.+)\]\]/gu, this._replaceExternal(field.el))
-        .replace(/>\s+</g, "><")
-
-      this._renderField(field, replacedText)
-      this._setFileNameToggle(file.name, field.el)
-    }
-
-    if (line) {
-      const pass = this._checkElementInBody(line.el, file)
-      if (!pass) line = this.findElAttr(file.name).line as IElAttr
-
-      const replacedText = data
-        .replace(/\[\[(.+)\]\]/gu, this._replaceExternal(line.el))
-        .replace(/>\s+</g, "><")
-
-      this._renderLines(line, replacedText)
-      this._setFileNameToggle(file.name, line.el)
-    }
+    this._setFileNameToggle(file.name, elAttr.el)
 
   }
 
@@ -217,10 +205,10 @@ export class FileRenderer {
 
   private _checkValidFile = (file: IFileType) => {
 
-    if (!isString(file.name))
+    if (typeof file.name !== 'string')
       throw new Error('file name is not string')
 
-    if (!isString(file.data))
+    if (typeof file.data !== 'string')
       throw new Error('file data is not string')
 
     if (file.name === '')
@@ -233,15 +221,15 @@ export class FileRenderer {
 
 
 
-  private _checkElementInBody(el: Element, file: IFileType) {
-    if (!document.body.contains(el)) {
+  private _checkElementInBody(elAttr: IElAttr, file: IFileType) {
+    if (!document.body.contains(elAttr.el)) {
       console.warn('element is not on body, probably lost reference. On file:', file.name)
       console.warn('getting fields and lines again, this may cause performance decrease')
       this.updateElements()
 
-      return false
+      return this.findElAttr(file)
     }
 
-    return true
+    return elAttr
   }
 }
