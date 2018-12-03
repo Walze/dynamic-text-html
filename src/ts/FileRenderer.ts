@@ -65,11 +65,27 @@ export class FileRenderer {
 
     let { field, line, loop } = this.findElAttr(file.name)
 
+    if (loop) {
+      const pass = this._checkElementInBody(loop.el, file)
+      if (!pass) loop = this.findElAttr(file.name).loop as IElAttr
+
+      const replacedText = data
+        .replace(/\[\[(.+)\]\]/gu, this._replaceExternal(loop.el))
+        .replace(/>\s+</g, "><")
+
+      this._renderLoops(loop, replacedText)
+      this._setFileNameToggle(file.name, loop.el)
+    }
+
     if (field) {
       const pass = this._checkElementInBody(field.el, file)
       if (!pass) field = this.findElAttr(file.name).field as IElAttr
 
-      this._renderField(field, data)
+      const replacedText = data
+        .replace(/\[\[(.+)\]\]/gu, this._replaceExternal(field.el))
+        .replace(/>\s+</g, "><")
+
+      this._renderField(field, replacedText)
       this._setFileNameToggle(file.name, field.el)
     }
 
@@ -77,26 +93,18 @@ export class FileRenderer {
       const pass = this._checkElementInBody(line.el, file)
       if (!pass) line = this.findElAttr(file.name).line as IElAttr
 
-      this._renderLines(line, data)
+      const replacedText = data
+        .replace(/\[\[(.+)\]\]/gu, this._replaceExternal(line.el))
+        .replace(/>\s+</g, "><")
+
+      this._renderLines(line, replacedText)
       this._setFileNameToggle(file.name, line.el)
-    }
-
-    if (loop) {
-      const pass = this._checkElementInBody(loop.el, file)
-      if (!pass) loop = this.findElAttr(file.name).loop as IElAttr
-
-      this._renderLoops(loop, data)
-      this._setFileNameToggle(file.name, loop.el)
     }
 
   }
 
-  private _renderField({ el }: IElAttr, data: string) {
-    const replacedText = data
-      .replace(/\[\[(.+)\]\]/gu, this._replaceExternal(el))
-      .replace(/>\s+</g, "><")
-
-    el.innerHTML = SF(replacedText)
+  private _renderField = ({ el }: IElAttr, data: string) => {
+    el.innerHTML = SF(data)
       .markdown().string
   }
 
@@ -148,7 +156,7 @@ export class FileRenderer {
       newHTML += div.outerHTML
     })
 
-    model.outerHTML = newHTML
+    el.innerHTML = newHTML
   }
 
 
@@ -157,7 +165,7 @@ export class FileRenderer {
       const [, external] = args
       const div = el.querySelector(`[${selectors.external} = ${external}]`) as Element
       if (!div) {
-        console.warn(`[${selectors.external} = ${external}] not found`)
+        console.warn(`External element '[${selectors.external} = ${external}]' not found`)
 
         return ''
       }
