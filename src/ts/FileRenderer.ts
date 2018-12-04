@@ -1,20 +1,18 @@
 import '../../css/dynamic-files.css'
 
-import { SF } from './StringFormatter'
-
 import {
   IFileType,
   IAttributeElement,
   Attribute,
   IAttributes,
-} from '../types'
+  SF,
+} from '../barrel'
 
-const selectors = {
+export const selectors = {
   field: Attribute.field,
   lines: Attribute.lines,
   loops: Attribute.loop,
   line: '[line]',
-  external: 'external',
 }
 
 export class FileRenderer {
@@ -92,30 +90,29 @@ export class FileRenderer {
     this._checkValidFile(file)
     this.files.push(file)
 
-    const data = SF(file.data)
+    const dataSF = SF(file.data)
       .removeComments()
-      .string
 
     const elAttrs = this._matchAttributes(file)
 
     elAttrs.map((elAttr) => {
 
-      const replacedText = data
-        .replace(/\[\[(.+)\]\]/gu, this._replaceExternal(elAttr.el))
-        .replace(/>\s+</g, "><")
+      const text = dataSF
+        .replaceExternal(elAttr)
+        .string
 
       // tslint:disable-next-line:switch-default
       switch (elAttr.name) {
         case Attribute.field:
-          this._renderField(elAttr, replacedText)
+          this._renderField(elAttr, text)
           break
 
         case Attribute.lines:
-          this._renderLines(elAttr, replacedText)
+          this._renderLines(elAttr, text)
           break
 
         case Attribute.loop:
-          this._renderLoops(elAttr, replacedText)
+          this._renderLoops(elAttr, text)
       }
 
       this._setFileNameToggle(file.name, elAttr.el)
@@ -192,24 +189,6 @@ export class FileRenderer {
 
 
   /**
-   *  Function generator that replaces the [[external]] tag
-   */
-  private _replaceExternal = (el: Element) =>
-    (...args: string[]) => {
-      const [, external] = args
-      const div = el.querySelector(`[${selectors.external} = ${external}]`) as Element
-      if (!div) {
-        console.warn(`External element '[${selectors.external} = ${external}]' not found`)
-
-        return ''
-      }
-
-      const newText = div.outerHTML.trim()
-
-      return newText
-    }
-
-  /**
    *  Checks is the file is valid
    */
   private _checkValidFile = (file: IFileType) => {
@@ -227,6 +206,7 @@ export class FileRenderer {
       console.warn('file data is empty')
 
   }
+
 
   /**
    *  Checks if the elAttr still has a reference to an element in the document body
