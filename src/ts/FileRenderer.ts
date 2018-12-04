@@ -3,64 +3,72 @@ import '../../css/dynamic-files.css'
 import { SF } from './StringFormatter'
 
 import {
-  IFileType, IElAttr, ElAttrType,
+  IFileType,
+  IAttributeElement,
+  Attribute,
+  IAttributes,
 } from '../types'
 
-export type IAttributes = {
-  [key in ElAttrType]: IElAttr[]
-}
-
 const selectors = {
-  field: ElAttrType.field,
-  lines: ElAttrType.lines,
-  loops: ElAttrType.loop,
-  line: '.d-line',
+  field: Attribute.field,
+  lines: Attribute.lines,
+  loops: Attribute.loop,
+  line: '[line]',
   external: 'external',
 }
 
 export class FileRenderer {
 
   public attributes: IAttributes
-
   public files: IFileType[] = []
 
   public constructor(
     public ext: string = 'md',
     public selectorReference: Element | Document = document,
   ) {
-    this.attributes = this.getElements()
+    this.attributes = this._getAttributes()
     this._listenKeysToShowFileNames()
   }
 
   /**
    *  Gets element by attribute and gets attributes value
    */
-  private _getElAttr = (name: ElAttrType): IElAttr[] => Array
-    .from(this.selectorReference.querySelectorAll(`[${name}]`))
-    .map((el) => ({
-      el,
-      type: name,
-      name: el.getAttribute(name) as string,
-    }))
+  private _getAttributeElements = (name: Attribute): IAttributeElement[] =>
+    Array
+      .from(this.selectorReference.querySelectorAll(`[${name}]`))
+      .map((el) => ({
+        el,
+        name,
+        value: el.getAttribute(name) as string,
+      }))
 
-  public getElements(): IAttributes {
-    const field = this._getElAttr(selectors.field)
-    const lines = this._getElAttr(selectors.lines)
-    const loop = this._getElAttr(selectors.loops)
+  /**
+   *  Gets all attributes
+   */
+  private _getAttributes(): IAttributes {
+    const field = this._getAttributeElements(selectors.field)
+    const lines = this._getAttributeElements(selectors.lines)
+    const loop = this._getAttributeElements(selectors.loops)
 
     return { field, lines, loop }
   }
 
-  public updateElement(type: ElAttrType) {
-    return this._getElAttr(type)
+  /**
+   * Gets one attribute
+   */
+  private _getAttribute(type: Attribute) {
+    return this._getAttributeElements(type)
   }
 
-  public getAttributes(file: IFileType) {
-    const compare = ({ name }: IElAttr) => `${name}.${this.ext}` === file.name
+  /**
+   * Returns all attributes that matches in file name
+   */
+  private _matchAttributes(file: IFileType) {
+    const match = ({ value: name }: IAttributeElement) => `${name}.${this.ext}` === file.name
 
-    const field = this.attributes.field.find(compare)
-    const line = this.attributes.lines.find(compare)
-    const loop = this.attributes.loop.find(compare)
+    const field = this.attributes.field.find(match)
+    const line = this.attributes.lines.find(match)
+    const loop = this.attributes.loop.find(match)
 
     const arr = [
       field,
@@ -71,12 +79,12 @@ export class FileRenderer {
     return arr
       .filter((item) => item)
       .map((item) => {
-        const elAttr = item as IElAttr
+        const elAttr = item as IAttributeElement
         const passed = this._checkElementInBody(elAttr, file)
 
         return passed
           ? elAttr
-          : this.attributes[elAttr.type].find(compare) as IElAttr
+          : this.attributes[elAttr.name].find(match) as IAttributeElement
       })
   }
 
@@ -88,7 +96,7 @@ export class FileRenderer {
       .removeComments()
       .string
 
-    const elAttrs = this.getAttributes(file)
+    const elAttrs = this._matchAttributes(file)
 
     elAttrs.map((elAttr) => {
 
@@ -97,16 +105,16 @@ export class FileRenderer {
         .replace(/>\s+</g, "><")
 
       // tslint:disable-next-line:switch-default
-      switch (elAttr.type) {
-        case ElAttrType.field:
+      switch (elAttr.name) {
+        case Attribute.field:
           this._renderField(elAttr, replacedText)
           break
 
-        case ElAttrType.lines:
+        case Attribute.lines:
           this._renderLines(elAttr, replacedText)
           break
 
-        case ElAttrType.loop:
+        case Attribute.loop:
           this._renderLoops(elAttr, replacedText)
       }
 
@@ -118,7 +126,7 @@ export class FileRenderer {
   /**
    *  Renders field attribute
    */
-  private _renderField = ({ el }: IElAttr, data: string) => {
+  private _renderField = ({ el }: IAttributeElement, data: string) => {
     el.innerHTML = SF(data)
       .markdown()
       .string
@@ -127,7 +135,7 @@ export class FileRenderer {
   /**
    *  Renders lines attribute
    */
-  private _renderLines = ({ el }: IElAttr, data: string) => {
+  private _renderLines = ({ el }: IAttributeElement, data: string) => {
     const linesArray = SF(data)
       .everyNthLineBreak(1)
       .map((line) =>
@@ -149,7 +157,7 @@ export class FileRenderer {
   /**
    *  Renders the loop attribute
    */
-  private _renderLoops = ({ el }: IElAttr, data: string) => {
+  private _renderLoops = ({ el }: IAttributeElement, data: string) => {
     const linesArray = SF(data)
       .everyNthLineBreak(1)
       .map((lineTxt) =>
@@ -223,7 +231,7 @@ export class FileRenderer {
   /**
    *  Checks if the elAttr still has a reference to an element in the document body
    */
-  private _checkElementInBody(elAttr: IElAttr, file: IFileType) {
+  private _checkElementInBody(elAttr: IAttributeElement, file: IFileType) {
 
     if (!document.body.contains(elAttr.el)) {
       console.warn(
@@ -232,7 +240,7 @@ export class FileRenderer {
         'On file:', file.name,
       )
 
-      this.attributes[elAttr.type] = this.updateElement(elAttr.type)
+      this.attributes[elAttr.name] = this._getAttribute(elAttr.name)
 
       return false
     }

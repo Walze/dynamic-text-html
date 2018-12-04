@@ -1,14 +1,18 @@
 
-export enum ElAttrType {
+export enum Attribute {
   field = 'field',
   lines = 'lines',
   loop = 'loop',
 }
 
-export interface IElAttr {
+export type IAttributes = {
+  [key in Attribute]: IAttributeElement[]
+}
+
+export interface IAttributeElement {
   el: Element;
-  name: string;
-  type: ElAttrType;
+  value: string;
+  name: Attribute;
 }
 
 export interface IFileObject {
