@@ -1,6 +1,6 @@
 {
   "name": "dynamic-text-html",
-  "version": "3.5.7",
+  "version": "3.6.0",
   "main": "dist/barrel.js",
   "typings": "./typings.d.ts",
   "scripts": {
@@ -10,12 +10,12 @@
     "deploy": "yarn build && yarn version"
   },
   "devDependencies": {
-    "@babel/core": "^7.1.6",
+    "@babel/core": "^7.2.0",
     "@babel/plugin-transform-regenerator": "^7.0.0",
     "@babel/polyfill": "^7.0.0",
-    "@babel/preset-env": "^7.1.6",
+    "@babel/preset-env": "^7.2.0",
     "@types/marked": "^0.4.2",
-    "@types/node": "^10.12.10",
+    "@types/node": "^10.12.12",
     "@types/webpack": "^4.4.20",
     "@types/webpack-env": "^1.13.6",
     "css-loader": "^1.0.1",
@@ -26,7 +26,7 @@
     "ts-loader": "^5.3.1",
     "tslint": "^5.11.0",
     "typescript": "^3.2.1",
-    "webpack": "^4.26.1",
+    "webpack": "^4.27.0",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.10"
   },

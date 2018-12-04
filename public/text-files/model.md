@@ -22,6 +22,7 @@ pdgopdmg
 
 [[cards]]
 
+[[error]]
 
 aosifdaosdnf
 asdnfaiosnsdfp

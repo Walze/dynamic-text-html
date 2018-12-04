@@ -1,5 +1,17 @@
-import marked from 'marked';
-import { globalMatch } from './helpers';
+import marked from 'marked'
+import {
+  IAttributeElement,
+  globalMatch,
+} from '../barrel'
+
+const externalSelector = 'external'
+
+const regexs = {
+  external: /\[\[(.+)\]\]/gu,
+  comments: /\/\*[.\s\n\r\S]*\*\//gu,
+  inlineClass: /(!?)\{([^{}]+)\}(\S+)/gu,
+  blockClass: /(!?)\{\[([^\]]+)\]([^\}]*)\}/gu,
+}
 
 /** Helper for getting a StringFormatter instance */
 export const SF = (text: string) => new StringFormatter(text)
@@ -23,7 +35,7 @@ export class StringFormatter {
   }
 
   public removeComments() {
-    const newString = this.string.replace(/\{\{[.\s\n\r\S]*\}\}/gu, '\n')
+    const newString = this.string.replace(regexs.comments, '\n')
 
     return SF(newString)
   }
@@ -106,6 +118,33 @@ export class StringFormatter {
   }
 
 
+  public replaceExternal(elAttr: IAttributeElement): StringFormatter {
+    const newText = this._string
+      .replace(regexs.external, this._externalReplacer(elAttr.el))
+      .replace(/>\s+</gu, "><")
+
+    return SF(newText)
+  }
+
+  /**
+   *  Function generator that replaces the [[external]] tag
+   */
+  private _externalReplacer = (el: Element) =>
+    (...args: string[]) => {
+      const [, external] = args
+      const div = el.querySelector(`[${externalSelector} = ${external}]`) as Element
+      if (!div) {
+        console.warn(`External element '[${externalSelector} = ${external}]' not found`)
+
+        return ''
+      }
+
+      const newText = div.outerHTML.trim()
+
+      return newText
+    }
+
+
   /**
    *  removes ./
    */
@@ -148,7 +187,7 @@ export class StringFormatter {
 
     const { 3: text } = match
 
-    const classes = match[2] ? match[2].split(/,\s?/) : undefined
+    const classes = match[2] ? match[2].split(/\s/) : undefined
     const breakLine = Boolean(match[1])
 
     const el = breakLine ? 'div' : 'span'
@@ -165,7 +204,7 @@ export class StringFormatter {
    */
   private _markClasses(): StringFormatter {
 
-    const regex = /(!?)\{([^{}]+)\}(\S+)/ug
+    const regex = regexs.inlineClass
     if (!regex.test(this._string)) return this
 
     const newString = this._string
@@ -226,7 +265,7 @@ export class StringFormatter {
 
   private _markBlockClasses(): StringFormatter {
 
-    const regex = /(!?)\{\[([^\]]+)\]([^\}]*)\}/gu
+    const regex = regexs.blockClass
     const matches = globalMatch(regex, this._string)
     if (!matches) return this
 

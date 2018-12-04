@@ -1,91 +1,138 @@
 import '../../css/dynamic-files.css'
 
-import { SF } from './StringFormatter'
-import { isString } from 'util'
-
 import {
-  IFileType, IElAttr,
-} from '../types'
+  IFileType,
+  IAttributeElement,
+  Attribute,
+  IAttributes,
+  SF,
+} from '../barrel'
 
-const selectors = {
-  field: 'field',
-  lines: 'lines',
-  line: '.d-line',
-  external: 'external',
+export const selectors = {
+  field: Attribute.field,
+  lines: Attribute.lines,
+  loops: Attribute.loop,
+  line: '[line]',
 }
 
 export class FileRenderer {
 
-  public fields: IElAttr[] = []
-  public lines: IElAttr[] = []
-
+  public attributes: IAttributes
   public files: IFileType[] = []
 
   public constructor(
     public ext: string = 'md',
     public selectorReference: Element | Document = document,
   ) {
-    this.updateFieldAndLines()
+    this.attributes = this._getAttributes()
     this._listenKeysToShowFileNames()
   }
 
   /**
-   *  gets element by attribute and gets attributes value
+   *  Gets element by attribute and gets attributes value
    */
-  private _getElAttr = (name: string) => Array
-    .from(this.selectorReference.querySelectorAll(`[${name}]`))
-    .map((el) => ({ el, name: el.getAttribute(name) as string }))
+  private _getAttributeElements = (name: Attribute): IAttributeElement[] =>
+    Array
+      .from(this.selectorReference.querySelectorAll(`[${name}]`))
+      .map((el) => ({
+        el,
+        name,
+        value: el.getAttribute(name) as string,
+      }))
 
-  public updateFieldAndLines() {
-    this.fields = this._getElAttr(selectors.field)
-    this.lines = this._getElAttr(selectors.lines)
+  /**
+   *  Gets all attributes
+   */
+  private _getAttributes(): IAttributes {
+    const field = this._getAttributeElements(selectors.field)
+    const lines = this._getAttributeElements(selectors.lines)
+    const loop = this._getAttributeElements(selectors.loops)
+
+    return { field, lines, loop }
   }
 
-  public findElAttr(name: string) {
-    const field = this.fields.find((fieldI) => `${fieldI.name}.${this.ext}` === name)
-    const line = this.lines.find((lineI) => `${lineI.name}.${this.ext}` === name)
+  /**
+   * Gets one attribute
+   */
+  private _getAttribute(type: Attribute) {
+    return this._getAttributeElements(type)
+  }
 
-    return { field, line }
+  /**
+   * Returns all attributes that matches in file name
+   */
+  private _matchAttributes(file: IFileType) {
+    const match = ({ value: name }: IAttributeElement) => `${name}.${this.ext}` === file.name
+
+    const field = this.attributes.field.find(match)
+    const line = this.attributes.lines.find(match)
+    const loop = this.attributes.loop.find(match)
+
+    const arr = [
+      field,
+      line,
+      loop,
+    ]
+
+    return arr
+      .filter((item) => item)
+      .map((item) => {
+        const elAttr = item as IAttributeElement
+        const passed = this._checkElementInBody(elAttr, file)
+
+        return passed
+          ? elAttr
+          : this.attributes[elAttr.name].find(match) as IAttributeElement
+      })
   }
 
   public render(file: IFileType) {
     this._checkValidFile(file)
     this.files.push(file)
 
-    const data = SF(file.data)
+    const dataSF = SF(file.data)
       .removeComments()
+
+    const elAttrs = this._matchAttributes(file)
+
+    elAttrs.map((elAttr) => {
+
+      const text = dataSF
+        .replaceExternal(elAttr)
+        .string
+
+      // tslint:disable-next-line:switch-default
+      switch (elAttr.name) {
+        case Attribute.field:
+          this._renderField(elAttr, text)
+          break
+
+        case Attribute.lines:
+          this._renderLines(elAttr, text)
+          break
+
+        case Attribute.loop:
+          this._renderLoops(elAttr, text)
+      }
+
+      this._setFileNameToggle(file.name, elAttr.el)
+    })
+
+  }
+
+  /**
+   *  Renders field attribute
+   */
+  private _renderField = ({ el }: IAttributeElement, data: string) => {
+    el.innerHTML = SF(data)
+      .markdown()
       .string
-
-    let { field, line } = this.findElAttr(file.name)
-
-    if (field) {
-      const pass = this._checkElementInBody(field.el, file)
-      if (!pass) field = this.findElAttr(file.name).field as IElAttr
-
-      this._renderField(field, data)
-      this._setFileNameToggle(file.name, field.el)
-    }
-
-    if (line) {
-      const pass = this._checkElementInBody(line.el, file)
-      if (!pass) line = this.findElAttr(file.name).line as IElAttr
-
-      this._renderLines(line, data)
-      this._setFileNameToggle(file.name, line.el)
-    }
-
   }
 
-  private _renderField({ el }: IElAttr, data: string) {
-    const replacedText = data
-      .replace(/\[\[(.+)\]\]/gu, this._replaceExternal(el))
-      .replace(/>\s+</g, "><")
-
-    el.innerHTML = SF(replacedText)
-      .markdown().string
-  }
-
-  private _renderLines = ({ el }: IElAttr, data: string) => {
+  /**
+   *  Renders lines attribute
+   */
+  private _renderLines = ({ el }: IAttributeElement, data: string) => {
     const linesArray = SF(data)
       .everyNthLineBreak(1)
       .map((line) =>
@@ -104,14 +151,82 @@ export class FileRenderer {
       .map((line, i) => line.innerHTML = linesArray[i])
   }
 
-  private _replaceExternal = (el: Element) =>
-    (...args: string[]) => {
-      const [, external] = args
-      const div = el.querySelector(`[${selectors.external} = ${external}]`) as Element
-      const newText = div.outerHTML.trim()
+  /**
+   *  Renders the loop attribute
+   */
+  private _renderLoops = ({ el }: IAttributeElement, data: string) => {
+    const linesArray = SF(data)
+      .everyNthLineBreak(1)
+      .map((lineTxt) =>
+        SF(lineTxt)
+          .markdown()
+          .removePTag()
+          .string
+          .trim(),
+      )
 
-      return newText
+    const model = el.querySelector('.model')
+    if (!model) throw new Error('model not found')
+
+    const modelLineDiv = el.querySelector('.model-line')
+    if (!modelLineDiv) throw new Error('model-line not found')
+
+    let newHTML = ''
+
+    linesArray.map((lineTxt) => {
+      const div = model.cloneNode(true) as Element
+      const line = div.querySelector('.model-line') as Element
+
+      line.innerHTML = SF(lineTxt)
+        .markdown()
+        .string
+
+      newHTML += div.outerHTML
+    })
+
+    el.innerHTML = newHTML
+  }
+
+
+  /**
+   *  Checks is the file is valid
+   */
+  private _checkValidFile = (file: IFileType) => {
+
+    if (typeof file.name !== 'string')
+      throw new Error('file name is not string')
+
+    if (typeof file.data !== 'string')
+      throw new Error('file data is not string')
+
+    if (file.name === '')
+      throw new Error('file name is empty')
+
+    if (file.data === '')
+      console.warn('file data is empty')
+
+  }
+
+
+  /**
+   *  Checks if the elAttr still has a reference to an element in the document body
+   */
+  private _checkElementInBody(elAttr: IAttributeElement, file: IFileType) {
+
+    if (!document.body.contains(elAttr.el)) {
+      console.warn(
+        'Element is not on body, probably lost reference.',
+        'Getting fields and lines again, this may cause performance decrease.',
+        'On file:', file.name,
+      )
+
+      this.attributes[elAttr.name] = this._getAttribute(elAttr.name)
+
+      return false
     }
+
+    return true
+  }
 
   private _setFileNameToggle = (fileName: string, el: Element) => {
 
@@ -153,33 +268,4 @@ export class FileRenderer {
     })
   }
 
-  private _checkValidFile = (file: IFileType) => {
-
-    if (!isString(file.name))
-      throw new Error('file name is not string')
-
-    if (!isString(file.data))
-      throw new Error('file data is not string')
-
-    if (file.name === '')
-      throw new Error('file name is empty')
-
-    if (file.data === '')
-      console.warn('file data is empty')
-
-  }
-
-
-
-  private _checkElementInBody(el: Element, file: IFileType) {
-    if (!document.body.contains(el)) {
-      console.warn('element is not on body, probably lost reference. On file:', file.name)
-      console.warn('getting fields and lines again, this may cause performance decrease')
-      this.updateFieldAndLines()
-
-      return false
-    }
-
-    return true
-  }
 }

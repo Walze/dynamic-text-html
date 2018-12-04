@@ -1,19 +1,19 @@
+### UNDER CONSTRUCTION
+
 # dynamic-text-html
 
 Uses markdown in .md files to write HTML. You can also change the file extension.
 
 ## Syntax
 * all syntax from [marked](https://www.npmjs.com/package/marked) are available
-* {CSS_CLASS_NAME1, CSS_CLASSNAME2}
-* [[EXTERNAL_HTML]]
-* {{ MULTILINE_COMMENT }}
+* under construction
 
 ## Examples
 #### Text file model.md
 ```markdown
-{{
+{[
     Comments go here
-}}
+]}
 
 apogmdpaomdgpomaasdgpomasasodpmgmasopdg
 apm
