@@ -1,5 +1,4 @@
-import { IFileObject } from './../types'
-import { IFileType } from "../types"
+import { IFileObject, IFileType } from './types'
 
 
 export const mapObj = <A, B>(

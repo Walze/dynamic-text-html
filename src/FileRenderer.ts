@@ -1,12 +1,13 @@
 import '../../css/dynamic-files.css'
 
+import { SF } from './StringFormatter'
 import {
-  IFileType,
-  IAttributeElement,
   Attribute,
   IAttributes,
-  SF,
-} from '../barrel'
+  IFileType,
+  IAttributeElement,
+} from './types'
+
 
 export const selectors = {
   field: Attribute.field,

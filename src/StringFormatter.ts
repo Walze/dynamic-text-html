@@ -1,8 +1,8 @@
 import marked from 'marked'
-import {
-  IAttributeElement,
-  globalMatch,
-} from '../barrel'
+
+import { IAttributeElement } from './types'
+import { globalMatch } from './helpers'
+
 
 const externalSelector = 'external'
 
