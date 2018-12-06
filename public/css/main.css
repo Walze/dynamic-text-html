@@ -19,3 +19,10 @@
 .margin {
     height: 1rem;
 }
+
+body {
+    background: #111;
+}
+* {
+    color: #f4f4f4;
+}
