@@ -1,6 +1,6 @@
 import marked from 'marked'
 
-import { IAttributeElement } from './types'
+import { IDynamicElement } from './types'
 import { globalMatch } from './helpers'
 
 
@@ -118,9 +118,9 @@ export class StringFormatter {
   }
 
 
-  public replaceExternal(elAttr: IAttributeElement): StringFormatter {
+  public replaceExternal(elAttr: IDynamicElement): StringFormatter {
     const newText = this._string
-      .replace(regexs.external, this._externalReplacer(elAttr.el))
+      .replace(regexs.external, this._externalReplacer(elAttr.element))
       .replace(/>\s+</gu, "><")
 
     return SF(newText)

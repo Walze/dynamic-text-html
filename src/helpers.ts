@@ -1,4 +1,4 @@
-import { IFileObject, IFileType } from './types'
+import { IFileObject, IFile } from './types'
 
 
 export const mapObj = <A, B>(
@@ -34,7 +34,7 @@ export const mapObjToArray = <A, B>(
 
 }
 
-export const makeFile = (name: string, data: string): IFileType => ({ name, data })
+export const makeFile = (name: string, data: string): IFile => ({ name, data })
 
 
 export const makesFiles = (obj: IFileObject, ext: string) =>
@@ -57,7 +57,7 @@ export const fetchFiles = (
 export const fetchFilesPromise = (filesUrls: IFileObject, ext: string) => {
   const promises = fetchFiles(filesUrls, ext)
 
-  return (callback: (file: IFileType) => void) =>
+  return (callback: (file: IFile) => void) =>
     promises.map((promise) => promise.then(callback))
 
 }

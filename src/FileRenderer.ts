@@ -2,24 +2,26 @@ import '../css/dynamic-files.css'
 
 import { SF } from './StringFormatter'
 import {
-  Attribute,
-  IAttributes,
-  IFileType,
-  IAttributeElement,
+  DynamicTypes,
+  IDynamicElementsObject,
+  IFile,
+  IDynamicElement,
 } from './types'
 
 
 export const selectors = {
-  field: Attribute.field,
-  lines: Attribute.lines,
-  loops: Attribute.loop,
+  field: DynamicTypes.field,
+  lines: DynamicTypes.lines,
+  loops: DynamicTypes.loop,
+  model: '.model',
+  model_line: '.model-line',
   line: '[line]',
 }
 
 export class FileRenderer {
 
-  public attributes: IAttributes
-  public files: IFileType[] = []
+  public attributes: IDynamicElementsObject
+  public files: IFile[] = []
 
   public constructor(
     public ext: string = 'md',
@@ -32,19 +34,19 @@ export class FileRenderer {
   /**
    *  Gets element by attribute and gets attributes value
    */
-  private _getAttributeElements = (name: Attribute): IAttributeElement[] =>
+  private _getAttributeElements = (name: DynamicTypes): IDynamicElement[] =>
     Array
       .from(this.selectorReference.querySelectorAll(`[${name}]`))
-      .map((el) => ({
-        el,
-        name,
-        value: el.getAttribute(name) as string,
+      .map((element) => ({
+        element,
+        type: name,
+        file: element.getAttribute(name) as string,
       }))
 
   /**
    *  Gets all attributes
    */
-  private _getAttributes(): IAttributes {
+  private _getAttributes(): IDynamicElementsObject {
     const field = this._getAttributeElements(selectors.field)
     const lines = this._getAttributeElements(selectors.lines)
     const loop = this._getAttributeElements(selectors.loops)
@@ -55,15 +57,15 @@ export class FileRenderer {
   /**
    * Gets one attribute
    */
-  private _getAttribute(type: Attribute) {
+  private _getAttribute(type: DynamicTypes) {
     return this._getAttributeElements(type)
   }
 
   /**
    * Returns all attributes that matches in file name
    */
-  private _matchAttributes(file: IFileType) {
-    const match = ({ value: name }: IAttributeElement) => `${name}.${this.ext}` === file.name
+  private _matchAttributes(file: IFile) {
+    const match = ({ file: name }: IDynamicElement) => `${name}.${this.ext}` === file.name
 
     const field = this.attributes.field.find(match)
     const line = this.attributes.lines.find(match)
@@ -75,56 +77,64 @@ export class FileRenderer {
       loop,
     ]
 
+    const elementReferenceHandler = (item: IDynamicElement | undefined) => {
+      const elAttr = item as IDynamicElement
+      const passed = this._checkElementInBody(elAttr, file)
+
+      return passed
+        ? elAttr
+        : this.attributes[elAttr.type].find(match) as IDynamicElement
+    }
+
     return arr
       .filter((item) => item)
-      .map((item) => {
-        const elAttr = item as IAttributeElement
-        const passed = this._checkElementInBody(elAttr, file)
-
-        return passed
-          ? elAttr
-          : this.attributes[elAttr.name].find(match) as IAttributeElement
-      })
+      .map(elementReferenceHandler)
   }
 
-  public render(file: IFileType) {
+  public render(file: IFile) {
     this._checkValidFile(file)
     this.files.push(file)
 
     const dataSF = SF(file.data)
       .removeComments()
 
-    const elAttrs = this._matchAttributes(file)
+    const dynamicEls = this._matchAttributes(file)
 
-    elAttrs.map((elAttr) => {
-
+    const dynamicElementRendererMapFunction = (elAttr: IDynamicElement) => {
       const text = dataSF
         .replaceExternal(elAttr)
         .string
 
-      // tslint:disable-next-line:switch-default
-      switch (elAttr.name) {
-        case Attribute.field:
-          this._renderField(elAttr, text)
-          break
+      this._render(elAttr, text)
+      this._setFileNameToggle(file.name, elAttr.element)
+    }
 
-        case Attribute.lines:
-          this._renderLines(elAttr, text)
-          break
+    dynamicEls.map(dynamicElementRendererMapFunction)
+  }
 
-        case Attribute.loop:
-          this._renderLoops(elAttr, text)
-      }
+  /**
+   * Renders element by given name
+   */
+  private _render(elAttr: IDynamicElement, text: string) {
 
-      this._setFileNameToggle(file.name, elAttr.el)
-    })
+    // tslint:disable-next-line:switch-default
+    switch (elAttr.type) {
+      case DynamicTypes.field:
+        this._renderField(elAttr, text)
+        break
+      case DynamicTypes.lines:
+        this._renderLines(elAttr, text)
+        break
+      case DynamicTypes.loop:
+        this._renderLoops(elAttr, text)
+    }
 
   }
 
   /**
    *  Renders field attribute
    */
-  private _renderField = ({ el }: IAttributeElement, data: string) => {
+  private _renderField = ({ element: el }: IDynamicElement, data: string) => {
     el.innerHTML = SF(data)
       .markdown()
       .string
@@ -133,7 +143,7 @@ export class FileRenderer {
   /**
    *  Renders lines attribute
    */
-  private _renderLines = ({ el }: IAttributeElement, data: string) => {
+  private _renderLines = ({ element: el }: IDynamicElement, data: string) => {
     const linesArray = SF(data)
       .everyNthLineBreak(1)
       .map((line) =>
@@ -155,7 +165,7 @@ export class FileRenderer {
   /**
    *  Renders the loop attribute
    */
-  private _renderLoops = ({ el }: IAttributeElement, data: string) => {
+  private _renderLoops = ({ element: el }: IDynamicElement, data: string) => {
     const linesArray = SF(data)
       .everyNthLineBreak(1)
       .map((lineTxt) =>
@@ -166,17 +176,17 @@ export class FileRenderer {
           .trim(),
       )
 
-    const model = el.querySelector('.model')
+    const model = el.querySelector(selectors.model)
     if (!model) throw new Error('model not found')
 
-    const modelLineDiv = el.querySelector('.model-line')
-    if (!modelLineDiv) throw new Error('model-line not found')
+    const modelLineDiv = el.querySelector(selectors.model_line)
+    if (!modelLineDiv) throw new Error('Model line not found')
 
     let newHTML = ''
 
     linesArray.map((lineTxt) => {
       const div = model.cloneNode(true) as Element
-      const line = div.querySelector('.model-line') as Element
+      const line = div.querySelector(selectors.model_line) as Element
 
       line.innerHTML = SF(lineTxt)
         .markdown()
@@ -192,7 +202,7 @@ export class FileRenderer {
   /**
    *  Checks is the file is valid
    */
-  private _checkValidFile = (file: IFileType) => {
+  private _checkValidFile = (file: IFile) => {
 
     if (typeof file.name !== 'string')
       throw new Error('file name is not string')
@@ -208,20 +218,19 @@ export class FileRenderer {
 
   }
 
-
   /**
    *  Checks if the elAttr still has a reference to an element in the document body
    */
-  private _checkElementInBody(elAttr: IAttributeElement, file: IFileType) {
+  private _checkElementInBody(elAttr: IDynamicElement, file: IFile) {
 
-    if (!document.body.contains(elAttr.el)) {
+    if (!document.body.contains(elAttr.element)) {
       console.warn(
         'Element is not on body, probably lost reference.',
         'Getting fields and lines again, this may cause performance decrease.',
         'On file:', file.name,
       )
 
-      this.attributes[elAttr.name] = this._getAttribute(elAttr.name)
+      this.attributes[elAttr.type] = this._getAttribute(elAttr.type)
 
       return false
     }

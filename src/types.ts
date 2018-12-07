@@ -1,26 +1,26 @@
 
-export enum Attribute {
+export enum DynamicTypes {
   field = 'field',
   lines = 'lines',
   loop = 'loop',
 }
 
-export type IAttributes = {
-  [key in Attribute]: IAttributeElement[]
+export interface IDynamicElement {
+  element: Element;
+  file: string;
+  type: DynamicTypes;
 }
 
-export interface IAttributeElement {
-  el: Element;
-  value: string;
-  name: Attribute;
+export type IDynamicElementsObject = {
+  [key in DynamicTypes]: IDynamicElement[]
 }
 
 export interface IFileObject {
-  [key: string]: string
+  [fileName: string]: string
 }
 
 export interface IFileRendererOptions {
   ext?: string,
 }
 
-export interface IFileType { name: string, data: string }
+export interface IFile { name: string, data: string }
