@@ -18,6 +18,17 @@ export const selectors = {
   line: '[line]',
 }
 
+const markdownLine = (lineTxt: string) => SF(lineTxt)
+  .markdown()
+  .removePTag()
+  .string
+  .trim()
+
+const getMarkedLines = (data: string) => SF(data)
+  .everyNthLineBreak(1)
+  .map(markdownLine)
+
+
 export class FileRenderer {
 
   public attributes: IDynamicElementsObject
@@ -144,16 +155,7 @@ export class FileRenderer {
    *  Renders lines attribute
    */
   private _renderLines = ({ element: el }: IDynamicElement, data: string) => {
-    const linesArray = SF(data)
-      .everyNthLineBreak(1)
-      .map((line) =>
-        SF(line)
-          .markdown()
-          .removePTag()
-          .string
-          .trim(),
-      )
-
+    const linesArray = getMarkedLines(data)
 
     const lines = Array
       .from(el.querySelectorAll(selectors.line))
@@ -166,15 +168,7 @@ export class FileRenderer {
    *  Renders the loop attribute
    */
   private _renderLoops = ({ element: el }: IDynamicElement, data: string) => {
-    const linesArray = SF(data)
-      .everyNthLineBreak(1)
-      .map((lineTxt) =>
-        SF(lineTxt)
-          .markdown()
-          .removePTag()
-          .string
-          .trim(),
-      )
+    const linesArray = getMarkedLines(data)
 
     const model = el.querySelector(selectors.model)
     if (!model) throw new Error('model not found')
