@@ -178,7 +178,7 @@ export class FileRenderer {
 
     let newHTML = ''
 
-    linesArray.map((lineTxt) => {
+    const markdownLoopLines = (lineTxt: string) => {
       const div = model.cloneNode(true) as Element
       const line = div.querySelector(selectors.model_line) as Element
 
@@ -187,7 +187,9 @@ export class FileRenderer {
         .string
 
       newHTML += div.outerHTML
-    })
+    }
+
+    linesArray.map(markdownLoopLines)
 
     el.innerHTML = newHTML
   }
