@@ -78,23 +78,30 @@ export class FileRenderer {
   private _matchAttributes(file: IFile) {
     const match = ({ file: name }: IDynamicElement) => `${name}.${this.ext}` === file.name
 
-    const field = this.attributes.field.find(match)
-    const line = this.attributes.lines.find(match)
-    const loop = this.attributes.loop.find(match)
+    const field = this.attributes.field.filter(match)
+    const line = this.attributes.lines.filter(match)
+    const loop = this.attributes.loop.filter(match)
 
     const arr = [
-      field,
-      line,
-      loop,
+      ...field,
+      ...line,
+      ...loop,
     ]
 
+    const checkedElements: Element[] = []
+
     const elementReferenceHandler = (item: IDynamicElement | undefined) => {
-      const elAttr = item as IDynamicElement
-      const passed = this._checkElementInBody(elAttr, file)
+      const dynamicElement = item as IDynamicElement
+
+      if (checkedElements.includes(dynamicElement.element)) return dynamicElement
+
+      const passed = this._checkElementInBody(dynamicElement, file)
+
+      checkedElements.push(dynamicElement.element)
 
       return passed
-        ? elAttr
-        : this.attributes[elAttr.type].find(match) as IDynamicElement
+        ? dynamicElement
+        : this.attributes[dynamicElement.type].find(match) as IDynamicElement
     }
 
     return arr
