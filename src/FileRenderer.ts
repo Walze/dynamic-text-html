@@ -164,11 +164,11 @@ export class FileRenderer {
   private _renderLines = ({ element: el }: IDynamicElement, data: string) => {
     const linesArray = getMarkedLines(data)
 
-    const lines = Array
-      .from(el.querySelectorAll(selectors.line))
+    const lines = Array.from(el.querySelectorAll(selectors.line))
 
-    lines
-      .map((line, i) => line.innerHTML = linesArray[i])
+    const renderLine = (line: Element, i: number) => line.innerHTML = linesArray[i]
+
+    lines.map(renderLine)
   }
 
   /**
@@ -185,7 +185,7 @@ export class FileRenderer {
 
     let newHTML = ''
 
-    linesArray.map((lineTxt) => {
+    const markdownLoopLines = (lineTxt: string) => {
       const div = model.cloneNode(true) as Element
       const line = div.querySelector(selectors.model_line) as Element
 
@@ -194,7 +194,9 @@ export class FileRenderer {
         .string
 
       newHTML += div.outerHTML
-    })
+    }
+
+    linesArray.map(markdownLoopLines)
 
     el.innerHTML = newHTML
   }
