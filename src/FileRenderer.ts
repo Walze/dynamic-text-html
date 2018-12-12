@@ -38,7 +38,7 @@ export class FileRenderer {
     public ext: string = 'md',
     public selectorReference: Element | Document = document,
   ) {
-    this.attributes = this._getAttributes()
+    this.attributes = this._getDynamicElements()
     this._listenKeysToShowFileNames()
   }
 
@@ -57,7 +57,7 @@ export class FileRenderer {
   /**
    *  Gets all attributes
    */
-  private _getAttributes(): IDynamicElementsObject {
+  private _getDynamicElements(): IDynamicElementsObject {
     const field = this._getAttributeElements(selectors.field)
     const lines = this._getAttributeElements(selectors.lines)
     const loop = this._getAttributeElements(selectors.loops)
@@ -133,18 +133,20 @@ export class FileRenderer {
   /**
    * Renders element by given name
    */
-  private _render(elAttr: IDynamicElement, text: string) {
+  private _render(dyElement: IDynamicElement, text: string) {
 
-    // tslint:disable-next-line:switch-default
-    switch (elAttr.type) {
+    switch (dyElement.type) {
       case DynamicTypes.field:
-        this._renderField(elAttr, text)
+        this._renderField(dyElement, text)
         break
       case DynamicTypes.lines:
-        this._renderLines(elAttr, text)
+        this._renderLines(dyElement, text)
         break
       case DynamicTypes.loop:
-        this._renderLoops(elAttr, text)
+        this._renderLoops(dyElement, text)
+        break
+      default:
+        throw new Error('Tried rendering unknown type')
     }
 
   }

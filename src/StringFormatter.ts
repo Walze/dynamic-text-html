@@ -7,11 +7,18 @@ import { globalMatch } from './helpers'
 const externalSelector = 'external'
 
 const regexs = {
-  external: /\[\[(.+)\]\]/gu,
-  comments: /\/\*[.\s\n\r\S]*\*\//gu,
-  inlineClass: /(!?)\{([^{}]+)\}(\S+)/gu,
-  blockClass: /(!?)\{\[([^\]]+)\]([^\}]*)\}/gu,
+  external: /\[\[(.+)?\](.+)?\]/g,
+  comments: /\/\*[.\s\n\r\S]*\*\//g,
+  inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
+  blockClass: /(!?)\{\[([^\]]+)\]([^\}]*)\}/g,
 }
+
+export interface IMakeElementOptions {
+  id?: string,
+  classNames?: string[],
+  attributes?: Array<{ attribute: string; value: string }>
+}
+
 
 /** Helper for getting a StringFormatter instance */
 export const SF = (text: string) => new StringFormatter(text)
@@ -131,7 +138,17 @@ export class StringFormatter {
    */
   private _externalReplacer = (el: Element) =>
     (...args: string[]) => {
-      const [, external] = args
+      const [, external, file] = args
+
+      if (file)
+        return SF('')
+          .makeElement('div', {
+            attributes: [{
+              attribute: 'import',
+              value: file.trim(),
+            }],
+          })
+
       const div = el.querySelector(`[${externalSelector} = ${external}]`) as Element
       if (!div) {
         console.warn(`External element '[${externalSelector} = ${external}]' not found`)
@@ -187,13 +204,13 @@ export class StringFormatter {
 
     const { 3: text } = match
 
-    const classes = match[2] ? match[2].split(/\s/) : undefined
+    const classNames = match[2] ? match[2].split(/\s/) : undefined
     const breakLine = Boolean(match[1])
 
     const el = breakLine ? 'div' : 'span'
 
     const newWord = SF(text)
-      .makeElement(el, classes)
+      .makeElement(el, { classNames })
 
     return newWord
 
@@ -221,7 +238,7 @@ export class StringFormatter {
 
       const replace = match[0]
       const removeP = !!match[1]
-      const classes = match[2].split(/\s+/)
+      const classNames = match[2].split(/\s+/)
       const { 0: tag } = match[3].split(/\s+/)
 
       const startI = previousText.indexOf(replace)
@@ -251,7 +268,7 @@ export class StringFormatter {
       }
 
       const newHTML = newHTMLSF
-        .makeElement(tag || 'div', classes)
+        .makeElement(tag || 'div', { classNames })
 
       const newText = start + newHTML + end
 
@@ -277,23 +294,25 @@ export class StringFormatter {
 
   /**
    * Makes an in-line element
-   *
-   * @param tag tag name
-   * @param classArray array of css classes
-   * @param id element id
    */
   public makeElement(
     tag: string,
-    classArray?: string[],
-    id?: string | undefined,
+    options: IMakeElementOptions = {},
   ) {
 
-    const classes = classArray ? classArray.join(' ') : undefined
+    const { classNames, id, attributes } = options
+
+    let attrString = ''
+
+    if (attributes)
+      attributes.map((attr) => attrString += `${attr.attribute}="${attr.value}" `)
+
+    const classes = classNames ? classNames.join(' ') : undefined
     const classesString = classes ? `class="${classes}"` : ''
 
     const idString = id ? `id="${id}" ` : ''
 
-    return `<${tag} ${idString}${classesString}>${this._string}</${tag}>`
+    return `<${tag} ${idString}${classesString}${attrString}>${this._string}</${tag}>`
 
   }
 
@@ -307,13 +326,12 @@ export class StringFormatter {
    */
   public makeInlineMarkedElement(
     tag: string,
-    classArray?: string[],
-    id?: string | undefined,
+    options: IMakeElementOptions,
   ) {
     return this
       .markdown()
       .removePTag()
-      .makeElement(tag, classArray, id)
+      .makeElement(tag, options)
   }
 
 
