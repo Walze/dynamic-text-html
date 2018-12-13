@@ -23,4 +23,14 @@ export interface IFileRendererOptions {
   ext?: string,
 }
 
-export interface IFile { name: string, data: string }
+export interface IFile {
+  name: string,
+  data: string
+  rendered?: boolean,
+}
+
+export interface IMakeElementOptions {
+  id?: string,
+  classNames?: string[],
+  attributes?: Array<{ attribute: string; value: string }>
+}

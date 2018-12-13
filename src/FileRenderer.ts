@@ -33,6 +33,7 @@ export class FileRenderer {
 
   public attributes: IDynamicElementsObject
   public files: IFile[] = []
+  // private _lastFile: IFile | undefined
 
   public constructor(
     public ext: string = 'md',
@@ -45,9 +46,12 @@ export class FileRenderer {
   /**
    *  Gets element by attribute and gets attributes value
    */
-  private _getAttributeElements = (name: DynamicTypes): IDynamicElement[] =>
+  private _getDynamicElements = (
+    name: DynamicTypes,
+    selectorReference: Element | Document,
+  ): IDynamicElement[] =>
     Array
-      .from(this.selectorReference.querySelectorAll(`[${name}]`))
+      .from(selectorReference.querySelectorAll(`[${name}]`))
       .map((element) => ({
         element,
         type: name,
@@ -57,10 +61,12 @@ export class FileRenderer {
   /**
    *  Gets all attributes
    */
-  private _getAttributes(): IDynamicElementsObject {
-    const field = this._getAttributeElements(selectors.field)
-    const lines = this._getAttributeElements(selectors.lines)
-    const loop = this._getAttributeElements(selectors.loops)
+  private _getAttributes(
+    selectorReference: Element | Document = this.selectorReference,
+  ): IDynamicElementsObject {
+    const field = this._getDynamicElements(selectors.field, selectorReference)
+    const lines = this._getDynamicElements(selectors.lines, selectorReference)
+    const loop = this._getDynamicElements(selectors.loops, selectorReference)
 
     return { field, lines, loop }
   }
@@ -68,8 +74,11 @@ export class FileRenderer {
   /**
    * Gets one attribute
    */
-  private _getAttribute(type: DynamicTypes) {
-    return this._getAttributeElements(type)
+  private _getAttribute(
+    type: DynamicTypes,
+    selectorReference: Element | Document = this.selectorReference,
+  ) {
+    return this._getDynamicElements(type, selectorReference)
   }
 
   /**
@@ -111,40 +120,48 @@ export class FileRenderer {
 
   public render(file: IFile) {
     this._checkValidFile(file)
-    this.files.push(file)
 
     const dataSF = SF(file.data)
       .removeComments()
 
     const dynamicEls = this._matchAttributes(file)
 
-    const dynamicElementRendererMapFunction = (elAttr: IDynamicElement) => {
+    const _render = (dyElement: IDynamicElement) => {
       const text = dataSF
-        .replaceExternal(elAttr)
+        .replaceExternal(dyElement)
         .string
 
-      this._render(elAttr, text)
-      this._setFileNameToggle(file.name, elAttr.element)
+      this._renderByType(dyElement, text)
+
+      this._setFileNameToggle(file.name, dyElement.element)
     }
 
-    dynamicEls.map(dynamicElementRendererMapFunction)
+    dynamicEls.map(_render)
+
+    file.rendered = dynamicEls.length > 0
+    // this._lastFile = file
+
+    if (!this.files.includes(file))
+      this.files.push(file)
   }
 
   /**
    * Renders element by given name
    */
-  private _render(elAttr: IDynamicElement, text: string) {
+  private _renderByType(dyElement: IDynamicElement, text: string) {
 
-    // tslint:disable-next-line:switch-default
-    switch (elAttr.type) {
+    switch (dyElement.type) {
       case DynamicTypes.field:
-        this._renderField(elAttr, text)
+        this._renderField(dyElement, text)
         break
       case DynamicTypes.lines:
-        this._renderLines(elAttr, text)
+        this._renderLines(dyElement, text)
         break
       case DynamicTypes.loop:
-        this._renderLoops(elAttr, text)
+        this._renderLoops(dyElement, text)
+        break
+      default:
+        throw new Error('Tried rendering unknown type')
     }
 
   }
@@ -247,6 +264,7 @@ export class FileRenderer {
     overlay.classList.add('show-file-name')
     overlay.innerHTML = SF(fileName)
       .makeElement(`span`)
+      .outerHTML
 
     el.classList.add('dynamic')
     el.appendChild(overlay)

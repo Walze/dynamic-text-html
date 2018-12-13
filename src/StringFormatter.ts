@@ -1,17 +1,18 @@
 import marked from 'marked'
 
-import { IDynamicElement } from './types'
+import { IDynamicElement, IMakeElementOptions } from './types'
 import { globalMatch } from './helpers'
 
 
 const externalSelector = 'external'
 
 const regexs = {
-  external: /\[\[(.+)\]\]/gu,
-  comments: /\/\*[.\s\n\r\S]*\*\//gu,
-  inlineClass: /(!?)\{([^{}]+)\}(\S+)/gu,
-  blockClass: /(!?)\{\[([^\]]+)\]([^\}]*)\}/gu,
+  external: /\[\[(.+)?\](.+)?\]/g,
+  comments: /\/\*[.\s\n\r\S]*\*\//g,
+  inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
+  blockClass: /(!?)\{\[([^\]]+)\]([^\}]*)\}/g,
 }
+
 
 /** Helper for getting a StringFormatter instance */
 export const SF = (text: string) => new StringFormatter(text)
@@ -26,8 +27,7 @@ export class StringFormatter {
   public constructor(text: string) {
 
     if (typeof text !== 'string') {
-      console.error('Given ', text)
-      throw new Error(`constructor expected string`)
+      throw new Error(`constructor expected string, given ${text}`)
     }
 
     this._string = text
@@ -131,7 +131,18 @@ export class StringFormatter {
    */
   private _externalReplacer = (el: Element) =>
     (...args: string[]) => {
-      const [, external] = args
+      const [, external, file] = args
+
+      if (file)
+        return SF('')
+          .makeElement('div', {
+            attributes: [{
+              attribute: 'field',
+              value: file.trim(),
+            }],
+          })
+          .outerHTML
+
       const div = el.querySelector(`[${externalSelector} = ${external}]`) as Element
       if (!div) {
         console.warn(`External element '[${externalSelector} = ${external}]' not found`)
@@ -187,13 +198,14 @@ export class StringFormatter {
 
     const { 3: text } = match
 
-    const classes = match[2] ? match[2].split(/\s/) : undefined
+    const classNames = match[2] ? match[2].split(/\s/) : undefined
     const breakLine = Boolean(match[1])
 
-    const el = breakLine ? 'div' : 'span'
+    const tag = breakLine ? 'div' : 'span'
 
     const newWord = SF(text)
-      .makeElement(el, classes)
+      .makeElement(tag, { classNames })
+      .outerHTML
 
     return newWord
 
@@ -221,7 +233,7 @@ export class StringFormatter {
 
       const replace = match[0]
       const removeP = !!match[1]
-      const classes = match[2].split(/\s+/)
+      const classNames = match[2].split(/\s+/)
       const { 0: tag } = match[3].split(/\s+/)
 
       const startI = previousText.indexOf(replace)
@@ -251,7 +263,8 @@ export class StringFormatter {
       }
 
       const newHTML = newHTMLSF
-        .makeElement(tag || 'div', classes)
+        .makeElement(tag || 'div', { classNames })
+        .outerHTML
 
       const newText = start + newHTML + end
 
@@ -274,46 +287,43 @@ export class StringFormatter {
     return SF(replaced[replaced.length - 1])
   }
 
-
   /**
    * Makes an in-line element
-   *
-   * @param tag tag name
-   * @param classArray array of css classes
-   * @param id element id
    */
   public makeElement(
-    tag: string,
-    classArray?: string[],
-    id?: string | undefined,
+    tag: string = 'div',
+    options: IMakeElementOptions = {},
   ) {
 
-    const classes = classArray ? classArray.join(' ') : undefined
-    const classesString = classes ? `class="${classes}"` : ''
+    const { classNames, id, attributes } = options
 
-    const idString = id ? `id="${id}" ` : ''
+    const element = document.createElement(tag)
 
-    return `<${tag} ${idString}${classesString}>${this._string}</${tag}>`
+    if (attributes)
+      attributes.map((attr) => element.setAttribute(attr.attribute, attr.value))
 
+    if (classNames)
+      classNames.map((name) => element.classList.add(name))
+
+    if (id) element.id = id
+
+    element.innerHTML = this._string
+
+    return element
   }
 
 
   /**
    * Makes an in-line element
-   *
-   * @param tag tag name
-   * @param classArray array of css classes
-   * @param id element id
    */
   public makeInlineMarkedElement(
     tag: string,
-    classArray?: string[],
-    id?: string | undefined,
+    options: IMakeElementOptions,
   ) {
     return this
       .markdown()
       .removePTag()
-      .makeElement(tag, classArray, id)
+      .makeElement(tag, options)
   }
 
 
