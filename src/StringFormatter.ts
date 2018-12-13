@@ -1,6 +1,6 @@
 import marked from 'marked'
 
-import { IDynamicElement } from './types'
+import { IDynamicElement, IMakeElementOptions } from './types'
 import { globalMatch } from './helpers'
 
 
@@ -11,12 +11,6 @@ const regexs = {
   comments: /\/\*[.\s\n\r\S]*\*\//g,
   inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
   blockClass: /(!?)\{\[([^\]]+)\]([^\}]*)\}/g,
-}
-
-export interface IMakeElementOptions {
-  id?: string,
-  classNames?: string[],
-  attributes?: Array<{ attribute: string; value: string }>
 }
 
 
@@ -33,8 +27,7 @@ export class StringFormatter {
   public constructor(text: string) {
 
     if (typeof text !== 'string') {
-      console.error('Given ', text)
-      throw new Error(`constructor expected string`)
+      throw new Error(`constructor expected string, given ${text}`)
     }
 
     this._string = text
@@ -148,6 +141,7 @@ export class StringFormatter {
               value: file.trim(),
             }],
           })
+          .outerHTML
 
       const div = el.querySelector(`[${externalSelector} = ${external}]`) as Element
       if (!div) {
@@ -207,10 +201,11 @@ export class StringFormatter {
     const classNames = match[2] ? match[2].split(/\s/) : undefined
     const breakLine = Boolean(match[1])
 
-    const el = breakLine ? 'div' : 'span'
+    const tag = breakLine ? 'div' : 'span'
 
     const newWord = SF(text)
-      .makeElement(el, { classNames })
+      .makeElement(tag, { classNames })
+      .outerHTML
 
     return newWord
 
@@ -269,6 +264,7 @@ export class StringFormatter {
 
       const newHTML = newHTMLSF
         .makeElement(tag || 'div', { classNames })
+        .outerHTML
 
       const newText = start + newHTML + end
 
@@ -291,38 +287,34 @@ export class StringFormatter {
     return SF(replaced[replaced.length - 1])
   }
 
-
   /**
    * Makes an in-line element
    */
   public makeElement(
-    tag: string,
+    tag: string = 'div',
     options: IMakeElementOptions = {},
   ) {
 
     const { classNames, id, attributes } = options
 
-    let attrString = ''
+    const element = document.createElement(tag)
 
     if (attributes)
-      attributes.map((attr) => attrString += `${attr.attribute}="${attr.value}" `)
+      attributes.map((attr) => element.setAttribute(attr.attribute, attr.value))
 
-    const classes = classNames ? classNames.join(' ') : undefined
-    const classesString = classes ? `class="${classes}"` : ''
+    if (classNames)
+      classNames.map((name) => element.classList.add(name))
 
-    const idString = id ? `id="${id}" ` : ''
+    if (id) element.id = id
 
-    return `<${tag} ${idString}${classesString}${attrString}>${this._string}</${tag}>`
+    element.innerHTML = this._string
 
+    return element
   }
 
 
   /**
    * Makes an in-line element
-   *
-   * @param tag tag name
-   * @param classArray array of css classes
-   * @param id element id
    */
   public makeInlineMarkedElement(
     tag: string,

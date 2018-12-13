@@ -28,3 +28,9 @@ export interface IFile {
   data: string
   rendered?: boolean,
 }
+
+export interface IMakeElementOptions {
+  id?: string,
+  classNames?: string[],
+  attributes?: Array<{ attribute: string; value: string }>
+}
