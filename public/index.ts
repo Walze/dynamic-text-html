@@ -12,6 +12,7 @@ const filesURLs = {
     model: require('./text-files/model.md'),
     field1: require('./text-files/field1.md'),
     field2: require('./text-files/field2.md'),
+    importFile: require('./text-files/importFile.md'),
     field3: require('./text-files/field3.md'),
     list: require('./text-files/list.md'),
 }

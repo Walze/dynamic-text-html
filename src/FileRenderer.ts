@@ -33,6 +33,7 @@ export class FileRenderer {
 
   public attributes: IDynamicElementsObject
   public files: IFile[] = []
+  private _lastFile: IFile | undefined
 
   public constructor(
     public ext: string = 'md',
@@ -111,7 +112,6 @@ export class FileRenderer {
 
   public render(file: IFile) {
     this._checkValidFile(file)
-    this.files.push(file)
 
     const dataSF = SF(file.data)
       .removeComments()
@@ -128,6 +128,18 @@ export class FileRenderer {
     }
 
     dynamicEls.map(dynamicElementRendererMapFunction)
+
+
+    // // make after render here
+    // if (this._lastFile && file.name !== this._lastFile.name)
+    //   this.files
+    //     .map((file2) => !file2.rendered && this.render(file2))
+
+    file.rendered = dynamicEls.length > 0
+    this._lastFile = file
+
+    if (!this.files.includes(file))
+      this.files.push(file)
   }
 
   /**

@@ -23,4 +23,8 @@ export interface IFileRendererOptions {
   ext?: string,
 }
 
-export interface IFile { name: string, data: string }
+export interface IFile {
+  name: string,
+  data: string
+  rendered?: boolean,
+}
