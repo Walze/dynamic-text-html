@@ -137,7 +137,7 @@ export class StringFormatter {
         return SF('')
           .makeElement('div', {
             attributes: [{
-              attribute: 'import',
+              attribute: 'field',
               value: file.trim(),
             }],
           })

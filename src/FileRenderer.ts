@@ -33,20 +33,20 @@ export class FileRenderer {
 
   public attributes: IDynamicElementsObject
   public files: IFile[] = []
-  private _lastFile: IFile | undefined
+  // private _lastFile: IFile | undefined
 
   public constructor(
     public ext: string = 'md',
     public selectorReference: Element | Document = document,
   ) {
-    this.attributes = this._getDynamicElements()
+    this.attributes = this._getAttributes()
     this._listenKeysToShowFileNames()
   }
 
   /**
    *  Gets element by attribute and gets attributes value
    */
-  private _getAttributeElements = (
+  private _getDynamicElements = (
     name: DynamicTypes,
     selectorReference: Element | Document,
   ): IDynamicElement[] =>
@@ -61,12 +61,12 @@ export class FileRenderer {
   /**
    *  Gets all attributes
    */
-  private _getDynamicElements(
+  private _getAttributes(
     selectorReference: Element | Document = this.selectorReference,
   ): IDynamicElementsObject {
-    const field = this._getAttributeElements(selectors.field, selectorReference)
-    const lines = this._getAttributeElements(selectors.lines, selectorReference)
-    const loop = this._getAttributeElements(selectors.loops, selectorReference)
+    const field = this._getDynamicElements(selectors.field, selectorReference)
+    const lines = this._getDynamicElements(selectors.lines, selectorReference)
+    const loop = this._getDynamicElements(selectors.loops, selectorReference)
 
     return { field, lines, loop }
   }
@@ -78,7 +78,7 @@ export class FileRenderer {
     type: DynamicTypes,
     selectorReference: Element | Document = this.selectorReference,
   ) {
-    return this._getAttributeElements(type, selectorReference)
+    return this._getDynamicElements(type, selectorReference)
   }
 
   /**
@@ -132,19 +132,14 @@ export class FileRenderer {
         .string
 
       this._renderByType(dyElement, text)
+
       this._setFileNameToggle(file.name, dyElement.element)
     }
 
     dynamicEls.map(_render)
 
-
-    // // make after render here
-    // if (this._lastFile && file.name !== this._lastFile.name)
-    //   this.files
-    //     .map((file2) => !file2.rendered && this.render(file2))
-
     file.rendered = dynamicEls.length > 0
-    this._lastFile = file
+    // this._lastFile = file
 
     if (!this.files.includes(file))
       this.files.push(file)
