@@ -15,7 +15,7 @@ export const selectors = {
   loops: DynamicTypes.loop,
   model: '.model',
   model_line: '.model-line',
-  line: '[line]',
+  line: /\[line-?(\d*)\]/g,
 }
 
 const markdownLine = (lineTxt: string) => SF(lineTxt)
@@ -24,8 +24,10 @@ const markdownLine = (lineTxt: string) => SF(lineTxt)
   .string
   .trim()
 
-const getMarkedLines = (data: string) => SF(data)
+const getLines = (data: string) => SF(data)
   .everyNthLineBreak(1)
+
+const getMarkedLines = (data: string) => getLines(data)
   .map(markdownLine)
 
 
@@ -179,13 +181,13 @@ export class FileRenderer {
    *  Renders lines attribute
    */
   private _renderLines = ({ element: el }: IDynamicElement, data: string) => {
-    const linesArray = getMarkedLines(data)
+    const linesArray = getLines(data)
 
-    const lines = Array.from(el.querySelectorAll(selectors.line))
+    let index = 0
 
-    const renderLine = (line: Element, i: number) => line.innerHTML = linesArray[i]
+    console.log(linesArray)
 
-    lines.map(renderLine)
+    el.innerHTML = el.innerHTML.replace(selectors.line, () => linesArray[index++])
   }
 
   /**
@@ -217,7 +219,6 @@ export class FileRenderer {
 
     el.innerHTML = newHTML
   }
-
 
   /**
    *  Checks is the file is valid

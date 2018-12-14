@@ -49,7 +49,6 @@ export class StringFormatter {
 
   }
 
-
   /**
    * Splits on every line break
    */
@@ -155,7 +154,6 @@ export class StringFormatter {
       return newText
     }
 
-
   /**
    *  removes ./
    */
@@ -192,7 +190,6 @@ export class StringFormatter {
     return SF(marked(markedClasses))
 
   }
-
 
   private _inlineClassReplacer = (...match: string[]) => {
 
@@ -234,7 +231,9 @@ export class StringFormatter {
       const replace = match[0]
       const removeP = !!match[1]
       const classNames = match[2].split(/\s+/)
-      const { 0: tag } = match[3].split(/\s+/)
+      const { 0: tag } = match[3]
+        .trim()
+        .split(/\s+/)
 
       const startI = previousText.indexOf(replace)
       if (startI === -1) {
@@ -312,7 +311,6 @@ export class StringFormatter {
     return element
   }
 
-
   /**
    * Makes an in-line element
    */
@@ -326,7 +324,6 @@ export class StringFormatter {
       .makeElement(tag, options)
   }
 
-
   /**
    * Makes an in-line string
    */
@@ -336,7 +333,6 @@ export class StringFormatter {
       .removePTag()
       .string
   }
-
 
   /**
    *  Maps array then joins it

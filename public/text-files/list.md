@@ -9,7 +9,7 @@
 Inline example {red}inline  
 lorem ipsum 
 
-**Title 2**    
+www.google.com  
 
 taosdingoasdingoisda {lines}*asdf2* ngoiasndgionads12 {green}asdf
 
