@@ -660,10 +660,10 @@
   resolved "https://registry.yarnpkg.com/@types/marked/-/marked-0.5.0.tgz#4b91c66ee8cf0abb6938e02fdec207279959962e"
   integrity sha512-5uRumM3yeMj+JcvWGku/FRJJCmSWZczLd8FJf76a90YCltRHVpjF2gKHiL6U+pi4qyATn7HvxR0Mk7mDySwaOQ==
 
-"@types/node@*", "@types/node@^10.11.7", "@types/node@^10.12.14":
-  version "10.12.14"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.14.tgz#c03b6380c5c301be0499ecd143b99b76ebe45678"
-  integrity sha512-0rVcFRhM93kRGAU88ASCjX9Y3FWDCh+33G5Z5evpKOea4xcpLqDGwmo64+DjgaSezTN5j9KdnUzvxhOw7fNciQ==
+"@types/node@*", "@types/node@^10.11.7", "@types/node@^10.12.15":
+  version "10.12.15"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.15.tgz#20e85651b62fd86656e57c9c9bc771ab1570bc59"
+  integrity sha512-9kROxduaN98QghwwHmxXO2Xz3MaWf+I1sLVAA6KJDF5xix+IyXVhds0MAfdNwtcpSrzhaTsNB0/jnL86fgUhqA==
 
 "@types/q@^1.5.1":
   version "1.5.1"
@@ -1452,14 +1452,14 @@ caniuse-api@^3.0.0:
     lodash.uniq "^4.5.0"
 
 caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
-  version "1.0.30000918"
-  resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000918.tgz#650a34372ced440a79fa600644667802c6a4b9c2"
-  integrity sha512-ZaBZBV3FSuGf1/rOEMY+hfyb2GNgOY9vXQzBSVtXEeLTbYu5y/qcXeu8oFXG6WX9LhLf+v+JEH8lT7YWUHb6VA==
+  version "1.0.30000921"
+  resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000921.tgz#2aa78193e23539634abcf0248919d5901506c53b"
+  integrity sha512-sAvmRuxZ457rlTK+ydUMpmeXjVfkiXQXv0POTdpHEdKrVwEQaeZqJgQA5MH7sKAGTGxzlLcDpfoNkpVXw09X5Q==
 
 caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000912:
-  version "1.0.30000918"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000918.tgz#6288f79da3c5c8b45e502f47ad8f3eb91f1379a9"
-  integrity sha512-CAZ9QXGViBvhHnmIHhsTPSWFBujDaelKnUj7wwImbyQRxmXynYqKGi3UaZTSz9MoVh+1EVxOS/DFIkrJYgR3aw==
+  version "1.0.30000921"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000921.tgz#7a607c1623444b22351d834e093aedda3c42fbe8"
+  integrity sha512-Bu09ciy0lMWLgpYC77I0YGuI8eFRBPPzaSOYJK1jTI64txCphYCqnWbxJYjHABYVt/TYX/p3jNjLBR87u1Bfpw==
 
 chalk@^1.1.3:
   version "1.1.3"
@@ -1899,10 +1899,10 @@ css-declaration-sorter@^4.0.1:
     postcss "^7.0.1"
     timsort "^0.3.0"
 
-css-loader@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/css-loader/-/css-loader-2.0.0.tgz#f0f7469dc8e750dace97534328ed80395b5c575b"
-  integrity sha512-3Fq8HJYs7ruBiDpJA/w2ZROtivA769ePuH3/vgPdOB+FQiotErJ7VJYRZq86SPRVFaccn1wEktUnaaUyf+Uslw==
+css-loader@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/css-loader/-/css-loader-2.0.1.tgz#2e51a15449ab3f7195b7e1bc00a407460016a3b3"
+  integrity sha512-XIVwoIOzSFRVsafOKa060GJ/A70c0IP/C1oVPHEX4eHIFF39z0Jl7j8Kua1SUTiqWDupUnbY3/yQx9r7EUB35w==
   dependencies:
     icss-utils "^4.0.0"
     loader-utils "^1.0.2"
@@ -2436,9 +2436,9 @@ ee-first@1.1.1:
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
 electron-to-chromium@^1.2.7, electron-to-chromium@^1.3.86:
-  version "1.3.90"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.90.tgz#b4c51b8303beff18f2b74817402bf4898e09558a"
-  integrity sha512-IjJZKRhFbWSOX1w0sdIXgp4CMRguu6UYcTckyFF/Gjtemsu/25eZ+RXwFlV+UWcIueHyQA1UnRJxocTpH5NdGA==
+  version "1.3.91"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.91.tgz#d74437a753b122aa6eca7c722055004d3627635d"
+  integrity sha512-wOWwM4vQpmb97VNkExnwE5e/sUMUb7NXurlEnhE89JOarUp6FOOMKjtTGgj9bmqskZkeRA7u+p0IztJ/y2OP5Q==
 
 elliptic@^6.0.0:
   version "6.4.1"

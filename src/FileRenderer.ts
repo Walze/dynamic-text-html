@@ -181,7 +181,7 @@ export class FileRenderer {
    *  Renders lines attribute
    */
   private _renderLines = ({ element: el }: IDynamicElement, data: string) => {
-    const linesArray = getLines(data)
+    const linesArray = getMarkedLines(data)
 
     let index = 0
 
