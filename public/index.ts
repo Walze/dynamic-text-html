@@ -1,7 +1,8 @@
-import { FileRenderer, fetchFiles } from '../src/barrel'
+import { FileRenderer } from './../src/FileRenderer'
+import { makesFiles } from './../src/helpers'
 
 // tslint:disable-next-line:no-implicit-dependencies
-import '@babel/polyfill'
+// import '@babel/polyfill'
 import './css/main.css'
 
 
@@ -18,11 +19,7 @@ const filesURLs = {
 }
 
 const renderer = new FileRenderer()
-
 console.log(renderer)
 
-fetchFiles(filesURLs, renderer.ext)
-    .map(async (filePromise) => {
-        renderer.render(await filePromise)
-    })
-
+makesFiles(filesURLs, renderer.ext)
+    .map((file) => renderer.render(file))

@@ -18,7 +18,15 @@ module.exports = {
       {
         test: /\.md$/,
         use: 'raw-loader'
-      }
+      },
+      // {
+      //   test: /\.(png|jpg|gif|md)$/,
+      //   use: [
+      //     {
+      //       loader: 'file-loader',
+      //     }
+      //   ]
+      // }
     ]
   },
   resolve: {
@@ -27,11 +35,7 @@ module.exports = {
   output: {
     filename: '[name].bundle.js',
     chunkFilename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'build')
-  },
-  devServer: {
-    contentBase: path.join(__dirname, 'dist'),
-    port: 9000
+    path: path.resolve(__dirname, 'dist')
   },
   plugins: [
     new HtmlWebpackPlugin({

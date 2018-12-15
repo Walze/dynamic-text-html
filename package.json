@@ -4,13 +4,13 @@
   "main": "dist/barrel.js",
   "typings": "./typings.d.ts",
   "scripts": {
-    "start": "parcel public/index.html --open --log-level 4 --no-cache",
+    "start": "webpack-dev-server --mode=development --progress --colors --open",
     "build-wp": "webpack --mode=production --progress --colors",
     "build": "tsc --outDir ./dist",
-    "deploy": "yarn build && yarn version"
+    "deploy": "yarn build && npm publish"
   },
   "devDependencies": {
-    "@babel/core": "^7.2.0",
+    "@babel/core": "^7.2.2",
     "@babel/polyfill": "^7.0.0",
     "@babel/preset-env": "^7.2.0",
     "@types/marked": "^0.5.0",
@@ -19,7 +19,6 @@
     "@types/webpack-env": "^1.13.6",
     "css-loader": "^2.0.1",
     "html-webpack-plugin": "^3.2.0",
-    "parcel-bundler": "^1.10.3",
     "raw-loader": "^1.0.0",
     "style-loader": "^0.23.1",
     "ts-loader": "^5.3.1",
@@ -27,7 +26,8 @@
     "typescript": "^3.2.2",
     "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.10"
+    "webpack-dev-server": "^3.1.10",
+    "file-loader": "^2.0.0"
   },
   "dependencies": {
     "marked": "^0.5.2"
