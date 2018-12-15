@@ -104,7 +104,8 @@ export class FileRenderer {
     const elementReferenceHandler = (item: IDynamicElement | undefined) => {
       const dynamicElement = item as IDynamicElement
 
-      if (checkedElements.includes(dynamicElement.element)) return dynamicElement
+      if (checkedElements.includes(dynamicElement.element))
+        return dynamicElement
 
       const passed = this._checkElementInBody(dynamicElement, file)
 
@@ -163,7 +164,7 @@ export class FileRenderer {
         this._renderLoops(dyElement, text)
         break
       default:
-        throw new Error('Tried rendering unknown type')
+        throw new Error('Tried rendering unknown dynamic element type')
     }
 
   }
@@ -184,8 +185,6 @@ export class FileRenderer {
     const linesArray = getMarkedLines(data)
 
     let index = 0
-
-    console.log(linesArray)
 
     el.innerHTML = el.innerHTML.replace(selectors.line, () => linesArray[index++])
   }
