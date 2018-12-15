@@ -117,27 +117,30 @@ export class StringFormatter {
   }
 
 
-  public replaceExternal(elAttr: IDynamicElement): StringFormatter {
-    const newText = this._string
-      .replace(regexs.external, this._externalReplacer(elAttr))
-      .replace(/>\s+</gu, "><")
+  public replaceExternal(elAttr: IDynamicElement) {
 
-    return SF(newText)
+    const obj = this._replaceExternal(elAttr)
+
+    return obj
   }
 
-  /**
-   *  Function generator that replaces the [[external]] tag
-   */
-  private _externalReplacer = ({ element: el, file: dyFile }: IDynamicElement) =>
-    (...args: string[]) => {
+  private _replaceExternal(elAttr: IDynamicElement) {
+    const { element: el, file: dyFile } = elAttr
+    let imported = false
+
+    /** Function generator that replaces the [[external]] tag */
+    const _externalReplacer = (...args: string[]) => {
       const [, external, file] = args
 
-      if (file)
+      if (file) {
+        imported = true
+
         return SF('')
           .makeElement('div', {
             attributes: [{ attribute: 'field', value: file.trim() }],
           })
           .outerHTML
+      }
 
       const div = el.querySelector(`[${externalSelector} = ${external}]`) as Element
       if (!div) {
@@ -146,10 +149,20 @@ export class StringFormatter {
         return ''
       }
 
-      const newText = div.outerHTML.trim()
-
-      return newText
+      return div.outerHTML.trim()
     }
+
+    const text = this._string
+      .replace(regexs.external, _externalReplacer)
+      .replace(/>\s+</gu, "><")
+
+
+    return {
+      text,
+      imported,
+    }
+  }
+
 
   /**
    *  removes ./

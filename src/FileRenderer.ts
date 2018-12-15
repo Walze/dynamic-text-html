@@ -130,9 +130,8 @@ export class FileRenderer {
     const dynamicEls = this._matchAttributes(file)
 
     const _render = (dyElement: IDynamicElement) => {
-      const text = dataSF
-        .replaceExternal(dyElement)
-        .string
+      const replaced = dataSF.replaceExternal(dyElement)
+      const text = replaced.text
 
       this._renderByType(dyElement, text)
 
