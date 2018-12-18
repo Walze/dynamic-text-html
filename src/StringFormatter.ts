@@ -93,7 +93,7 @@ export class StringFormatter {
         groups[groupsIndex] = ''
 
       if (isEmpty)
-        breakCounter++
+        breakCounter += 1
       else
         breakCounter = 0
 
@@ -105,7 +105,7 @@ export class StringFormatter {
         blocked = false
 
       if (goToNextGroup && !blocked) {
-        groupsIndex++
+        groupsIndex += 1
         blocked = true
       }
 

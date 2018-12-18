@@ -15,7 +15,7 @@ export const selectors = {
   loops: DynamicTypes.loop,
   model: '.model',
   model_line: '.model-line',
-  line: /\[line-?(\d*)\]/g,
+  line: /\[line-?(-)?(\d*)\]/g,
 }
 
 const markdownLine = (lineTxt: string) => SF(lineTxt)
@@ -183,9 +183,31 @@ export class FileRenderer {
   private _renderLines = ({ element: el }: IDynamicElement, data: string) => {
     const linesArray = getMarkedLines(data)
 
+    console.warn(linesArray)
+
     let index = 0
 
-    el.innerHTML = el.innerHTML.replace(selectors.line, () => linesArray[index++])
+    el.innerHTML = el.innerHTML.replace(selectors.line, (...args: string[]) => {
+
+
+      const skip = !!args[1]
+      const line = parseInt(args[2], 10)
+      const text = linesArray[index]
+
+      if (skip) {
+        index += 1
+
+        return ''
+      }
+
+      if (!isNaN(line)) {
+        return linesArray[line]
+      }
+
+      index += 1
+
+      return text
+    })
   }
 
   /**
