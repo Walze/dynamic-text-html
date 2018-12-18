@@ -1,3 +1,4 @@
+import { makeFile } from './helpers';
 import '../css/dynamic-files.css'
 
 import { SF } from './StringFormatter'
@@ -54,11 +55,15 @@ export class FileRenderer {
   ): IDynamicElement[] =>
     Array
       .from(selectorReference.querySelectorAll(`[${name}]`))
-      .map((element) => ({
-        element,
-        type: name,
-        file: element.getAttribute(name) as string,
-      }))
+      .map(this._makeDynamicElement(name))
+
+  private _makeDynamicElement = (type: DynamicTypes, fileName?: string) =>
+    (element: Element): IDynamicElement => ({
+      element,
+      type,
+      file: fileName || element.getAttribute(type) as string,
+    })
+
 
   /**
    *  Gets all attributes
@@ -87,7 +92,7 @@ export class FileRenderer {
    * Returns all attributes that matches in file name
    */
   private _matchAttributes(file: IFile) {
-    const match = ({ file: name }: IDynamicElement) => `${name}.${this.ext}` === file.name
+    const match = ({ file: name }: IDynamicElement) => name === file.name
 
     const field = this.attributes.field.filter(match)
     const line = this.attributes.lines.filter(match)
@@ -133,7 +138,9 @@ export class FileRenderer {
       const replaced = dataSF.replaceExternal(dyElement)
       const text = replaced.text
 
-      this._renderByType(dyElement, text)
+      const newFile = makeFile(file.name, text, this.ext)
+
+      this._renderByType(dyElement, newFile)
 
       this._setFileNameToggle(file.name, dyElement.element)
     }
@@ -150,17 +157,17 @@ export class FileRenderer {
   /**
    * Renders element by given name
    */
-  private _renderByType(dyElement: IDynamicElement, text: string) {
+  private _renderByType(dyElement: IDynamicElement, file: IFile) {
 
     switch (dyElement.type) {
       case DynamicTypes.field:
-        this._renderField(dyElement, text)
+        this._renderField(dyElement, file)
         break
       case DynamicTypes.lines:
-        this._renderLines(dyElement, text)
+        this._renderLines(dyElement, file)
         break
       case DynamicTypes.loop:
-        this._renderLoops(dyElement, text)
+        this._renderLoops(dyElement, file)
         break
       default:
         throw new Error('Tried rendering unknown dynamic element type')
@@ -171,7 +178,7 @@ export class FileRenderer {
   /**
    *  Renders field attribute
    */
-  private _renderField = ({ element: el }: IDynamicElement, data: string) => {
+  private _renderField = ({ element: el }: IDynamicElement, { data }: IFile) => {
     el.innerHTML = SF(data)
       .markdown()
       .string
@@ -180,16 +187,12 @@ export class FileRenderer {
   /**
    *  Renders lines attribute
    */
-  private _renderLines = ({ element: el }: IDynamicElement, data: string) => {
+  private _renderLines = ({ element: el }: IDynamicElement, { data }: IFile) => {
     const linesArray = getMarkedLines(data)
-
-    console.warn(linesArray)
 
     let index = 0
 
     el.innerHTML = el.innerHTML.replace(selectors.line, (...args: string[]) => {
-
-
       const skip = !!args[1]
       const line = parseInt(args[2], 10)
       const text = linesArray[index]
@@ -213,7 +216,8 @@ export class FileRenderer {
   /**
    *  Renders the loop attribute
    */
-  private _renderLoops = ({ element: el }: IDynamicElement, data: string) => {
+  private _renderLoops = ({ element: el }: IDynamicElement, file: IFile) => {
+    const { data } = file
     const linesArray = getMarkedLines(data)
 
     const model = el.querySelector(selectors.model)
@@ -226,6 +230,7 @@ export class FileRenderer {
 
     const markdownLoopLines = (lineTxt: string) => {
       const div = model.cloneNode(true) as Element
+
       const line = div.querySelector(selectors.model_line) as Element
 
       line.innerHTML = SF(lineTxt)
@@ -268,7 +273,8 @@ export class FileRenderer {
       console.warn(
         'Element is not on body, probably lost reference.',
         'Getting fields and lines again, this may cause performance decrease.',
-        'On file:', file.name,
+        'Fix your render order.',
+        'File:', file.nameWExt,
       )
 
       this.attributes[elAttr.type] = this._getAttribute(elAttr.type)

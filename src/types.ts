@@ -25,6 +25,7 @@ export interface IFileRendererOptions {
 
 export interface IFile {
   name: string,
+  nameWExt: string,
   data: string
   rendered?: boolean,
 }
