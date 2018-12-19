@@ -1,4 +1,4 @@
-import { makeFile } from './helpers';
+import { makeFile, globalMatch } from './helpers';
 import '../css/dynamic-files.css'
 
 import { SF } from './StringFormatter'
@@ -14,6 +14,8 @@ export const selectors = {
   field: DynamicTypes.field,
   lines: DynamicTypes.lines,
   loops: DynamicTypes.loop,
+  external: DynamicTypes.external,
+  externalRGX: /\[\[(.+)?\](.+)?\]/g,
   model: '.model',
   model_line: '.model-line',
   line: /\[line-?(-)?(\d*)\]/g,
@@ -64,7 +66,6 @@ export class FileRenderer {
       file: fileName || element.getAttribute(type) as string,
     })
 
-
   /**
    *  Gets all attributes
    */
@@ -74,8 +75,9 @@ export class FileRenderer {
     const field = this._getDynamicElements(selectors.field, selectorReference)
     const lines = this._getDynamicElements(selectors.lines, selectorReference)
     const loop = this._getDynamicElements(selectors.loops, selectorReference)
+    const external = this._getDynamicElements(selectors.external, selectorReference)
 
-    return { field, lines, loop }
+    return { field, lines, loop, external }
   }
 
   /**
@@ -92,11 +94,11 @@ export class FileRenderer {
    * Returns all attributes that matches in file name
    */
   private _matchAttributes(file: IFile) {
-    const match = ({ file: name }: IDynamicElement) => name === file.name
+    const matchElWithString = ({ file: name }: IDynamicElement) => name === file.name
 
-    const field = this.attributes.field.filter(match)
-    const line = this.attributes.lines.filter(match)
-    const loop = this.attributes.loop.filter(match)
+    const field = this.attributes.field.filter(matchElWithString)
+    const line = this.attributes.lines.filter(matchElWithString)
+    const loop = this.attributes.loop.filter(matchElWithString)
 
     const arr = [
       ...field,
@@ -118,7 +120,7 @@ export class FileRenderer {
 
       return passed
         ? dynamicElement
-        : this.attributes[dynamicElement.type].find(match) as IDynamicElement
+        : this.attributes[dynamicElement.type].find(matchElWithString) as IDynamicElement
     }
 
     return arr
@@ -133,14 +135,30 @@ export class FileRenderer {
       .removeComments()
 
     const dynamicEls = this._matchAttributes(file)
+    console.warn(file, dynamicEls)
 
     const _render = (dyElement: IDynamicElement) => {
-      const replaced = dataSF.replaceExternal(dyElement)
-      const text = replaced.text
 
-      const newFile = makeFile(file.name, text, this.ext)
+      const matches = globalMatch(selectors.externalRGX, dataSF.string)
 
-      this._renderByType(dyElement, newFile)
+      if (matches)
+        matches.map((matchRGX) => {
+          const [match, external, fileName] = matchRGX
+
+          console.log(match)
+
+          if (external === file.name)
+            file.data = file.data
+              .replace(match, dyElement.element.outerHTML)
+              .replace(/>\s+</gu, "><")
+
+        })
+
+
+      // const replaced = dataSF.replaceExternal(dyElement)
+      // const text = replaced.text
+
+      this._renderByType(dyElement, file)
 
       this._setFileNameToggle(file.name, dyElement.element)
     }

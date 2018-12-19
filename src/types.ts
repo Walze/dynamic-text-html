@@ -3,6 +3,7 @@ export enum DynamicTypes {
   field = 'field',
   lines = 'lines',
   loop = 'loop',
+  external = 'external',
 }
 
 export interface IDynamicElement {
