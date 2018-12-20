@@ -63,7 +63,7 @@ export class FileRenderer {
     (element: Element): IDynamicElement => ({
       element,
       type,
-      file: fileName || element.getAttribute(type) as string,
+      value: fileName || element.getAttribute(type) as string,
     })
 
   /**
@@ -94,7 +94,7 @@ export class FileRenderer {
    * Returns all attributes that matches in file name
    */
   private _matchAttributes(file: IFile) {
-    const matchElWithString = ({ file: name }: IDynamicElement) => name === file.name
+    const matchElWithString = ({ value: name }: IDynamicElement) => name === file.name
 
     const field = this.attributes.field.filter(matchElWithString)
     const line = this.attributes.lines.filter(matchElWithString)
@@ -136,16 +136,12 @@ export class FileRenderer {
       .string
 
     const matchedDyEls = this._matchAttributes(file)
-    console.warn(file, matchedDyEls)
 
-    const matches = globalMatch(selectors.externalRGX, file.data)
-    if (matches)
-      matches.map((matchRGX) => {
+    const externalMatches = globalMatch(selectors.externalRGX, file.data)
+    if (externalMatches)
+      externalMatches.map((matchRGX) => {
+        // REFACTOR EVERYTHING HERE
         const [match, external, fileName] = matchRGX
-
-        const found = this.attributes
-          .external
-          .find(({ file: externalName }) => external === externalName)
 
         if (fileName) {
           const text = SF('')
@@ -154,17 +150,23 @@ export class FileRenderer {
             })
             .outerHTML
 
+          //
           file.data = file.data.replace(match, text)
 
           return
         }
 
-        // REFACTOR THIS
+        const found = this.attributes
+          .external
+          .find(({ value: externalName }) => external === externalName)
+
         if (found)
+          //
           file.data = file.data
             .replace(match, found.element.outerHTML.trim())
             .replace(/>\s+</gu, "><")
         else
+          //
           file.data = file.data
             .replace(match, 'NOT FOUND')
       })

@@ -8,7 +8,7 @@ export enum DynamicTypes {
 
 export interface IDynamicElement {
   element: Element;
-  file: string;
+  value: string;
   type: DynamicTypes;
 }
 
