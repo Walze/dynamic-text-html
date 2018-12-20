@@ -7,4 +7,4 @@ test6
 
 test3
 
-[[] importTest]
+[[prefab-test-1] importFile]

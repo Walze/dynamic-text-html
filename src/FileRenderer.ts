@@ -14,6 +14,7 @@ export const selectors = {
   field: DynamicTypes.field,
   lines: DynamicTypes.lines,
   loops: DynamicTypes.loop,
+  prefab: DynamicTypes.prefab,
   external: DynamicTypes.external,
   externalRGX: /\[\[(.+)?\](.+)?\]/g,
   model: '.model',
@@ -76,8 +77,9 @@ export class FileRenderer {
     const lines = this._getDynamicElements(selectors.lines, selectorReference)
     const loop = this._getDynamicElements(selectors.loops, selectorReference)
     const external = this._getDynamicElements(selectors.external, selectorReference)
+    const prefab = this._getDynamicElements(selectors.prefab, selectorReference)
 
-    return { field, lines, loop, external }
+    return { field, lines, loop, external, prefab }
   }
 
   /**
@@ -129,6 +131,10 @@ export class FileRenderer {
   }
 
   public render(file: IFile) {
+    if (file.rendered) {
+      console.warn('file already rendered', file)
+    }
+
     this._checkValidFile(file)
 
     file.data = SF(file.data)
@@ -151,6 +157,13 @@ export class FileRenderer {
 
     if (!this.files.includes(file))
       this.files.push(file)
+
+    this.files.map((f) => {
+      if (!f.rendered && f.name !== file.name) {
+        // debugger
+        this.render(f)
+      }
+    })
   }
 
   private _preRender(file: IFile) {
@@ -161,16 +174,25 @@ export class FileRenderer {
       externalMatches.map((matchRGX) => {
         const [match, external, fileName] = matchRGX
 
-
         if (fileName) {
-          const text = SF('')
-            .makeElement('div', {
-              attributes: [{ attribute: 'field', value: fileName }],
-            })
-            .outerHTML
+          const prefab = this.attributes.prefab.find((p) => p.value === external)
+          if (!prefab)
+            return console.warn(`External element '[external = ${external}]' not found on file ${file.nameWExt}`)
+
+          const type = prefab.element.getAttribute('type') as DynamicTypes | undefined
+          if (!type) return console.log('prefab has no type')
+
+          const element = prefab.element.cloneNode(true) as Element
+          element.removeAttribute('prefab')
+          element.removeAttribute('type')
+          element.setAttribute(type, fileName.trim())
+
+          const newDyEl = this._makeDynamicElement(type, fileName.trim())(element)
+          this.attributes[newDyEl.type].push(newDyEl)
 
           newFileData = newFileData
-            .replace(match, text)
+            .replace(match, element.outerHTML.trim())
+            .replace(/>\s+</gu, "><")
 
           return
         }
