@@ -1,4 +1,4 @@
-import { makeFile, globalMatch } from './helpers';
+import { globalMatch } from './helpers'
 import '../css/dynamic-files.css'
 
 import { SF } from './StringFormatter'
@@ -131,41 +131,52 @@ export class FileRenderer {
   public render(file: IFile) {
     this._checkValidFile(file)
 
-    const dataSF = SF(file.data)
+    file.data = SF(file.data)
       .removeComments()
+      .string
 
-    const dynamicEls = this._matchAttributes(file)
-    console.warn(file, dynamicEls)
+    const matchedDyEls = this._matchAttributes(file)
+    console.warn(file, matchedDyEls)
+
+    const matches = globalMatch(selectors.externalRGX, file.data)
+    if (matches)
+      matches.map((matchRGX) => {
+        const [match, external, fileName] = matchRGX
+
+        const found = this.attributes
+          .external
+          .find(({ file: externalName }) => external === externalName)
+
+        if (fileName) {
+          const text = SF('')
+            .makeElement('div', {
+              attributes: [{ attribute: 'field', value: fileName }],
+            })
+            .outerHTML
+
+          file.data = file.data.replace(match, text)
+
+          return
+        }
+
+        // REFACTOR THIS
+        if (found)
+          file.data = file.data
+            .replace(match, found.element.outerHTML.trim())
+            .replace(/>\s+</gu, "><")
+        else
+          file.data = file.data
+            .replace(match, 'NOT FOUND')
+      })
 
     const _render = (dyElement: IDynamicElement) => {
-
-      const matches = globalMatch(selectors.externalRGX, dataSF.string)
-
-      if (matches)
-        matches.map((matchRGX) => {
-          const [match, external, fileName] = matchRGX
-
-          console.log(match)
-
-          if (external === file.name)
-            file.data = file.data
-              .replace(match, dyElement.element.outerHTML)
-              .replace(/>\s+</gu, "><")
-
-        })
-
-
-      // const replaced = dataSF.replaceExternal(dyElement)
-      // const text = replaced.text
-
       this._renderByType(dyElement, file)
-
       this._setFileNameToggle(file.name, dyElement.element)
     }
 
-    dynamicEls.map(_render)
+    matchedDyEls.map(_render)
 
-    file.rendered = dynamicEls.length > 0
+    file.rendered = matchedDyEls.length > 0
     // this._lastFile = file
 
     if (!this.files.includes(file))

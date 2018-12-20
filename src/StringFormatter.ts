@@ -1,13 +1,10 @@
 import marked from 'marked'
 
-import { IDynamicElement, IMakeElementOptions } from './types'
+import { IMakeElementOptions } from './types'
 import { globalMatch } from './helpers'
 
 
-const externalSelector = 'external'
-
 const regexs = {
-  external: /\[\[(.+)?\](.+)?\]/g,
   comments: /\/\*[.\s\n\r\S]*\*\//g,
   inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
   blockClass: /(!?)\{\[([^\]]+)\]([^\}]*)\}/g,
@@ -115,54 +112,6 @@ export class StringFormatter {
 
     return groups
   }
-
-
-  public replaceExternal(elAttr: IDynamicElement) {
-
-    const obj = this._replaceExternal(elAttr)
-
-    return obj
-  }
-
-  private _replaceExternal(elAttr: IDynamicElement) {
-    const { element: el, file: dyFile } = elAttr
-    let imported = false
-
-    /** Function generator that replaces the [[external]] tag */
-    const _externalReplacer = (...args: string[]) => {
-      const [, external, file] = args
-
-      if (file) {
-        imported = true
-
-        return SF('')
-          .makeElement('div', {
-            attributes: [{ attribute: 'field', value: file.trim() }],
-          })
-          .outerHTML
-      }
-
-      const div = el.querySelector(`[${externalSelector} = ${external}]`) as Element
-      if (!div) {
-        console.warn(`External element '[${externalSelector} = ${external}]' not found on file ${dyFile}`)
-
-        return ''
-      }
-
-      return div.outerHTML.trim()
-    }
-
-    const text = this._string
-      .replace(regexs.external, _externalReplacer)
-      .replace(/>\s+</gu, "><")
-
-
-    return {
-      text,
-      imported,
-    }
-  }
-
 
   /**
    *  removes ./
