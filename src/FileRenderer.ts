@@ -135,46 +135,14 @@ export class FileRenderer {
       .removeComments()
       .string
 
-    const matchedDyEls = this._matchAttributes(file)
-
-    const externalMatches = globalMatch(selectors.externalRGX, file.data)
-    if (externalMatches)
-      externalMatches.map((matchRGX) => {
-        // REFACTOR EVERYTHING HERE
-        const [match, external, fileName] = matchRGX
-
-        if (fileName) {
-          const text = SF('')
-            .makeElement('div', {
-              attributes: [{ attribute: 'field', value: fileName }],
-            })
-            .outerHTML
-
-          //
-          file.data = file.data.replace(match, text)
-
-          return
-        }
-
-        const found = this.attributes
-          .external
-          .find(({ value: externalName }) => external === externalName)
-
-        if (found)
-          //
-          file.data = file.data
-            .replace(match, found.element.outerHTML.trim())
-            .replace(/>\s+</gu, "><")
-        else
-          //
-          file.data = file.data
-            .replace(match, 'NOT FOUND')
-      })
+    file.data = this._preRender(file)
 
     const _render = (dyElement: IDynamicElement) => {
       this._renderByType(dyElement, file)
       this._setFileNameToggle(file.name, dyElement.element)
     }
+
+    const matchedDyEls = this._matchAttributes(file)
 
     matchedDyEls.map(_render)
 
@@ -183,6 +151,47 @@ export class FileRenderer {
 
     if (!this.files.includes(file))
       this.files.push(file)
+  }
+
+  private _preRender(file: IFile) {
+    const externalMatches = globalMatch(selectors.externalRGX, file.data)
+    let newFileData = file.data
+
+    if (externalMatches) {
+      externalMatches.map((matchRGX) => {
+        const [match, external, fileName] = matchRGX
+
+
+        if (fileName) {
+          const text = SF('')
+            .makeElement('div', {
+              attributes: [{ attribute: 'field', value: fileName }],
+            })
+            .outerHTML
+
+          newFileData = newFileData
+            .replace(match, text)
+
+          return
+        }
+
+        const found = this.attributes.external
+          .find(({ value: externalName }) => external === externalName)
+
+        if (found)
+          newFileData = newFileData
+            .replace(match, found.element.outerHTML.trim())
+            .replace(/>\s+</gu, "><")
+        else {
+          console.warn(`External element '[external = ${external}]' not found on file ${file.nameWExt}`)
+
+          newFileData = newFileData
+            .replace(match, 'NOT FOUND')
+        }
+      })
+    }
+
+    return newFileData
   }
 
   /**
