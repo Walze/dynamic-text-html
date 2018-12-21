@@ -62,7 +62,8 @@ export class FileRenderer {
 
   private _makeDynamicElement = (type: DynamicTypes, fileName?: string) =>
     (element: Element): IDynamicElement => ({
-      element,
+      elementCopy: element,
+      DOMElement: element,
       type,
       value: fileName || element.getAttribute(type) as string,
     })
@@ -113,12 +114,12 @@ export class FileRenderer {
     const elementReferenceHandler = (item: IDynamicElement | undefined) => {
       const dynamicElement = item as IDynamicElement
 
-      if (checkedElements.includes(dynamicElement.element))
+      if (checkedElements.includes(dynamicElement.elementCopy))
         return dynamicElement
 
       const passed = this._checkElementInBody(dynamicElement, file)
 
-      checkedElements.push(dynamicElement.element)
+      checkedElements.push(dynamicElement.elementCopy)
 
       return passed
         ? dynamicElement
@@ -143,14 +144,14 @@ export class FileRenderer {
 
     file.data = this._preRender(file)
 
-    const _render = (dyElement: IDynamicElement) => {
+    const _renderDyEl = (dyElement: IDynamicElement) => {
       this._renderByType(dyElement, file)
-      this._setFileNameToggle(file.name, dyElement.element)
+      this._setFileNameToggle(file.name, dyElement.elementCopy)
     }
 
     const matchedDyEls = this._matchAttributes(file)
 
-    matchedDyEls.map(_render)
+    matchedDyEls.map(_renderDyEl)
 
     file.rendered = matchedDyEls.length > 0
     // this._lastFile = file
@@ -166,7 +167,7 @@ export class FileRenderer {
     })
   }
 
-  private _preRender(file: IFile) {
+  public _preRender(file: IFile) {
     const externalMatches = globalMatch(selectors.externalRGX, file.data)
     let newFileData = file.data
 
@@ -179,10 +180,10 @@ export class FileRenderer {
           if (!prefab)
             return console.warn(`External element '[external = ${external}]' not found on file ${file.nameWExt}`)
 
-          const type = prefab.element.getAttribute('type') as DynamicTypes | undefined
+          const type = prefab.elementCopy.getAttribute('type') as DynamicTypes | undefined
           if (!type) return console.log('prefab has no type')
 
-          const element = prefab.element.cloneNode(true) as Element
+          const element = prefab.elementCopy.cloneNode(true) as Element
           element.removeAttribute('prefab')
           element.removeAttribute('type')
           element.setAttribute(type, fileName.trim())
@@ -202,7 +203,7 @@ export class FileRenderer {
 
         if (found)
           newFileData = newFileData
-            .replace(match, found.element.outerHTML.trim())
+            .replace(match, found.elementCopy.outerHTML.trim())
             .replace(/>\s+</gu, "><")
         else {
           console.warn(`External element '[external = ${external}]' not found on file ${file.nameWExt}`)
@@ -234,13 +235,12 @@ export class FileRenderer {
       default:
         throw new Error('Tried rendering unknown dynamic element type')
     }
-
   }
 
   /**
    *  Renders field attribute
    */
-  private _renderField = ({ element: el }: IDynamicElement, { data }: IFile) => {
+  private _renderField = ({ elementCopy: el }: IDynamicElement, { data }: IFile) => {
     el.innerHTML = SF(data)
       .markdown()
       .string
@@ -249,7 +249,7 @@ export class FileRenderer {
   /**
    *  Renders lines attribute
    */
-  private _renderLines = ({ element: el }: IDynamicElement, { data }: IFile) => {
+  private _renderLines = ({ elementCopy: el }: IDynamicElement, { data }: IFile) => {
     const linesArray = getMarkedLines(data)
 
     let index = 0
@@ -278,7 +278,7 @@ export class FileRenderer {
   /**
    *  Renders the loop attribute
    */
-  private _renderLoops = ({ element: el }: IDynamicElement, file: IFile) => {
+  private _renderLoops = ({ elementCopy: el }: IDynamicElement, file: IFile) => {
     const { data } = file
     const linesArray = getMarkedLines(data)
 
@@ -331,7 +331,7 @@ export class FileRenderer {
    */
   private _checkElementInBody(elAttr: IDynamicElement, file: IFile) {
 
-    if (!document.body.contains(elAttr.element)) {
+    if (!document.body.contains(elAttr.elementCopy)) {
       console.warn(
         'Element is not on body, probably lost reference.',
         'Getting fields and lines again, this may cause performance decrease.',

@@ -1,7 +1,7 @@
 import marked from 'marked'
 
 import { IMakeElementOptions } from './types'
-import { globalMatch } from './helpers'
+import { globalMatch, regexIndexOf } from './helpers'
 
 
 const regexs = {
@@ -199,7 +199,7 @@ export class StringFormatter {
         return previousText
       }
 
-      let endI = previousText.indexOf('\n\r', startI)
+      let endI = regexIndexOf(previousText, /\n\r|\n\n/, startI)
       if (endI === -1) endI = previousText.length
 
       const start = previousText.substring(0, startI)

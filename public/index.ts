@@ -1,4 +1,5 @@
-import { FileRenderer } from './../src/FileRenderer'
+import { FileRenderer2 as FileRenderer } from './../src/FileRenderer2'
+// import { FileRenderer } from './../src/FileRenderer'
 import { makesFiles } from './../src/helpers'
 
 // tslint:disable-next-line:no-implicit-dependencies

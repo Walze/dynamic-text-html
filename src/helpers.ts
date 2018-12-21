@@ -80,5 +80,10 @@ export const globalMatch = (regex: RegExp, string: string) => {
     : matches
 }
 
+export const regexIndexOf = (text: string, re: RegExp, i = 0) => {
+  const indexInSuffix = text.slice(i)
+    .search(re)
 
+  return indexInSuffix < 0 ? indexInSuffix : indexInSuffix + i
+}
 
