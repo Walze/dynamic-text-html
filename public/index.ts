@@ -1,5 +1,5 @@
-import { FileRenderer2 as FileRenderer } from './../src/FileRenderer2'
-// import { FileRenderer } from './../src/FileRenderer'
+import { FileRenderer2 } from './../src/FileRenderer2'
+import { FileRenderer } from './../src/FileRenderer'
 import { makesFiles } from './../src/helpers'
 
 // tslint:disable-next-line:no-implicit-dependencies
@@ -19,8 +19,31 @@ const filesURLs = {
     list: require('./text-files/list.md'),
 }
 
-const renderer = new FileRenderer()
-console.log(renderer)
+const files = makesFiles(filesURLs, 'md')
 
-makesFiles(filesURLs, renderer.ext)
-    .map((file) => renderer.render(file))
+export const render2 = () => {
+    const t0 = performance.now()
+
+    const renderer = new FileRenderer2()
+    files.map((file) => renderer.render(file))
+
+    console.warn('\n FileRenderer 2:', performance.now() - t0, 'ms')
+}
+
+export const render1 = () => {
+    const t0 = performance.now()
+
+    const renderer = new FileRenderer()
+    files.map((file) => renderer.render(file))
+
+    console.warn('\n FileRenderer 1:', performance.now() - t0, 'ms')
+}
+
+// const saveDOM = document.body.innerHTML
+// document.body.innerHTML = saveDOM
+
+render2()
+
+
+
+
