@@ -161,7 +161,6 @@ export class FileRenderer {
 
     this.files.map((f) => {
       if (!f.rendered && f.name !== file.name) {
-        // debugger
         this.render(f)
       }
     })

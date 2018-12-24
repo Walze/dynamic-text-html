@@ -1,3 +1,4 @@
+import { mapObjToArray } from './helpers';
 import { SF } from './StringFormatter'
 import {
   DynamicTypes,
@@ -5,6 +6,7 @@ import {
   IFile,
   IDynamicElement,
 } from './types'
+import { globalMatch } from './barrel';
 
 
 export const selectors = {
@@ -114,22 +116,125 @@ export class FileRenderer2 {
 
 
     const matchedDyEls = this._matchAttributes(file)
-
+    // debugger
     matchedDyEls.map((dyElement) => {
       const div = document.createElement(dyElement.elementCopy.tagName)
       div.innerHTML = file.data
 
+      this._preRender(div)
       this._renderByType(dyElement, div)
+      this._postRender(div, file)
 
       dyElement.DOMElement.replaceWith(div)
     })
 
+    file.rendered = matchedDyEls.length > 0
+
+    if (!this.files.includes(file))
+      this.files.push(file)
+
   }
+
+
+  /**
+   * Gets dynamic element from new element, adds it to this.dyElements and renders unrendered files
+   */
+  private _postRender(div: HTMLElement, file: IFile) {
+    const dyEls = this._getDyElements(div)
+
+    return mapObjToArray(dyEls, (e) => e)
+      .flat()
+      .map((dy) => {
+        this.dyElements[dy.type].push(dy)
+
+        // if file already went by, find it and render it
+        const foundFile = this.files.find((f) => f.name === dy.value && !file.rendered)
+        if (foundFile)
+          this.render(foundFile)
+      })
+  }
+
+
+  /**
+   * Renders new Dynamic elements
+   */
+  private _preRender(element: Element) {
+    const externalMatches = globalMatch(selectors.externalRGX, element.innerHTML)
+
+    if (externalMatches) {
+      externalMatches.map((matchRGX) => {
+
+        const prefab = this._renderPrefab(matchRGX, element)
+        if (prefab) return
+
+        this._renderExternal(matchRGX, element)
+      })
+    }
+
+  }
+
+
+  private _renderExternal(matchRGX: RegExpMatchArray, element: Element) {
+    const { 0: match, 1: external } = matchRGX
+
+    const found = this.dyElements.external
+      .find(({ value: externalName }) => external === externalName)
+
+    if (found)
+      element.innerHTML = element.innerHTML
+        .replace(match, found.elementCopy.outerHTML.trim())
+        .replace(/>\s+</gu, "><")
+    else {
+      console.warn(`External element '[external = ${external}]' not found on file`)
+
+      element.innerHTML = element.innerHTML
+        .replace(match, 'NOT FOUND')
+    }
+  }
+
+
+  private _renderPrefab(matchRGX: RegExpMatchArray, element: Element) {
+    const { 0: match, 1: external } = matchRGX
+    let { 2: fileName } = matchRGX
+    if (!fileName) return false
+
+    fileName = fileName.trim()
+
+    // finds prefab
+    const prefab = this.dyElements.prefab.find((p) => p.value === external)
+    if (!prefab) {
+      console.warn(`External element '[external = ${external}]' not found on file`)
+
+      return false
+    }
+
+    // gets type of prefab
+    const type = prefab.elementCopy.getAttribute('type') as DynamicTypes | undefined
+    if (!type) {
+      console.log('prefab has no type')
+
+      return false
+    }
+
+    // copies prefab and manages attributes
+    const prefabCopy = prefab.elementCopy.cloneNode(true) as Element
+    prefabCopy.removeAttribute('prefab')
+    prefabCopy.removeAttribute('type')
+    prefabCopy.setAttribute(type, fileName)
+
+    // sets prefab html into dynamic elements html
+    element.innerHTML = element.innerHTML
+      .replace(match, prefabCopy.outerHTML.trim())
+      .replace(/>\s+</gu, "><")
+
+    return true
+  }
+
 
   /**
    * Renders element by given type
    */
-  public _renderByType(dyElement: IDynamicElement, div: Element) {
+  private _renderByType(dyElement: IDynamicElement, div: Element) {
 
     switch (dyElement.type) {
       case DynamicTypes.field:
@@ -155,6 +260,7 @@ export class FileRenderer2 {
       .markdown()
       .string
   }
+
 
   /**
    *  Renders lines attribute
