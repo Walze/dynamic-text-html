@@ -8,8 +8,8 @@ export enum DynamicTypes {
 }
 
 export interface IDynamicElement {
-  readonly elementCopy: Element;
-  readonly DOMElement: Element;
+  readonly elementCopy: HTMLElement;
+  readonly DOMElement: HTMLElement;
   readonly value: string;
   readonly type: DynamicTypes;
 }

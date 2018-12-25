@@ -43,7 +43,7 @@ export class FileRenderer {
 
   public constructor(
     public ext: string = 'md',
-    public selectorReference: Element | Document = document,
+    public selectorReference: HTMLElement | Document = document,
   ) {
     this.attributes = this._getAttributes()
     this._listenKeysToShowFileNames()
@@ -52,16 +52,17 @@ export class FileRenderer {
   /**
    *  Gets element by attribute and gets attributes value
    */
-  private _getDynamicElements = (
+  private _getDynamicElements(
     name: DynamicTypes,
-    selectorReference: Element | Document,
-  ): IDynamicElement[] =>
-    Array
-      .from(selectorReference.querySelectorAll(`[${name}]`))
-      .map(this._makeDynamicElement(name))
+    selectorReference: HTMLElement | Document,
+  ): IDynamicElement[] {
+    const els = Array.from(selectorReference.querySelectorAll(`[${name}]`)) as HTMLElement[]
+
+    return els.map(this._makeDynamicElement(name))
+  }
 
   private _makeDynamicElement = (type: DynamicTypes, fileName?: string) =>
-    (element: Element): IDynamicElement => ({
+    (element: HTMLElement): IDynamicElement => ({
       elementCopy: element,
       DOMElement: element,
       type,
@@ -72,7 +73,7 @@ export class FileRenderer {
    *  Gets all attributes
    */
   private _getAttributes(
-    selectorReference: Element | Document = this.selectorReference,
+    selectorReference: HTMLElement | Document = this.selectorReference,
   ): IDynamicElementsObject {
     const field = this._getDynamicElements(selectors.field, selectorReference)
     const lines = this._getDynamicElements(selectors.lines, selectorReference)
@@ -88,7 +89,7 @@ export class FileRenderer {
    */
   private _getAttribute(
     type: DynamicTypes,
-    selectorReference: Element | Document = this.selectorReference,
+    selectorReference: HTMLElement | Document = this.selectorReference,
   ) {
     return this._getDynamicElements(type, selectorReference)
   }
@@ -109,7 +110,7 @@ export class FileRenderer {
       ...loop,
     ]
 
-    const checkedElements: Element[] = []
+    const checkedElements: HTMLElement[] = []
 
     const elementReferenceHandler = (item: IDynamicElement | undefined) => {
       const dynamicElement = item as IDynamicElement
@@ -182,7 +183,7 @@ export class FileRenderer {
           const type = prefab.elementCopy.getAttribute('type') as DynamicTypes | undefined
           if (!type) return console.log('prefab has no type')
 
-          const element = prefab.elementCopy.cloneNode(true) as Element
+          const element = prefab.elementCopy.cloneNode(true) as HTMLElement
           element.removeAttribute('prefab')
           element.removeAttribute('type')
           element.setAttribute(type, fileName.trim())
@@ -290,9 +291,9 @@ export class FileRenderer {
     let newHTML = ''
 
     const markdownLoopLines = (lineTxt: string) => {
-      const div = model.cloneNode(true) as Element
+      const div = model.cloneNode(true) as HTMLElement
 
-      const line = div.querySelector(selectors.model_line) as Element
+      const line = div.querySelector(selectors.model_line) as HTMLElement
 
       line.innerHTML = SF(lineTxt)
         .markdown()
@@ -332,7 +333,7 @@ export class FileRenderer {
 
     if (!document.body.contains(elAttr.elementCopy)) {
       console.warn(
-        'Element is not on body, probably lost reference.',
+        'HTMLElement is not on body, probably lost reference.',
         'Getting fields and lines again, this may cause performance decrease.',
         'Fix your render order.',
         'File:', file.nameWExt,
@@ -346,7 +347,7 @@ export class FileRenderer {
     return true
   }
 
-  private _setFileNameToggle = (fileName: string, el: Element) => {
+  private _setFileNameToggle = (fileName: string, el: HTMLElement) => {
 
     const overlay = document.createElement('div')
     overlay.classList.add('show-file-name')
@@ -367,7 +368,7 @@ export class FileRenderer {
     }
     const keysReset = { ...keys }
 
-    let showFiles: Element[] | undefined
+    let showFiles: HTMLElement[] | undefined
     let state = false
 
     window.addEventListener('keydown', ({ key }) => {
