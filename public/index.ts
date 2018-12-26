@@ -27,7 +27,8 @@ export const render2 = () => {
     const renderer = new FileRenderer2()
     files.map((file) => renderer.render(file))
 
-    console.warn('\n FileRenderer 2:', performance.now() - t0, 'ms')
+    const diff = Math.ceil(performance.now() - t0)
+    console.warn('\n FileRenderer 2 =>', `${diff}ms`)
 }
 
 export const render1 = () => {
@@ -36,7 +37,8 @@ export const render1 = () => {
     const renderer = new FileRenderer()
     files.map((file) => renderer.render(file))
 
-    console.warn('\n FileRenderer 1:', performance.now() - t0, 'ms')
+    const diff = Math.ceil(performance.now() - t0)
+    console.warn('\n FileRenderer 1 =>', `${diff}ms`)
 }
 
 // const saveDOM = document.body.innerHTML
