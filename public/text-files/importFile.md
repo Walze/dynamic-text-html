@@ -1,3 +1,4 @@
-# imported file test
+{[green]}
+imported file test
 
 *nice*

@@ -29,7 +29,7 @@ const markdownLine = (lineTxt: string) => SF(lineTxt)
   .trim()
 
 const getLines = (data: string) => SF(data)
-  .everyNthLineBreak(1)
+  .splitConsecutiveLineBreaks(1)
 
 const getMarkedLines = (data: string) => getLines(data)
   .map(markdownLine)

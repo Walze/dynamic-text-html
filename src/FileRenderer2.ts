@@ -1,5 +1,5 @@
 import { mapObjToArray } from './helpers';
-import { SF } from './StringFormatter'
+import { SF, getMarkedLines } from './StringFormatter'
 import {
   DynamicTypes,
   IDynamicElementsObject,
@@ -17,24 +17,10 @@ export const selectors = {
   external: DynamicTypes.external,
   externalRGX: /\[\[(.+)?\](.+)?\]/g,
   model: '.model',
-  model_line: '.model-line',
   line: /\[line-?(-)?(\d*)\]/g,
 }
 
-const markdownLine = (lineTxt: string) => SF(lineTxt)
-  .markdown()
-  .removePTag()
-  .string
-  .trim()
-
-const getLines = (data: string) => SF(data)
-  .everyNthLineBreak(1)
-
-export const getMarkedLines = (data: string) => getLines(data)
-  .map(markdownLine)
-
 export class FileRenderer2 {
-
 
   public dyElements: IDynamicElementsObject
   public files: IFile[] = []
@@ -229,7 +215,7 @@ export class FileRenderer2 {
     // sets prefab html into dynamic elements html
     element.innerHTML = element.innerHTML
       .replace(match, prefabCopy.outerHTML.trim())
-      .replace(/>\s+</gu, "><")
+    // .replace(/>\s+</gu, "><")
 
     return true
   }
@@ -245,10 +231,10 @@ export class FileRenderer2 {
         this._renderField(div)
         break
       case DynamicTypes.lines:
-        this._renderLines(div)
+        this._renderLines(dyElement, div)
         break
       case DynamicTypes.loop:
-        this._renderLoops(dyElement, div)
+        this._renderLoop(dyElement, div)
         break
       default:
         throw new Error('Tried rendering unknown dynamic element type')
@@ -269,12 +255,13 @@ export class FileRenderer2 {
   /**
    *  Renders lines attribute
    */
-  private _renderLines = (el: HTMLElement) => {
-    const linesArray = getMarkedLines(el.innerHTML)
+  private _renderLines = (dyEl: IDynamicElement, newEl: HTMLElement, lines?: string[]) => {
+    const linesArray = lines || getMarkedLines(newEl.innerHTML.trim())
     let index = 0
 
-    el.innerHTML = el.innerHTML
+    newEl.innerHTML = dyEl.elementCopy.innerHTML
       .replace(selectors.line, (...args: string[]) => {
+
         const skip = !!args[1]
         const line = parseInt(args[2], 10)
         const text = linesArray[index]
@@ -299,33 +286,34 @@ export class FileRenderer2 {
   /**
    *  Renders the loop attribute
    */
-  private _renderLoops = (dyEl: IDynamicElement, el: HTMLElement) => {
-    const linesArray = getMarkedLines(el.innerHTML)
-
-    const model = dyEl.elementCopy.querySelector(selectors.model)
+  private _renderLoop = (dyEl: IDynamicElement, newEl: HTMLElement) => {
+    const loop = dyEl.elementCopy
+    const model = loop.querySelector(selectors.model)
     if (!model) throw new Error('model not found')
 
-    const modelLineDiv = dyEl.elementCopy.querySelector(selectors.model_line)
-    if (!modelLineDiv) throw new Error('Model line not found')
+    const breaks = Number(loop.getAttribute('breaks')) || 1
 
-    let newHTML = ''
+    const liness = SF(newEl.innerHTML)
+      .splitEveryNthLineBreak(breaks)
 
-    const div = model.cloneNode(true) as HTMLElement
+    const modelCopy = model.cloneNode(true) as HTMLElement
+    // loop.removeChild(model)
 
-    const markdownLoopLines = (lineTxt: string) => {
+    const newLoopDiv = document.createElement(newEl.tagName)
 
-      const line = div.querySelector(selectors.model_line) as HTMLElement
+    liness.map((a) => {
+      const newHTML = document.createElement(model.tagName)
 
-      line.innerHTML = SF(lineTxt)
-        .markdown()
-        .string
+      this._renderLines(
+        this._makeDynamicElement(DynamicTypes.lines, dyEl.value)(modelCopy),
+        newHTML,
+        a,
+      )
 
-      newHTML += div.outerHTML
-    }
+      newLoopDiv.append(newHTML)
+    })
 
-    linesArray.map(markdownLoopLines)
-
-    el.innerHTML = newHTML
+    newEl.innerHTML = newLoopDiv.innerHTML
   }
 
 

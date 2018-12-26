@@ -5,6 +5,7 @@ import { globalMatch, regexIndexOf } from './helpers'
 
 
 const regexs = {
+  lineBreak: /\r\n|\n\n/g,
   comments: /\/\*[.\s\n\r\S]*\*\//g,
   inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
   blockClass: /(!?)\{\[([^\]]+)\]([^\}]*)\}/g,
@@ -13,6 +14,18 @@ const regexs = {
 
 /** Helper for getting a StringFormatter instance */
 export const SF = (text: string) => new StringFormatter(text)
+
+export const markdownLine = (lineTxt: string) => SF(lineTxt)
+  .markdown()
+  .removePTag()
+  .string
+  .trim()
+
+export const getLines = (data: string) => SF(data)
+  .splitConsecutiveLineBreaks(1)
+
+export const getMarkedLines = (data: string) => getLines(data)
+  .map(markdownLine)
 
 /**
  * Used to help format strings
@@ -59,17 +72,54 @@ export class StringFormatter {
 
   }
 
-  public everyNthLineBreak = (everyN: number = 0, filterEmpty = true): string[] => {
 
-    const regex = /\r\n|\r|\n/ug
+  public splitEveryNthLineBreak = (nth: number, filter = true, markdown = true) => {
+    const regex = regexs.lineBreak
+    const lines = this._string
+      .split(regex)
+      .map((txt) =>
+        markdown ?
+          SF(txt.trim())
+            .markdown()
+            .removePTag()
+            .string
+          : txt,
+      )
+
+    const arr: string[][] = []
+    let index = 0
+
+    const split = (line: string, __: number) => {
+
+      if (filter && line === '')
+        return
+
+      if (!Array.isArray(arr[index]))
+        arr[index] = []
+
+      if (arr[index].length === nth) {
+        arr[index += 1] = []
+      }
+
+      arr[index].push(line)
+    }
+
+    lines.map(split)
+
+    return arr
+  }
+
+  public splitConsecutiveLineBreaks = (everyN: number = 0, filterEmpty = true): string[] => {
+
+    const regex = regexs.lineBreak
 
     const lines = this._string
-      .trim()
+      // .trim()
       .split(regex)
       .map((txt) => txt.trim())
 
 
-    if (everyN <= 0)
+    if (everyN <= 1)
       return filterEmpty ? lines.filter((txt) => txt) : lines
 
 
