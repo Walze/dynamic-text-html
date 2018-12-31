@@ -8,19 +8,7 @@ import {
   IFile,
   IDynamicElement,
 } from './types'
-
-
-export const selectors = {
-  field: DynamicTypes.field,
-  lines: DynamicTypes.lines,
-  loops: DynamicTypes.loop,
-  prefab: DynamicTypes.prefab,
-  external: DynamicTypes.external,
-  externalRGX: /\[\[(.+)?\](.+)?\]/g,
-  model: '.model',
-  model_line: '.model-line',
-  line: /\[line-?(-)?(\d*)\]/g,
-}
+import { selectors } from './FileRenderer2';
 
 const markdownLine = (lineTxt: string) => SF(lineTxt)
   .markdown()

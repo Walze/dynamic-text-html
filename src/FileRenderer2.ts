@@ -17,6 +17,7 @@ export const selectors = {
   external: DynamicTypes.external,
   externalRGX: /\[\[(.+)?\](.+)?\]/g,
   model: '.model',
+  model_line: '.model-line', // deprecated
   line: /\[line-?(-)?(\d*)\]/g,
 }
 
