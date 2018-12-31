@@ -1,18 +1,4 @@
-arquivo texto 2
-
-*italico*
-
-**negrito**
-
-***ambos***
-
-# teste
-
-## teste2
-
-### teste3
-
-![](https://www.w3schools.com/w3css/img_snowtops.jpg)
+# Field 2
 
 > ### Foo
 > bar  

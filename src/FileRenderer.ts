@@ -1,3 +1,4 @@
+import { globalMatch } from './helpers'
 import '../css/dynamic-files.css'
 
 import { SF } from './StringFormatter'
@@ -7,16 +8,7 @@ import {
   IFile,
   IDynamicElement,
 } from './types'
-
-
-export const selectors = {
-  field: DynamicTypes.field,
-  lines: DynamicTypes.lines,
-  loops: DynamicTypes.loop,
-  model: '.model',
-  model_line: '.model-line',
-  line: /\[line-?(-)?(\d*)\]/g,
-}
+import { selectors } from './FileRenderer2';
 
 const markdownLine = (lineTxt: string) => SF(lineTxt)
   .markdown()
@@ -25,7 +17,7 @@ const markdownLine = (lineTxt: string) => SF(lineTxt)
   .trim()
 
 const getLines = (data: string) => SF(data)
-  .everyNthLineBreak(1)
+  .splitConsecutiveLineBreaks(1)
 
 const getMarkedLines = (data: string) => getLines(data)
   .map(markdownLine)
@@ -39,38 +31,46 @@ export class FileRenderer {
 
   public constructor(
     public ext: string = 'md',
-    public selectorReference: Element | Document = document,
+    public selectorReference: HTMLElement | Document = document,
   ) {
     this.attributes = this._getAttributes()
     this._listenKeysToShowFileNames()
+    console.log('Deprecated, use FileRenderer2')
   }
 
   /**
    *  Gets element by attribute and gets attributes value
    */
-  private _getDynamicElements = (
+  private _getDynamicElements(
     name: DynamicTypes,
-    selectorReference: Element | Document,
-  ): IDynamicElement[] =>
-    Array
-      .from(selectorReference.querySelectorAll(`[${name}]`))
-      .map((element) => ({
-        element,
-        type: name,
-        file: element.getAttribute(name) as string,
-      }))
+    selectorReference: HTMLElement | Document,
+  ): IDynamicElement[] {
+    const els = Array.from(selectorReference.querySelectorAll(`[${name}]`)) as HTMLElement[]
+
+    return els.map(this._makeDynamicElement(name))
+  }
+
+  private _makeDynamicElement = (type: DynamicTypes, fileName?: string) =>
+    (element: HTMLElement): IDynamicElement => ({
+      elementCopy: element,
+      DOMElement: element,
+      type,
+      value: fileName || element.getAttribute(type) as string,
+    })
 
   /**
    *  Gets all attributes
    */
   private _getAttributes(
-    selectorReference: Element | Document = this.selectorReference,
+    selectorReference: HTMLElement | Document = this.selectorReference,
   ): IDynamicElementsObject {
     const field = this._getDynamicElements(selectors.field, selectorReference)
     const lines = this._getDynamicElements(selectors.lines, selectorReference)
     const loop = this._getDynamicElements(selectors.loops, selectorReference)
+    const external = this._getDynamicElements(selectors.external, selectorReference)
+    const prefab = this._getDynamicElements(selectors.prefab, selectorReference)
 
-    return { field, lines, loop }
+    return { field, lines, loop, external, prefab }
   }
 
   /**
@@ -78,7 +78,7 @@ export class FileRenderer {
    */
   private _getAttribute(
     type: DynamicTypes,
-    selectorReference: Element | Document = this.selectorReference,
+    selectorReference: HTMLElement | Document = this.selectorReference,
   ) {
     return this._getDynamicElements(type, selectorReference)
   }
@@ -87,11 +87,11 @@ export class FileRenderer {
    * Returns all attributes that matches in file name
    */
   private _matchAttributes(file: IFile) {
-    const match = ({ file: name }: IDynamicElement) => `${name}.${this.ext}` === file.name
+    const matchElWithString = ({ value: name }: IDynamicElement) => name === file.name
 
-    const field = this.attributes.field.filter(match)
-    const line = this.attributes.lines.filter(match)
-    const loop = this.attributes.loop.filter(match)
+    const field = this.attributes.field.filter(matchElWithString)
+    const line = this.attributes.lines.filter(matchElWithString)
+    const loop = this.attributes.loop.filter(matchElWithString)
 
     const arr = [
       ...field,
@@ -99,21 +99,21 @@ export class FileRenderer {
       ...loop,
     ]
 
-    const checkedElements: Element[] = []
+    const checkedElements: HTMLElement[] = []
 
     const elementReferenceHandler = (item: IDynamicElement | undefined) => {
       const dynamicElement = item as IDynamicElement
 
-      if (checkedElements.includes(dynamicElement.element))
+      if (checkedElements.includes(dynamicElement.elementCopy))
         return dynamicElement
 
       const passed = this._checkElementInBody(dynamicElement, file)
 
-      checkedElements.push(dynamicElement.element)
+      checkedElements.push(dynamicElement.elementCopy)
 
       return passed
         ? dynamicElement
-        : this.attributes[dynamicElement.type].find(match) as IDynamicElement
+        : this.attributes[dynamicElement.type].find(matchElWithString) as IDynamicElement
     }
 
     return arr
@@ -122,56 +122,114 @@ export class FileRenderer {
   }
 
   public render(file: IFile) {
-    this._checkValidFile(file)
-
-    const dataSF = SF(file.data)
-      .removeComments()
-
-    const dynamicEls = this._matchAttributes(file)
-
-    const _render = (dyElement: IDynamicElement) => {
-      const replaced = dataSF.replaceExternal(dyElement)
-      const text = replaced.text
-
-      this._renderByType(dyElement, text)
-
-      this._setFileNameToggle(file.name, dyElement.element)
+    if (file.rendered) {
+      console.warn('file already rendered', file)
     }
 
-    dynamicEls.map(_render)
+    this._checkValidFile(file)
 
-    file.rendered = dynamicEls.length > 0
+    file.data = SF(file.data)
+      .removeComments()
+      .string
+
+    file.data = this._preRender(file)
+
+    const _renderDyEl = (dyElement: IDynamicElement) => {
+      this._renderByType(dyElement, file)
+      this._setFileNameToggle(file.name, dyElement.elementCopy)
+    }
+
+    const matchedDyEls = this._matchAttributes(file)
+
+    matchedDyEls.map(_renderDyEl)
+
+    file.rendered = matchedDyEls.length > 0
     // this._lastFile = file
 
     if (!this.files.includes(file))
       this.files.push(file)
+
+    this.files.map((f) => {
+      if (!f.rendered && f.name !== file.name) {
+        this.render(f)
+      }
+    })
+  }
+
+  public _preRender(file: IFile) {
+    const externalMatches = globalMatch(selectors.externalRGX, file.data)
+    let newFileData = file.data
+
+    if (externalMatches) {
+      externalMatches.map((matchRGX) => {
+        const [match, external, fileName] = matchRGX
+
+        if (fileName) {
+          const prefab = this.attributes.prefab.find((p) => p.value === external)
+          if (!prefab)
+            return console.warn(`External element '[external = ${external}]' not found on file ${file.nameWExt}`)
+
+          const type = prefab.elementCopy.getAttribute('type') as DynamicTypes | undefined
+          if (!type) return console.log('prefab has no type')
+
+          const element = prefab.elementCopy.cloneNode(true) as HTMLElement
+          element.removeAttribute('prefab')
+          element.removeAttribute('type')
+          element.setAttribute(type, fileName.trim())
+
+          const newDyEl = this._makeDynamicElement(type, fileName.trim())(element)
+          this.attributes[newDyEl.type].push(newDyEl)
+
+          newFileData = newFileData
+            .replace(match, element.outerHTML.trim())
+            .replace(/>\s+</gu, "><")
+
+          return
+        }
+
+        const found = this.attributes.external
+          .find(({ value: externalName }) => external === externalName)
+
+        if (found)
+          newFileData = newFileData
+            .replace(match, found.elementCopy.outerHTML.trim())
+            .replace(/>\s+</gu, "><")
+        else {
+          console.warn(`External element '[external = ${external}]' not found on file ${file.nameWExt}`)
+
+          newFileData = newFileData
+            .replace(match, 'NOT FOUND')
+        }
+      })
+    }
+
+    return newFileData
   }
 
   /**
    * Renders element by given name
    */
-  private _renderByType(dyElement: IDynamicElement, text: string) {
+  private _renderByType(dyElement: IDynamicElement, file: IFile) {
 
     switch (dyElement.type) {
       case DynamicTypes.field:
-        this._renderField(dyElement, text)
+        this._renderField(dyElement, file)
         break
       case DynamicTypes.lines:
-        this._renderLines(dyElement, text)
+        this._renderLines(dyElement, file)
         break
       case DynamicTypes.loop:
-        this._renderLoops(dyElement, text)
+        this._renderLoops(dyElement, file)
         break
       default:
         throw new Error('Tried rendering unknown dynamic element type')
     }
-
   }
 
   /**
    *  Renders field attribute
    */
-  private _renderField = ({ element: el }: IDynamicElement, data: string) => {
+  private _renderField = ({ elementCopy: el }: IDynamicElement, { data }: IFile) => {
     el.innerHTML = SF(data)
       .markdown()
       .string
@@ -180,16 +238,12 @@ export class FileRenderer {
   /**
    *  Renders lines attribute
    */
-  private _renderLines = ({ element: el }: IDynamicElement, data: string) => {
+  private _renderLines = ({ elementCopy: el }: IDynamicElement, { data }: IFile) => {
     const linesArray = getMarkedLines(data)
-
-    console.warn(linesArray)
 
     let index = 0
 
     el.innerHTML = el.innerHTML.replace(selectors.line, (...args: string[]) => {
-
-
       const skip = !!args[1]
       const line = parseInt(args[2], 10)
       const text = linesArray[index]
@@ -213,7 +267,8 @@ export class FileRenderer {
   /**
    *  Renders the loop attribute
    */
-  private _renderLoops = ({ element: el }: IDynamicElement, data: string) => {
+  private _renderLoops = ({ elementCopy: el }: IDynamicElement, file: IFile) => {
+    const { data } = file
     const linesArray = getMarkedLines(data)
 
     const model = el.querySelector(selectors.model)
@@ -225,8 +280,9 @@ export class FileRenderer {
     let newHTML = ''
 
     const markdownLoopLines = (lineTxt: string) => {
-      const div = model.cloneNode(true) as Element
-      const line = div.querySelector(selectors.model_line) as Element
+      const div = model.cloneNode(true) as HTMLElement
+
+      const line = div.querySelector(selectors.model_line) as HTMLElement
 
       line.innerHTML = SF(lineTxt)
         .markdown()
@@ -264,11 +320,12 @@ export class FileRenderer {
    */
   private _checkElementInBody(elAttr: IDynamicElement, file: IFile) {
 
-    if (!document.body.contains(elAttr.element)) {
+    if (!document.body.contains(elAttr.elementCopy)) {
       console.warn(
-        'Element is not on body, probably lost reference.',
+        'HTMLElement is not on body, probably lost reference.',
         'Getting fields and lines again, this may cause performance decrease.',
-        'On file:', file.name,
+        'Fix your render order.',
+        'File:', file.nameWExt,
       )
 
       this.attributes[elAttr.type] = this._getAttribute(elAttr.type)
@@ -279,7 +336,7 @@ export class FileRenderer {
     return true
   }
 
-  private _setFileNameToggle = (fileName: string, el: Element) => {
+  private _setFileNameToggle = (fileName: string, el: HTMLElement) => {
 
     const overlay = document.createElement('div')
     overlay.classList.add('show-file-name')
@@ -300,7 +357,7 @@ export class FileRenderer {
     }
     const keysReset = { ...keys }
 
-    let showFiles: Element[] | undefined
+    let showFiles: HTMLElement[] | undefined
     let state = false
 
     window.addEventListener('keydown', ({ key }) => {

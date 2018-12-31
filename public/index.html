@@ -6,8 +6,7 @@
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <meta http-equiv='X-UA-Compatible' content='ie=edge'>
 
-  <!-- Compiled and minified CSS -->
-  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css' />
+  <link rel="stylesheet" href="../node_modules/materialize-css/dist/css/materialize.min.css">
 
   <title>Dynamic Text</title>
 
@@ -15,9 +14,11 @@
 
 <body class='container'>
 
+  <div prefab=prefab-test-1 type=field></div>
+
   <h2>Editavel</h2>
 
-  <div loop='loop'>
+  <div loop='loop' breaks=2>
 
     <div external='test4'>
       nice
@@ -27,8 +28,8 @@
 
       <label>line eg</label>
       <br>
-      <span class='model-line'></span>
-      <br>
+      <div class="red model-line">[line]</div>
+      <div class="blue">[line]</div>
       <br>
 
     </div>
@@ -38,8 +39,6 @@
   <hr>
   <hr>
   <hr>
-
-  <div field='field1'></div>
 
   <div field='field1'></div>
 
@@ -63,7 +62,7 @@
       <div>[line]</div>
       <div>[line]</div>
       <div>[line-0]</div>
-      <div>[line-3]</div>
+      <div>[line-2]</div>
       <div>[line--]</div>
 
       <a href=[line]>[line]</a>

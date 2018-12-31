@@ -10,7 +10,7 @@ export const mapObj = <A, B>(
   let index = 0
 
   for (const prop in object)
-    newObj[prop] = cb(object[prop], prop, index++)
+    newObj[prop] = cb(object[prop], prop, index += 1)
 
   return newObj
 
@@ -27,25 +27,29 @@ export const mapObjToArray = <A, B>(
 
   for (const prop in object)
     arr.push(
-      cb(object[prop], prop, index++),
+      cb(object[prop], prop, index += 1),
     )
 
   return arr
 
 }
 
-export const makeFile = (name: string, data: string): IFile => ({ name, data })
+export const makeFile = (name: string, data: string, ext: string): IFile => ({
+  name,
+  data,
+  nameWExt: `${name}.${ext}`,
+})
 
 
 export const makesFiles = (obj: IFileObject, ext: string) =>
-  mapObjToArray(obj, (text, name) => makeFile(`${name}.${ext}`, text))
+  mapObjToArray(obj, (text, name) => makeFile(name, text, ext))
 
 
 export const fetchMakeFile = (ext: string) =>
   (path: string, name: string) =>
     fetch(path)
       .then((response) => response.text())
-      .then((text) => makeFile(`${name}.${ext}`, text))
+      .then((text) => makeFile(name, text, ext))
 
 
 export const fetchFiles = (
@@ -76,5 +80,19 @@ export const globalMatch = (regex: RegExp, string: string) => {
     : matches
 }
 
+export const regexIndexOf = (text: string, re: RegExp, i = 0) => {
+  const indexInSuffix = text.slice(i)
+    .search(re)
+
+  return indexInSuffix < 0 ? indexInSuffix : indexInSuffix + i
+}
+
+
+export const replaceHTMLCodes = (str: string) =>
+  str.replace(/&amp;/g, '&')
+    .replace(/&gt;/g, '>')
+    .replace(/&lt;/g, '<')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, '\'')
 
 

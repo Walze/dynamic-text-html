@@ -3,12 +3,15 @@ export enum DynamicTypes {
   field = 'field',
   lines = 'lines',
   loop = 'loop',
+  external = 'external',
+  prefab = 'prefab',
 }
 
 export interface IDynamicElement {
-  element: Element;
-  file: string;
-  type: DynamicTypes;
+  readonly elementCopy: HTMLElement;
+  readonly DOMElement: HTMLElement;
+  readonly value: string;
+  readonly type: DynamicTypes;
 }
 
 export type IDynamicElementsObject = {
@@ -25,6 +28,7 @@ export interface IFileRendererOptions {
 
 export interface IFile {
   name: string,
+  nameWExt: string,
   data: string
   rendered?: boolean,
 }

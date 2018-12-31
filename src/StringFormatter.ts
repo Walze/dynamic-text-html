@@ -1,13 +1,11 @@
 import marked from 'marked'
 
-import { IDynamicElement, IMakeElementOptions } from './types'
-import { globalMatch } from './helpers'
+import { IMakeElementOptions } from './types'
+import { globalMatch, regexIndexOf, replaceHTMLCodes } from './helpers'
 
-
-const externalSelector = 'external'
 
 const regexs = {
-  external: /\[\[(.+)?\](.+)?\]/g,
+  lineBreak: /\r\n|\n\n/g,
   comments: /\/\*[.\s\n\r\S]*\*\//g,
   inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
   blockClass: /(!?)\{\[([^\]]+)\]([^\}]*)\}/g,
@@ -16,6 +14,18 @@ const regexs = {
 
 /** Helper for getting a StringFormatter instance */
 export const SF = (text: string) => new StringFormatter(text)
+
+export const markdownLine = (lineTxt: string) => SF(lineTxt)
+  .markdown()
+  .removePTag()
+  .string
+  .trim()
+
+export const getLines = (data: string) => SF(data)
+  .splitConsecutiveLineBreaks(1)
+
+export const getMarkedLines = (data: string) => getLines(data)
+  .map(markdownLine)
 
 /**
  * Used to help format strings
@@ -30,7 +40,7 @@ export class StringFormatter {
       throw new Error(`constructor expected string, given ${text}`)
     }
 
-    this._string = text
+    this._string = replaceHTMLCodes(text)
 
   }
 
@@ -62,17 +72,54 @@ export class StringFormatter {
 
   }
 
-  public everyNthLineBreak = (everyN: number = 0, filterEmpty = true): string[] => {
 
-    const regex = /\r\n|\r|\n/ug
+  public splitEveryNthLineBreak = (nth: number, filter = true, markdown = true) => {
+    const regex = regexs.lineBreak
+    const lines = this._string
+      .split(regex)
+      .map((txt) =>
+        markdown ?
+          SF(txt.trim())
+            .markdown()
+            .removePTag()
+            .string
+          : txt,
+      )
+
+    const arr: string[][] = []
+    let index = 0
+
+    const split = (line: string, __: number) => {
+
+      if (filter && line === '')
+        return
+
+      if (!Array.isArray(arr[index]))
+        arr[index] = []
+
+      if (arr[index].length === nth) {
+        arr[index += 1] = []
+      }
+
+      arr[index].push(line)
+    }
+
+    lines.map(split)
+
+    return arr
+  }
+
+  public splitConsecutiveLineBreaks = (everyN: number = 0, filterEmpty = true): string[] => {
+
+    const regex = regexs.lineBreak
 
     const lines = this._string
-      .trim()
+      // .trim()
       .split(regex)
       .map((txt) => txt.trim())
 
 
-    if (everyN <= 0)
+    if (everyN <= 1)
       return filterEmpty ? lines.filter((txt) => txt) : lines
 
 
@@ -115,54 +162,6 @@ export class StringFormatter {
 
     return groups
   }
-
-
-  public replaceExternal(elAttr: IDynamicElement) {
-
-    const obj = this._replaceExternal(elAttr)
-
-    return obj
-  }
-
-  private _replaceExternal(elAttr: IDynamicElement) {
-    const { element: el, file: dyFile } = elAttr
-    let imported = false
-
-    /** Function generator that replaces the [[external]] tag */
-    const _externalReplacer = (...args: string[]) => {
-      const [, external, file] = args
-
-      if (file) {
-        imported = true
-
-        return SF('')
-          .makeElement('div', {
-            attributes: [{ attribute: 'field', value: file.trim() }],
-          })
-          .outerHTML
-      }
-
-      const div = el.querySelector(`[${externalSelector} = ${external}]`) as Element
-      if (!div) {
-        console.warn(`External element '[${externalSelector} = ${external}]' not found on file ${dyFile}`)
-
-        return ''
-      }
-
-      return div.outerHTML.trim()
-    }
-
-    const text = this._string
-      .replace(regexs.external, _externalReplacer)
-      .replace(/>\s+</gu, "><")
-
-
-    return {
-      text,
-      imported,
-    }
-  }
-
 
   /**
    *  removes ./
@@ -250,7 +249,7 @@ export class StringFormatter {
         return previousText
       }
 
-      let endI = previousText.indexOf('\n\r', startI)
+      let endI = regexIndexOf(previousText, /\n\r|\n\n/, startI)
       if (endI === -1) endI = previousText.length
 
       const start = previousText.substring(0, startI)
