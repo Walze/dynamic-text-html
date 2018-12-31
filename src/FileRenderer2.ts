@@ -76,20 +76,18 @@ export class FileRenderer2 {
    * Returns all attributes that matches in file name
    */
   private _matchAttributes(file: IFile) {
-    const matchElWithString = ({ value: name }: IDynamicElement) => name === file.name
+    const matched: IDynamicElement[] = []
 
-    const field = this.dyElements.field.filter(matchElWithString)
-    const line = this.dyElements.lines.filter(matchElWithString)
-    const loop = this.dyElements.loop.filter(matchElWithString)
+    const matchAndPush = (dyEl: IDynamicElement) => {
+      if (dyEl.value === file.name)
+        matched.push(dyEl)
+    }
 
-    const arr = [
-      ...field,
-      ...line,
-      ...loop,
-    ]
+    this.dyElements.field.map(matchAndPush)
+    this.dyElements.lines.map(matchAndPush)
+    this.dyElements.loop.map(matchAndPush)
 
-    return arr
-      .filter((item) => item)
+    return matched
   }
 
 

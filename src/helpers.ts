@@ -87,3 +87,12 @@ export const regexIndexOf = (text: string, re: RegExp, i = 0) => {
   return indexInSuffix < 0 ? indexInSuffix : indexInSuffix + i
 }
 
+
+export const replaceHTMLCodes = (str: string) =>
+  str.replace(/&amp;/g, '&')
+    .replace(/&gt;/g, '>')
+    .replace(/&lt;/g, '<')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, '\'')
+
+

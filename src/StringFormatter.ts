@@ -1,7 +1,7 @@
 import marked from 'marked'
 
 import { IMakeElementOptions } from './types'
-import { globalMatch, regexIndexOf } from './helpers'
+import { globalMatch, regexIndexOf, replaceHTMLCodes } from './helpers'
 
 
 const regexs = {
@@ -40,7 +40,7 @@ export class StringFormatter {
       throw new Error(`constructor expected string, given ${text}`)
     }
 
-    this._string = text
+    this._string = replaceHTMLCodes(text)
 
   }
 

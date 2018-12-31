@@ -25,7 +25,9 @@ export const render2 = () => {
     const t0 = performance.now()
 
     const renderer = new FileRenderer2()
-    files.map((file) => renderer.render(file))
+    files.map((file) => {
+        renderer.render(file)
+    })
 
     const diff = Math.ceil(performance.now() - t0)
     console.warn('\n FileRenderer 2 =>', `${diff}ms`)
@@ -35,7 +37,10 @@ export const render1 = () => {
     const t0 = performance.now()
 
     const renderer = new FileRenderer()
-    files.map((file) => renderer.render(file))
+    files.map((file) => {
+
+        renderer.render(file)
+    })
 
     const diff = Math.ceil(performance.now() - t0)
     console.warn('\n FileRenderer 1 =>', `${diff}ms`)
