@@ -47,6 +47,7 @@ export class FileRenderer {
   ) {
     this.attributes = this._getAttributes()
     this._listenKeysToShowFileNames()
+    console.log('Deprecated, use FileRenderer2')
   }
 
   /**
