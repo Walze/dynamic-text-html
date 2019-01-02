@@ -15,11 +15,11 @@ const regexs = {
 /** Helper for getting a StringFormatter instance */
 export const SF = (text: string) => new StringFormatter(text)
 
-export const markdownLine = (lineTxt: string) => SF(lineTxt)
-  .markdown()
-  .removePTag()
-  .string
-  .trim()
+export const markdownLine = (lineTxt: string) =>
+  SF(lineTxt.trim())
+    .markdown()
+    .removePTag()
+    .string
 
 export const getLines = (data: string) => SF(data)
   .splitConsecutiveLineBreaks(1)
@@ -79,10 +79,7 @@ export class StringFormatter {
       .split(regex)
       .map((txt) =>
         markdown ?
-          SF(txt.trim())
-            .markdown()
-            .removePTag()
-            .string
+          markdownLine(txt)
           : txt,
       )
 
