@@ -126,6 +126,26 @@ export class FileRenderer2 {
 
 
   /**
+   * Renders new Dynamic elements
+   */
+  private _preRender(element: HTMLElement) {
+    const externalMatches = globalMatch(selectors.externalRGX, element.innerHTML)
+
+    if (externalMatches) {
+      externalMatches.map((matchRGX) => {
+        const prefab = matchRGX[2]
+
+        if (prefab)
+          this._renderPrefab(matchRGX, element)
+        else
+          this._renderExternal(matchRGX, element)
+      })
+    }
+
+  }
+
+
+  /**
    * Gets dynamic element from new element, adds it to this.dyElements and renders unrendered files
    */
   private _postRender(div: HTMLElement, file: IFile) {
@@ -144,25 +164,6 @@ export class FileRenderer2 {
   }
 
 
-  /**
-   * Renders new Dynamic elements
-   */
-  private _preRender(element: HTMLElement) {
-    const externalMatches = globalMatch(selectors.externalRGX, element.innerHTML)
-
-    if (externalMatches) {
-      externalMatches.map((matchRGX) => {
-
-        const prefab = this._renderPrefab(matchRGX, element)
-        if (prefab) return
-
-        this._renderExternal(matchRGX, element)
-      })
-    }
-
-  }
-
-
   private _renderExternal(matchRGX: RegExpMatchArray, element: HTMLElement) {
     const { 0: match, 1: external } = matchRGX
 
@@ -174,7 +175,7 @@ export class FileRenderer2 {
         .replace(match, found.elementCopy.outerHTML.trim())
         .replace(/>\s+</gu, "><")
     else {
-      console.warn(`External element '[external = ${external}]' not found on file`)
+      console.warn(`External element '[prefab = ${external}]' not found on file`)
 
       element.innerHTML = element.innerHTML
         .replace(match, 'NOT FOUND')
@@ -183,16 +184,16 @@ export class FileRenderer2 {
 
 
   private _renderPrefab(matchRGX: RegExpMatchArray, element: HTMLElement): boolean {
-    const { 0: match, 1: external } = matchRGX
+    const { 0: match, 1: prefabName } = matchRGX
     let { 2: fileName } = matchRGX
     if (!fileName) return false
 
     fileName = fileName.trim()
 
     // finds prefab
-    const prefab = this.dyElements.prefab.find((p) => p.value === external)
+    const prefab = this.dyElements.prefab.find((p) => p.value === prefabName)
     if (!prefab) {
-      console.warn(`External element '[external = ${external}]' not found on file`)
+      console.warn(`External element '[external = ${prefabName}]' not found on file`)
 
       return false
     }
@@ -200,7 +201,7 @@ export class FileRenderer2 {
     // gets type of prefab
     const type = prefab.elementCopy.getAttribute('type') as DynamicTypes | undefined
     if (!type) {
-      console.log('prefab has no type')
+      console.log(`prefab ${prefabName} has no type`)
 
       return false
     }
