@@ -112,7 +112,7 @@ export class FileRenderer2 {
 
       this._preRender(div)
       this._render(dyElement, div)
-      this._postRender(div, file)
+      this._postRender(div)
 
       dyElement.DOMElement.replaceWith(div)
     })
@@ -148,7 +148,7 @@ export class FileRenderer2 {
   /**
    * Gets dynamic element from new element, adds it to this.dyElements and renders unrendered files
    */
-  private _postRender(div: HTMLElement, file: IFile) {
+  private _postRender(div: HTMLElement) {
     const dyEls = this._getDyElements(div)
 
     return mapObjToArray(dyEls, (e) => e)
