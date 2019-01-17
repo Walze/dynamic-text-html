@@ -157,7 +157,7 @@ export class FileRenderer2 {
         this.dyElements[dy.type].push(dy)
 
         // if file already went by, find it and render it
-        const foundFile = this.files.find((f) => f.name === dy.value && !file.rendered)
+        const foundFile = this.files.find((f) => f.name === dy.value && !f.rendered)
         if (foundFile)
           this.render(foundFile)
       })
