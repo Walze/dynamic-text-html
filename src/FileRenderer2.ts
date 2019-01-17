@@ -107,7 +107,7 @@ export class FileRenderer2 {
     const matchedDyEls = this._matchAttributes(file)
     // debugger
     matchedDyEls.map((dyElement) => {
-      const div = document.createElement(dyElement.elementCopy.tagName)
+      const div = dyElement.elementCopy.cloneNode() as HTMLElement
       div.innerHTML = file.data
 
       this._preRender(div)
