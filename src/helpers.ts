@@ -1,5 +1,7 @@
 import { IFileObject, IFile } from './types'
-
+import {
+  h, VNode,
+} from 'virtual-dom'
 
 export const mapObj = <A, B>(
   object: { [key: string]: A },
@@ -94,5 +96,39 @@ export const replaceHTMLCodes = (str: string) =>
     .replace(/&lt;/g, '<')
     .replace(/&quot;/g, '"')
     .replace(/&#039;/g, '\'')
+
+
+
+export const createVTree = (el: HTMLElement): VNode => {
+  const tag = el.tagName
+  const attributes = getAttrs(el)
+  const children = getChildren(el)
+
+  return h(tag, { attributes }, children)
+}
+
+const getChildren = (el: HTMLElement) =>
+  Array.from(el.childNodes)
+    .map((child) => {
+      if (child.nodeName === '#text') return child.textContent || ''
+
+      return createVTree(child as HTMLElement)
+    })
+
+const getAttrs = (el: HTMLElement) => {
+  const { attributes } = el
+
+
+  const obj: VirtualDOM.createProperties = {}
+
+  if (attributes)
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < attributes.length; i += 1) {
+      const { nodeName, nodeValue } = attributes[i]
+      obj[nodeName] = nodeValue
+    }
+
+  return obj
+}
 
 
