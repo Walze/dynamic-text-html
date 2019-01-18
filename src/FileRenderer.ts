@@ -1,27 +1,14 @@
 import { globalMatch } from './helpers'
 import '../css/dynamic-files.css'
 
-import { SF } from './StringFormatter'
+import { SF, getMarkedLines } from './StringFormatter'
 import {
   DynamicTypes,
   IDynamicElementsObject,
   IFile,
   IDynamicElement,
 } from './types'
-import { selectors } from './FileRenderer2';
-
-const markdownLine = (lineTxt: string) => SF(lineTxt)
-  .markdown()
-  .removePTag()
-  .string
-  .trim()
-
-const getLines = (data: string) => SF(data)
-  .splitConsecutiveLineBreaks(1)
-
-const getMarkedLines = (data: string) => getLines(data)
-  .map(markdownLine)
-
+import { selectors } from './FileRenderer2'
 
 export class FileRenderer {
 

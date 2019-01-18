@@ -26,6 +26,7 @@ export const render2 = () => {
 
     const renderer = new FileRenderer2()
     files.map((file) => {
+        // debugger
         renderer.render(file)
     })
 

@@ -22,7 +22,8 @@ export const markdownLine = (lineTxt: string) =>
     .string
 
 export const getLines = (data: string) => SF(data)
-  .splitConsecutiveLineBreaks(1)
+  .splitEveryNthLineBreak(1)
+  .flat()
 
 export const getMarkedLines = (data: string) => getLines(data)
   .map(markdownLine)
@@ -116,7 +117,7 @@ export class StringFormatter {
       .map((txt) => txt.trim())
 
 
-    if (everyN <= 1)
+    if (everyN < 1)
       return filterEmpty ? lines.filter((txt) => txt) : lines
 
 
