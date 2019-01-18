@@ -1,11 +1,11 @@
 import marked from 'marked'
 
 import { IMakeElementOptions } from './types'
-import { globalMatch, regexIndexOf, replaceHTMLCodes } from './helpers'
+import { globalMatch, replaceHTMLCodes } from './helpers'
 
 
 const regexs = {
-  lineBreak: /\r\n|\n\n/g,
+  lineBreak: /\n{3,}/g,
   comments: /\/\*[.\s\n\r\S]*\*\//g,
   inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
   blockClass: /(!?)\{\[([^\]]+)\]([^\}]*)\}/g,
@@ -13,7 +13,7 @@ const regexs = {
 
 
 /** Helper for getting a StringFormatter instance */
-export const SF = (text: string) => new StringFormatter(text)
+export const SF = (text: string, previous?: StringFormatter) => new StringFormatter(text, previous)
 
 export const markdownLine = (lineTxt: string) =>
   SF(lineTxt.trim())
@@ -22,8 +22,7 @@ export const markdownLine = (lineTxt: string) =>
     .string
 
 export const getLines = (data: string) => SF(data)
-  .splitEveryNthLineBreak(1)
-  .flat()
+  .splitConsecutiveLineBreaks(1)
 
 export const getMarkedLines = (data: string) => getLines(data)
   .map(markdownLine)
@@ -35,20 +34,23 @@ export class StringFormatter {
 
   private readonly _string: string
 
-  public constructor(text: string) {
-
+  public constructor(
+    text: string,
+    public previous?: StringFormatter,
+  ) {
     if (typeof text !== 'string') {
       throw new Error(`constructor expected string, given ${text}`)
     }
 
     this._string = replaceHTMLCodes(text)
+      .replace(/\n\r/, '\n')
 
   }
 
   public removeComments() {
     const newString = this.string.replace(regexs.comments, '\n')
 
-    return SF(newString)
+    return SF(newString, this)
   }
 
   /**
@@ -75,6 +77,7 @@ export class StringFormatter {
 
 
   public splitEveryNthLineBreak = (nth: number, filter = true, markdown = true) => {
+    console.warn('fix')
     const regex = regexs.lineBreak
     const lines = this._string
       .split(regex)
@@ -107,59 +110,67 @@ export class StringFormatter {
     return arr
   }
 
-  public splitConsecutiveLineBreaks = (everyN: number = 0, filterEmpty = true): string[] => {
+  public splitConsecutiveLineBreaks = (x: number) => {
+    const rgx = new RegExp(`\\n{${x + 1}}`)
 
-    const regex = regexs.lineBreak
-
-    const lines = this._string
-      // .trim()
-      .split(regex)
-      .map((txt) => txt.trim())
-
-
-    if (everyN < 1)
-      return filterEmpty ? lines.filter((txt) => txt) : lines
-
-
-    const groups: string[] = []
-
-    /** Blocks consecutive breaks */
-    let blocked = false
-
-    let groupsIndex = 0
-    let breakCounter = 0
-
-    const lineBreaker = (line: string) => {
-
-      let goToNextGroup = false
-      const isEmpty = line === ''
-
-      if (!groups[groupsIndex])
-        groups[groupsIndex] = ''
-
-      if (isEmpty)
-        breakCounter += 1
-      else
-        breakCounter = 0
-
-      // if breakcounter matches param
-      goToNextGroup = breakCounter === everyN && everyN !== 0
-      groups[groupsIndex] += `${line}\r\n`
-
-      if (!goToNextGroup)
-        blocked = false
-
-      if (goToNextGroup && !blocked) {
-        groupsIndex += 1
-        blocked = true
-      }
-
-    }
-
-    lines.map(lineBreaker)
-
-    return groups
+    return this._string
+      .split(rgx)
+      .filter((a) => !!a)
   }
+
+  // public splitConsecutiveLineBreaks = (everyN: number = 0, filterEmpty = true): string[] => {
+
+  //   const regex = regexs.lineBreak
+
+  //   const lines = this._string
+  //     // .trim()
+  //     .split(regex)
+  //     .map((txt) => txt.trim())
+
+
+  //   if (everyN <= 1)
+  //     return filterEmpty ? lines.filter((txt) => txt) : lines
+
+
+  //   const groups: string[] = []
+
+  //   /** Blocks consecutive breaks */
+  //   let blocked = false
+
+  //   let groupsIndex = 0
+  //   let breakCounter = 0
+
+  //   const lineBreaker = (line: string) => {
+
+  //     let goToNextGroup = false
+  //     const isEmpty = line === ''
+
+  //     if (!groups[groupsIndex])
+  //       groups[groupsIndex] = ''
+
+  //     if (isEmpty)
+  //       breakCounter += 1
+  //     else
+  //       breakCounter = 0
+
+  //     // if breakcounter matches param
+  //     goToNextGroup = breakCounter === everyN && everyN !== 0
+  //     groups[groupsIndex] += `${line}\n\n`
+
+  //     if (!goToNextGroup)
+  //       blocked = false
+
+  //     if (goToNextGroup && !blocked) {
+  //       groupsIndex += 1
+  //       blocked = true
+  //     }
+
+  //   }
+
+  //   lines.map(lineBreaker)
+
+  //   return groups
+  // }
 
   /**
    *  removes ./
@@ -168,6 +179,7 @@ export class StringFormatter {
 
     return SF(
       this._string.replace(/^\.\//gu, ''),
+      this,
     )
 
   }
@@ -179,6 +191,7 @@ export class StringFormatter {
 
     return SF(
       this._string.replace(/<\/?p>/gu, ''),
+      this,
     )
 
   }
@@ -194,7 +207,7 @@ export class StringFormatter {
       ._markBlockClasses()
       .string
 
-    return SF(marked(markedClasses))
+    return SF(marked(markedClasses), this)
 
   }
 
@@ -226,7 +239,7 @@ export class StringFormatter {
     const newString = this._string
       .replace(regex, this._inlineClassReplacer.bind(this))
 
-    return SF(newString)
+    return SF(newString, this)
 
   }
 
@@ -247,7 +260,7 @@ export class StringFormatter {
         return previousText
       }
 
-      let endI = regexIndexOf(previousText, /\n\r|\n\n/, startI)
+      let endI = previousText.indexOf('{[]}')
       if (endI === -1) endI = previousText.length
 
       const start = previousText.substring(0, startI)
@@ -290,7 +303,7 @@ export class StringFormatter {
 
     const replaced = matches.map(this._blockClassReplacer()) as string[]
 
-    return SF(replaced[replaced.length - 1])
+    return SF(replaced[replaced.length - 1], this)
   }
 
   /**

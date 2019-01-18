@@ -20,6 +20,8 @@ const filesURLs = {
 }
 
 const files = makesFiles(filesURLs, 'md')
+console.log(files)
+// debugger
 
 export const render2 = () => {
     const t0 = performance.now()
