@@ -11,9 +11,11 @@ posdogpmas
 
 !{[red]}
 test1
+{[]}
 
 {[green]}
 test2
+{[]}
 
 apogmdpaomdgpomaasdgpomasasodpmgmasopdg
 apm

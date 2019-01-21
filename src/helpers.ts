@@ -131,4 +131,35 @@ const getAttrs = (el: HTMLElement) => {
   return obj
 }
 
+export const replaceBetween = (
+  initialString: string,
+  start: number,
+  end: number,
+  replace: string,
+) => {
+  const arr = initialString.split('')
+  arr.splice(start, end + 1 - start, replace) // arr is modified
+  const newStr = arr.join('')
 
+  return newStr
+}
+
+export const closestN = (array: number[], num: number, index = false) => {
+  let minDiff = 1000
+  let ans
+  let i = 0
+  // tslint:disable-next-line:forin
+  for (const i2 in array) {
+    const m = Math.abs(num - array[i2])
+    if (m < minDiff) {
+      minDiff = m
+      ans = array[i2]
+      i = Number(i2)
+    }
+  }
+
+  if (index)
+    return i
+
+  return ans
+}

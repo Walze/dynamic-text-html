@@ -9,5 +9,6 @@ Why Markdown?
 
 {[a] blockquote}
 It's easy. It's not overly bloated, unlike HTML. Also
+{[]}
 
 ---
