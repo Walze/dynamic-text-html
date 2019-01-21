@@ -192,47 +192,52 @@ export class StringFormatter {
     const starts = globalMatch(regexs.blockClass, this.string)
     const ends = globalMatch(regexs.blockClassEnd, this.string)
 
-    let newString: string
+    let newString: string = this.string
 
     if (starts && ends) {
       const SIs = starts.map((a) => a.index)
-      // const EIs = starts.map((a) => a.index)
       const taken: number[] = []
 
       ends.map((endMatch) => {
-        const replace = endMatch[0]
-        // const removeP = !!endMatch[1]
-        // const classNames = endMatch[2].split(/\s+/)
-        // const { 0: tag } = endMatch[3]
-        //   .trim()
-        //   .split(/\s+/)
-
         const startIndexes = SIs.filter((a) => a < endMatch.index && !taken.includes(a))
-        const foundIndex = closestN(startIndexes, endMatch.index, true) as number
-        const start = startIndexes[foundIndex]
-        taken.push(start)
+        const start = starts.find((a) =>
+          a.index === closestN(startIndexes, endMatch.index),
+        ) as RegExpExecArray
+        taken.push(start.index)
 
-        const text = this.string.substring(start + replace.length, endMatch.index)
+        const text = this.string.substring(start.index + start[0].length, endMatch.index)
+        const removeP = !!start[1]
+        const classNames = start[2].split(/\s+/)
+        const { 0: tag } = start[3]
+          .trim()
+          .split(/\s+/)
 
-        console.warn(text)
-        // let newHTMLSF = SF(text)
+        let newHTMLSF = SF(text)
 
-        // if (text && text !== '') {
-        //   newHTMLSF = newHTMLSF.markdown()
+        if (text && text !== '') {
+          // newHTMLSF = newHTMLSF.markdown()
 
-        //   if (removeP)
-        //     newHTMLSF = newHTMLSF.removePTag()
-        // }
+          if (removeP)
+            newHTMLSF = newHTMLSF.removePTag()
+        }
 
-        // const newHTML = newHTMLSF
-        //   .makeElement(tag || 'div', { classNames })
-        //   .outerHTML
+        const newHTML = newHTMLSF
+          .makeElement(tag || 'div', { classNames })
+          .outerHTML
 
-        // newString = replaceBetween(this.string, startIndex, endIndex + endMatch[0].length, newHTML)
+        newString = replaceBetween(
+          newString,
+          start.index,
+          endMatch.index + endMatch[0].length,
+          newHTML,
+        )
+
+        debugger
+        console.log(newString)
       })
     }
 
-    return () => this.string
+    return () => newString
   }
 
   public _blockClassReplacer2 = () => {
