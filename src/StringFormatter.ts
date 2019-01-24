@@ -1,7 +1,7 @@
 import marked from 'marked'
 
 import { IMakeElementOptions } from './types'
-import { globalMatch, replaceHTMLCodes, replaceBetween, closestN } from './helpers'
+import { globalMatch, replaceHTMLCodes, replaceBetween } from './helpers'
 
 
 const regexs = {
@@ -189,23 +189,23 @@ export class StringFormatter {
   }
 
   private _blockClassReplacer = () => {
-    const starts = globalMatch(regexs.blockClass, this.string)
-    const ends = globalMatch(regexs.blockClassEnd, this.string)
-
     let newString: string = this.string
 
-    if (starts && ends) {
-      const SIs = starts.map((a) => a.index)
-      const taken: number[] = []
+    const starts = globalMatch(regexs.blockClass, newString)
 
-      ends.map((endMatch) => {
-        const startIndexes = SIs.filter((a) => a < endMatch.index && !taken.includes(a))
-        const start = starts.find((a) =>
-          a.index === closestN(startIndexes, endMatch.index),
-        ) as RegExpExecArray
-        taken.push(start.index)
+    if (starts) {
+      starts.map((start) => {
+        let end = newString.indexOf('{[]}', start.index)
 
-        const text = this.string.substring(start.index + start[0].length, endMatch.index)
+        const text = this.string.substring(start.index + start[0].length, end)
+        const nested = regexs.blockClass.test(text)
+
+        if (nested) {
+          SF(text)
+            .markdown()
+          end = newString.indexOf('{[]}', start.index)
+        }
+
         const removeP = !!start[1]
         const classNames = start[2].split(/\s+/)
         const { 0: tag } = start[3]
@@ -228,12 +228,11 @@ export class StringFormatter {
         newString = replaceBetween(
           newString,
           start.index,
-          endMatch.index + endMatch[0].length,
+          end + 4,
           newHTML,
         )
 
-        debugger
-        console.log(newString)
+        // console.log(text)
       })
     }
 
