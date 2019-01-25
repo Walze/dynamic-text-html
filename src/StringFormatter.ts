@@ -195,7 +195,6 @@ export class StringFormatter {
       const classNames = match[2].split(/\s+/)
       const tag = match[3] ? match[3].trim() : match[3]
       const text = match[4].trim()
-      console.log(text)
       if (!text) return ''
 
       let newHTMLSF = SF(text)
@@ -213,59 +212,6 @@ export class StringFormatter {
     })
 
     return () => newString
-  }
-
-  public _blockClassReplacer2 = () => {
-    let previousText = this.string
-
-    const replaceFunction = (match: RegExpExecArray) => {
-
-      const replace = match[0]
-      const removeP = !!match[1]
-      const classNames = match[2].split(/\s+/)
-      const { 0: tag } = match[3]
-        .trim()
-        .split(/\s+/)
-
-      const startI = previousText.indexOf(replace)
-      if (startI === -1) {
-        return previousText
-      }
-
-      let endI = previousText.indexOf('{[]}')
-      if (endI === -1) endI = previousText.length
-      // endI -= 4
-
-      const start = previousText.substring(0, startI)
-      const end = previousText.substring(endI, previousText.length)
-
-      const innerText = previousText
-        .substring(startI, endI)
-        .replace(replace, '')
-        .trim()
-
-
-      let newHTMLSF = SF(innerText)
-
-      if (innerText && innerText !== '') {
-        newHTMLSF = newHTMLSF.markdown()
-
-        if (removeP)
-          newHTMLSF = newHTMLSF.removePTag()
-      }
-
-      const newHTML = newHTMLSF
-        .makeElement(tag || 'div', { classNames })
-        .outerHTML
-
-      const newText = start + newHTML + end
-
-      previousText = newText
-
-      return previousText
-    }
-
-    return replaceFunction
   }
 
   private _markBlockClasses(): StringFormatter {
