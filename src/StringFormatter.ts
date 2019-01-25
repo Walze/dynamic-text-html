@@ -1,15 +1,14 @@
 import marked from 'marked'
 
 import { IMakeElementOptions } from './types'
-import { globalMatch, replaceHTMLCodes, replaceBetween } from './helpers'
-
+import { globalMatch, replaceHTMLCodes } from './helpers'
+import XRegExp from 'xregexp'
 
 const regexs = {
   lineBreak: /\n{3,}/g,
   comments: /\/\*[.\s\n\r\S]*\*\//g,
   inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
-  blockClass: /(!?){\[([^\]]+)\]([^}]*)}/g,
-  blockClassEnd: /{\[\]}/g,
+  blockClass: /(!?){\[([^\]]+)\]\s*(?:\[([^\]]+)\])?([^}]+)}/g,
 }
 
 
@@ -191,50 +190,38 @@ export class StringFormatter {
   private _blockClassReplacer = () => {
     let newString: string = this.string
 
-    const starts = globalMatch(regexs.blockClass, newString)
+    const test = (str: string, pattern: RegExp, what: string) => {
+      const newstr = str.replace(pattern, what);
 
-    if (starts) {
-      starts.map((start) => {
-        let end = newString.indexOf('{[]}', start.index)
+      if (newstr === str)
+        return newstr;
 
-        const text = this.string.substring(start.index + start[0].length, end)
-        const nested = regexs.blockClass.test(text)
+      return newstr.replace(pattern, what);
+    };
 
-        if (nested) {
-          SF(text)
-            .markdown()
-          end = newString.indexOf('{[]}', start.index)
-        }
 
-        const removeP = !!start[1]
-        const classNames = start[2].split(/\s+/)
-        const { 0: tag } = start[3]
-          .trim()
-          .split(/\s+/)
+    console.log(test(newString, regexs.blockClass, 'AAAAAAAAAA'))
 
-        let newHTMLSF = SF(text)
+    // newString = XRegExp.replace(newString, regexs.blockClass, (...match: RegExpMatchArray) => {
+    //   const removeP = !!match[1]
+    //   const classNames = match[2].split(/\s+/)
+    //   const tag = match[3] ? match[3].trim() : match[3]
+    //   const text = match[4].trim()
+    //   if (!text) return ''
 
-        if (text && text !== '') {
-          // newHTMLSF = newHTMLSF.markdown()
+    //   let newHTMLSF = SF(text)
 
-          if (removeP)
-            newHTMLSF = newHTMLSF.removePTag()
-        }
+    //   newHTMLSF = newHTMLSF.markdown()
 
-        const newHTML = newHTMLSF
-          .makeElement(tag || 'div', { classNames })
-          .outerHTML
+    //   if (removeP)
+    //     newHTMLSF = newHTMLSF.removePTag()
 
-        newString = replaceBetween(
-          newString,
-          start.index,
-          end + 4,
-          newHTML,
-        )
+    //   const newHTML = newHTMLSF
+    //     .makeElement(tag || 'div', { classNames })
+    //     .outerHTML
 
-        // console.log(text)
-      })
-    }
+    //   return newHTML
+    // })
 
     return () => newString
   }

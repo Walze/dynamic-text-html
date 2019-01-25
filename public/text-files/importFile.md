@@ -2,6 +2,10 @@
 imported 1-1 
 {[]}
 
+{[green]
+lorem {[blue] abs}
+}
+
 {[green2]}
 imported 2-1
   {[green2]}

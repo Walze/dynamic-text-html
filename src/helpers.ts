@@ -90,6 +90,9 @@ export const regexIndexOf = (text: string, re: RegExp, i = 0) => {
 }
 
 
+export const countOccur = (str: string, match: string | RegExp) => (str.match(match) || []).length
+
+
 export const replaceHTMLCodes = (str: string) =>
   str.replace(/&amp;/g, '&')
     .replace(/&gt;/g, '>')
