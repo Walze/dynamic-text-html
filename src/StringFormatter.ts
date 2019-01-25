@@ -190,38 +190,27 @@ export class StringFormatter {
   private _blockClassReplacer = () => {
     let newString: string = this.string
 
-    const test = (str: string, pattern: RegExp, what: string) => {
-      const newstr = str.replace(pattern, what);
+    newString = XRegExp.replace(newString, regexs.blockClass, (...match: RegExpMatchArray) => {
+      const removeP = !!match[1]
+      const classNames = match[2].split(/\s+/)
+      const tag = match[3] ? match[3].trim() : match[3]
+      const text = match[4].trim()
+      console.log(text)
+      if (!text) return ''
 
-      if (newstr === str)
-        return newstr;
+      let newHTMLSF = SF(text)
 
-      return newstr.replace(pattern, what);
-    };
+      newHTMLSF = newHTMLSF.markdown()
 
+      if (removeP)
+        newHTMLSF = newHTMLSF.removePTag()
 
-    console.log(test(newString, regexs.blockClass, 'AAAAAAAAAA'))
+      const newHTML = newHTMLSF
+        .makeElement(tag || 'div', { classNames })
+        .outerHTML
 
-    // newString = XRegExp.replace(newString, regexs.blockClass, (...match: RegExpMatchArray) => {
-    //   const removeP = !!match[1]
-    //   const classNames = match[2].split(/\s+/)
-    //   const tag = match[3] ? match[3].trim() : match[3]
-    //   const text = match[4].trim()
-    //   if (!text) return ''
-
-    //   let newHTMLSF = SF(text)
-
-    //   newHTMLSF = newHTMLSF.markdown()
-
-    //   if (removeP)
-    //     newHTMLSF = newHTMLSF.removePTag()
-
-    //   const newHTML = newHTMLSF
-    //     .makeElement(tag || 'div', { classNames })
-    //     .outerHTML
-
-    //   return newHTML
-    // })
+      return newHTML
+    })
 
     return () => newString
   }
