@@ -28,13 +28,8 @@ Ready to start writing?  Either start changing stuff on the left or
 margin
 
 {[margin]}
-{[]}
 
-{[margin]}
-{[]}
-
-{[margin]}
-{[]}
+{[margin] }
 
 end of margin
 

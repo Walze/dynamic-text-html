@@ -8,7 +8,7 @@ const regexs = {
   lineBreak: /\n{3,}/g,
   comments: /\/\*[.\s\n\r\S]*\*\//g,
   inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
-  blockClass: /(!?){\[([^\]]+)\]\s*(?:\[([^\]]+)\])?([^}]+)}/g,
+  blockClass: /(!?){\[([^\]]+)\]\s*(?:\[([^\]]+)\])?([^}]*)?}/g,
 }
 
 
@@ -194,15 +194,16 @@ export class StringFormatter {
       const removeP = !!match[1]
       const classNames = match[2].split(/\s+/)
       const tag = match[3] ? match[3].trim() : match[3]
-      const text = match[4].trim()
-      if (!text) return ''
+      const text = match[4] ? match[4].trim() : ''
 
       let newHTMLSF = SF(text)
 
-      newHTMLSF = newHTMLSF.markdown()
+      if (text) {
+        newHTMLSF = newHTMLSF.markdown()
 
-      if (removeP)
-        newHTMLSF = newHTMLSF.removePTag()
+        if (removeP)
+          newHTMLSF = newHTMLSF.removePTag()
+      }
 
       const newHTML = newHTMLSF
         .makeElement(tag || 'div', { classNames })
