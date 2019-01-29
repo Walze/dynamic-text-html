@@ -9,8 +9,14 @@ const regexs = {
   comments: /\/\*[.\s\n\r\S]*\*\//g,
   inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
   blockClass: /(!?){\[([^\]]+)\]\s*(?:\[([^\]]+)\])?([^}]*)?}/g,
+  block: {
+    start: /(!?){\[([^\]]+)\]\s*(?:\[([^\]]+)\])?/g,
+    r: /([^}]*)?/g,
+    end: /}/g,
+  },
 }
 
+console.log(regexs)
 
 /** Helper for getting a StringFormatter instance */
 export const SF = (text: string, previous?: StringFormatter) => new StringFormatter(text, previous)
@@ -187,8 +193,34 @@ export class StringFormatter {
 
   }
 
+  private _recursive = (string: string, start: RegExp, r: RegExp, end: RegExp) => {
+    const arr = []
+    let i = 0
+
+    console.warn(globalMatch(regexs.blockClass, string))
+
+    string.replace(regexs.blockClass, (...args: string[]) => {
+      console.warn(args)
+
+
+
+      i += 1
+
+      return 'REGEX_PLACEHOLDER'
+    })
+
+    return 1
+  }
+
   private _blockClassReplacer = () => {
     let newString: string = this.string
+
+    this._recursive(
+      newString,
+      regexs.block.start,
+      regexs.block.r,
+      regexs.block.end,
+    )
 
     newString = XRegExp.replace(newString, regexs.blockClass, (...match: RegExpMatchArray) => {
       const removeP = !!match[1]

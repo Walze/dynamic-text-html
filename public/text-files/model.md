@@ -8,15 +8,6 @@ posdogpmas
 
 <h1>asd</h1>
 
-
-!{[red]}
-test1
-{[]}
-
-{[green]}
-test2
-{[]}
-
 apogmdpaomdgpomaasdgpomasasodpmgmasopdg
 apm
 pdoggmaogmdapomdgpoam
