@@ -1,14 +1,13 @@
 import marked from 'marked'
 
 import { IMakeElementOptions } from './types'
-import { globalMatch, replaceHTMLCodes } from './helpers'
-import XRegExp from 'xregexp'
+import { replaceHTMLCodes } from './helpers'
 
 const regexs = {
   lineBreak: /\n{3,}/g,
   comments: /\/\*[.\s\n\r\S]*\*\//g,
-  inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
-  blockClass: /(!?){\[([^\]]+)\]\s*(?:\[([^\]]+)\])?([^}]*)?}/g,
+  // inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
+  blockClass: /\({\s*\[([^\]]+)\]\s*(?:\[([^\]]+)\])?([^}]*)?}\)/g,
   block: {
     start: /(!?){\[([^\]]+)\]\s*(?:\[([^\]]+)\])?/g,
     r: /([^}]*)?/g,
@@ -156,85 +155,29 @@ export class StringFormatter {
     if (!string || string !== string) return SF('')
 
     return SF(this.string)
-      ._markClasses()
-      ._markBlockClasses()
+      ._syntaxReplacer()
       ._marked()
   }
 
-  private _inlineClassReplacer = (...match: string[]) => {
+  // turn into a helper someday?
+  private _recursive = (string: string) => {
 
-    const { 3: text } = match
+    const replaceFunc = (replacee: string) => replacee.replace(regexs.blockClass, (...match: string[]) => {
+      const classNames = match[1].split(/\s+/)
+      const tag = match[2] ? match[2].trim() : match[2]
+      let text = match[3] ? match[3].trim() : ''
+      const textWCloseTag = `${text}})`
+      const isRecursive = regexs.blockClass.test(textWCloseTag)
 
-    const classNames = match[2] ? match[2].split(/\s/) : undefined
-    const breakLine = Boolean(match[1])
-
-    const tag = breakLine ? 'div' : 'span'
-
-    const newWord = SF(text)
-      .makeElement(tag, { classNames })
-      .outerHTML
-
-    return newWord
-
-  }
-
-  /**
-   * marks custom classes
-   */
-  private _markClasses(): StringFormatter {
-
-    const regex = regexs.inlineClass
-    if (!regex.test(this.string)) return this
-
-    const newString = this.string
-      .replace(regex, this._inlineClassReplacer.bind(this))
-
-    return SF(newString, this)
-
-  }
-
-  private _recursive = (string: string, start: RegExp, r: RegExp, end: RegExp) => {
-    const arr = []
-    let i = 0
-
-    console.warn(globalMatch(regexs.blockClass, string))
-
-    string.replace(regexs.blockClass, (...args: string[]) => {
-      console.warn(args)
-
-
-
-      i += 1
-
-      return 'REGEX_PLACEHOLDER'
-    })
-
-    return 1
-  }
-
-  private _blockClassReplacer = () => {
-    let newString: string = this.string
-
-    this._recursive(
-      newString,
-      regexs.block.start,
-      regexs.block.r,
-      regexs.block.end,
-    )
-
-    newString = XRegExp.replace(newString, regexs.blockClass, (...match: RegExpMatchArray) => {
-      const removeP = !!match[1]
-      const classNames = match[2].split(/\s+/)
-      const tag = match[3] ? match[3].trim() : match[3]
-      const text = match[4] ? match[4].trim() : ''
+      if (isRecursive)
+        text = replaceFunc(textWCloseTag)
 
       let newHTMLSF = SF(text)
 
       if (text) {
-        newHTMLSF = newHTMLSF.markdown()
-
-        if (removeP)
-          newHTMLSF = newHTMLSF.removePTag()
+        newHTMLSF = newHTMLSF
+          .markdown()
+          .removePTag()
       }
 
       const newHTML = newHTMLSF
@@ -244,19 +187,12 @@ export class StringFormatter {
       return newHTML
     })
 
-    return () => newString
+
+    return replaceFunc(string)
+      .replace(/\}\)/g, '')
   }
 
-  private _markBlockClasses(): StringFormatter {
-
-    const regex = regexs.blockClass
-    const matches = globalMatch(regex, this.string)
-    if (!matches) return this
-
-    const replaced = matches.map(this._blockClassReplacer()) as string[]
-
-    return SF(replaced[replaced.length - 1], this)
-  }
+  private _syntaxReplacer = () => SF(this._recursive(this.string), this)
 
   /**
    * Makes an in-line element

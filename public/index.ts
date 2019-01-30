@@ -3,7 +3,7 @@ import { FileRenderer } from './../src/FileRenderer'
 import { makesFiles } from './../src/helpers'
 
 // tslint:disable-next-line:no-implicit-dependencies
-// import '@babel/polyfill'
+import '@babel/polyfill'
 import './css/main.css'
 
 
