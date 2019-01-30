@@ -1,21 +1,45 @@
+// tslint:disable:no-require-imports
+// tslint:disable:no-implicit-dependencies
+
 import { FileRenderer2 } from './../src/FileRenderer2'
 import { FileRenderer } from './../src/FileRenderer'
-import { makesFiles } from './../src/helpers'
-
-// tslint:disable-next-line:no-implicit-dependencies
-import '@babel/polyfill'
+import { makesFiles, handleBranches } from './../src/helpers'
+// import '@babel/polyfill'
 import './css/main.css'
+import { IBranch } from '../src/types';
 
 
-// tslint:disable:no-require-imports
-const filesURLs = {
+const branch_init: IBranch = {
+    FILE_NAME: 'FILE_DATA',
+    children: [
+        {
+            FILE_NAME2: 'FILE_DATA',
+            children: [
+                {
+                    FILE_NAME3: 'FILE_DATA',
+                },
+            ],
+        },
+        {
+            FILE_NAME4: 'FILE_DATA',
+        },
+    ],
+}
+
+console.log(handleBranches(branch_init))
+
+
+/**
+ * Branches are for UNIQUE nested files
+ * Shared nested files should be on the bottom of the filesURLS
+ */
+const filesURLs: {
+    [fileName: string]: string;
+} = {
     importFile: require('./text-files/importFile.md'),
     loop: require('./text-files/loop.md'),
-    // model at wrong order just to show warning, it should be last or after list.md
     model: require('./text-files/model.md'),
-    field1: require('./text-files/field1.md'),
-    field2: require('./text-files/field2.md'),
-    field3: require('./text-files/field3.md'),
+    field: require('./text-files/field.md'),
     list: require('./text-files/list.md'),
 }
 
@@ -27,6 +51,7 @@ export const render2 = () => {
     const t0 = performance.now()
 
     const renderer = new FileRenderer2()
+    console.log(renderer)
     files.map((file) => {
         // debugger
         renderer.render(file)

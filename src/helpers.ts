@@ -1,4 +1,4 @@
-import { IFileObject, IFile } from './types'
+import { IFileObject, IFile, IBranch } from './types'
 import {
   h, VNode,
 } from 'virtual-dom'
@@ -18,6 +18,21 @@ export const mapObj = <A, B>(
 
 }
 
+export const handleBranches = (branch: IBranch, filesRef?: { [fileName: string]: string }) => {
+  const sortedFiles: { [fileName: string]: string } = filesRef || {}
+
+  for (const prop in branch) if (branch.hasOwnProperty(prop)) {
+      const fileDataOrBranch = branch[prop];
+      const isData = typeof fileDataOrBranch === 'string'
+
+      if (isData)
+          sortedFiles[prop] = fileDataOrBranch as string
+      else
+          (fileDataOrBranch as IBranch[]).map((branchItem) => handleBranches(branchItem, sortedFiles))
+  }
+
+  return sortedFiles
+}
 
 export const mapObjToArray = <A, B>(
   object: { [key: string]: A },
