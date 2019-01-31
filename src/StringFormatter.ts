@@ -1,21 +1,22 @@
 import marked from 'marked'
 
 import { IMakeElementOptions } from './types'
-import { replaceHTMLCodes } from './helpers'
+import { replaceHTMLCodes, globalMatch, replaceBetween, regexIndexOf } from './helpers'
 
-const regexs = {
+const rgx = {
   lineBreak: /\n{3,}/g,
   comments: /\/\*[.\s\n\r\S]*\*\//g,
   // inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
   blockClass: /\({\s*\[([^\]]+)\]\s*(?:\[([^\]]+)\])?([^}]*)?}\)/g,
   block: {
-    start: /(!?){\[([^\]]+)\]\s*(?:\[([^\]]+)\])?/g,
-    r: /([^}]*)?/g,
-    end: /}/g,
+    start: /\(\{/,
+    startG: /\(\{/g,
+    r: /([^}]*)?/,
+    end: /\}\)/,
+    endG: /\}\)/g,
+    attr: /^\[([^\]]+)\](?:\[([^\]]+)\])?/,
   },
 }
-
-console.log(regexs)
 
 /** Helper for getting a StringFormatter instance */
 export const SF = (text: string, previous?: StringFormatter) => new StringFormatter(text, previous)
@@ -53,7 +54,7 @@ export class StringFormatter {
   }
 
   public removeComments() {
-    const newString = this.string.replace(regexs.comments, '\n')
+    const newString = this.string.replace(rgx.comments, '\n')
 
     return SF(newString, this)
   }
@@ -83,7 +84,7 @@ export class StringFormatter {
 
   public splitEveryNthLineBreak = (nth: number, filter = true, markdown = true) => {
     console.warn('fix')
-    const regex = regexs.lineBreak
+    const regex = rgx.lineBreak
     const lines = this.string
       .split(regex)
       .map((txt) =>
@@ -116,10 +117,10 @@ export class StringFormatter {
   }
 
   public splitConsecutiveLineBreaks = (x: number) => {
-    const rgx = new RegExp(`\\n{${x + 1}}`)
+    const rgx2 = new RegExp(`\\n{${x + 1}}`)
 
     return this.string
-      .split(rgx)
+      .split(rgx2)
       .filter((a) => !!a)
   }
 
@@ -161,13 +162,66 @@ export class StringFormatter {
 
   // turn into a helper someday?
   private _recursive = (string: string) => {
+    let start = string.match(rgx.block.start) as RegExpExecArray
+    const end = string.match(rgx.block.end) as RegExpExecArray
+    let mutableString = string
 
-    const replaceFunc = (replacee: string) => replacee.replace(regexs.blockClass, (...match: string[]) => {
+
+    if (start && end) {
+      // console.log(replaceBetween(string, starts[2].index, ends[0].index + 1, 'EEEEE'))
+      const replace = (index = 0) => {
+        const starts = globalMatch(rgx.block.startG, string)
+        debugger
+        let text = string
+          .substring(index + start[0].length, end.index)
+
+        const lnt = regexIndexOf(text, rgx.block.start)
+        const isRecursive = lnt > -1
+        console.log(text)
+
+        if (isRecursive) {
+          // restart
+          const idx = start.index + lnt + index
+          start = text.match(rgx.block.start) as RegExpExecArray
+          replace(idx)
+
+          return
+        }
+
+        const attrs: IMakeElementOptions & { tag: string } = {
+          attributes: [],
+          classNames: [],
+          tag: 'div',
+        }
+
+        // treat this
+        text = text.replace(rgx.block.attr, (...attrsM) => {
+          attrs.classNames = attrsM[1].split('\s+')
+          attrs.tag = attrsM[2] ? attrsM[2] : attrs.tag
+
+          return ''
+        })
+
+        mutableString = replaceBetween(
+          mutableString,
+          start.index,
+          end.index + end[0].length - 1,
+          'AAAAA',
+        )
+        // SI += 1
+      }
+
+      replace()
+    }
+
+    return string
+
+    const replaceFunc = (replacee: string) => replacee.replace(rgx.blockClass, (...match: string[]) => {
       const classNames = match[1].split(/\s+/)
       const tag = match[2] ? match[2].trim() : match[2]
       let text = match[3] ? match[3].trim() : ''
       const textWCloseTag = `${text}})`
-      const isRecursive = regexs.blockClass.test(textWCloseTag)
+      const isRecursive = rgx.blockClass.test(textWCloseTag)
 
       if (isRecursive)
         text = replaceFunc(textWCloseTag)
@@ -186,7 +240,6 @@ export class StringFormatter {
 
       return newHTML
     })
-
 
     return replaceFunc(string)
       .replace(/\}\)/g, '')

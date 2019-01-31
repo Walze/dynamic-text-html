@@ -22,13 +22,13 @@ export const handleBranches = (branch: IBranch, filesRef?: { [fileName: string]:
   const sortedFiles: { [fileName: string]: string } = filesRef || {}
 
   for (const prop in branch) if (branch.hasOwnProperty(prop)) {
-      const fileDataOrBranch = branch[prop];
-      const isData = typeof fileDataOrBranch === 'string'
+    const fileDataOrBranch = branch[prop];
+    const isData = typeof fileDataOrBranch === 'string'
 
-      if (isData)
-          sortedFiles[prop] = fileDataOrBranch as string
-      else
-          (fileDataOrBranch as IBranch[]).map((branchItem) => handleBranches(branchItem, sortedFiles))
+    if (isData)
+      sortedFiles[prop] = fileDataOrBranch as string
+    else
+      (fileDataOrBranch as IBranch[]).map((branchItem) => handleBranches(branchItem, sortedFiles))
   }
 
   return sortedFiles
@@ -83,7 +83,7 @@ export const fetchFilesPromise = (filesUrls: IFileObject, ext: string) => {
 
 }
 
-export const globalMatch = (regex: RegExp, string: string) => {
+export const globalMatch = (regex: RegExp, string: string, returnArrayIfUndef = false) => {
 
   const matches = []
 
@@ -91,6 +91,9 @@ export const globalMatch = (regex: RegExp, string: string) => {
   // tslint:disable-next-line:no-conditional-assignment
   while (value = regex.exec(string) as RegExpExecArray)
     matches.push(value)
+
+  if (!matches.length && returnArrayIfUndef)
+    return []
 
   return !matches.length
     ? undefined
