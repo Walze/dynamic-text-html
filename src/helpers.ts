@@ -1,5 +1,7 @@
-import { IFileObject, IFile } from './types'
-
+import { IFileObject, IFile, IBranch } from './types'
+import {
+  h, VNode,
+} from 'virtual-dom'
 
 export const mapObj = <A, B>(
   object: { [key: string]: A },
@@ -16,6 +18,21 @@ export const mapObj = <A, B>(
 
 }
 
+export const handleBranches = (branch: IBranch, filesRef?: { [fileName: string]: string }) => {
+  const sortedFiles: { [fileName: string]: string } = filesRef || {}
+
+  for (const prop in branch) if (branch.hasOwnProperty(prop)) {
+    const fileDataOrBranch = branch[prop];
+    const isData = typeof fileDataOrBranch === 'string'
+
+    if (isData)
+      sortedFiles[prop] = fileDataOrBranch as string
+    else
+      (fileDataOrBranch as IBranch[]).map((branchItem) => handleBranches(branchItem, sortedFiles))
+  }
+
+  return sortedFiles
+}
 
 export const mapObjToArray = <A, B>(
   object: { [key: string]: A },
@@ -66,7 +83,7 @@ export const fetchFilesPromise = (filesUrls: IFileObject, ext: string) => {
 
 }
 
-export const globalMatch = (regex: RegExp, string: string) => {
+export const globalMatch = (regex: RegExp, string: string, returnArrayIfUndef = false) => {
 
   const matches = []
 
@@ -74,6 +91,9 @@ export const globalMatch = (regex: RegExp, string: string) => {
   // tslint:disable-next-line:no-conditional-assignment
   while (value = regex.exec(string) as RegExpExecArray)
     matches.push(value)
+
+  if (!matches.length && returnArrayIfUndef)
+    return []
 
   return !matches.length
     ? undefined
@@ -88,6 +108,9 @@ export const regexIndexOf = (text: string, re: RegExp, i = 0) => {
 }
 
 
+export const countOccur = (str: string, match: string | RegExp) => (str.match(match) || []).length
+
+
 export const replaceHTMLCodes = (str: string) =>
   str.replace(/&amp;/g, '&')
     .replace(/&gt;/g, '>')
@@ -96,3 +119,68 @@ export const replaceHTMLCodes = (str: string) =>
     .replace(/&#039;/g, '\'')
 
 
+
+export const createVTree = (el: HTMLElement): VNode => {
+  const tag = el.tagName
+  const attributes = getAttrs(el)
+  const children = getChildren(el)
+
+  return h(tag, { attributes }, children)
+}
+
+const getChildren = (el: HTMLElement) =>
+  Array.from(el.childNodes)
+    .map((child) => {
+      if (child.nodeName === '#text') return child.textContent || ''
+
+      return createVTree(child as HTMLElement)
+    })
+
+const getAttrs = (el: HTMLElement) => {
+  const { attributes } = el
+
+
+  const obj: VirtualDOM.createProperties = {}
+
+  if (attributes)
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < attributes.length; i += 1) {
+      const { nodeName, nodeValue } = attributes[i]
+      obj[nodeName] = nodeValue
+    }
+
+  return obj
+}
+
+export const replaceBetween = (
+  initialString: string,
+  start: number,
+  end: number,
+  replace: string,
+) => {
+  const arr = initialString.split('')
+  arr.splice(start, end + 1 - start, replace) // arr is modified
+  const newStr = arr.join('')
+
+  return newStr
+}
+
+export const closestN = (array: number[], num: number, index = false) => {
+  let minDiff = 1000
+  let ans
+  let i = 0
+  // tslint:disable-next-line:forin
+  for (const i2 in array) {
+    const m = Math.abs(num - array[i2])
+    if (m < minDiff) {
+      minDiff = m
+      ans = array[i2]
+      i = Number(i2)
+    }
+  }
+
+  if (index)
+    return i
+
+  return ans
+}

@@ -1,19 +1,25 @@
 import marked from 'marked'
 
 import { IMakeElementOptions } from './types'
-import { globalMatch, regexIndexOf, replaceHTMLCodes } from './helpers'
+import { replaceHTMLCodes } from './helpers'
 
-
-const regexs = {
-  lineBreak: /\r\n|\n\n/g,
+const rgx = {
+  lineBreak: /\n{3,}/g,
   comments: /\/\*[.\s\n\r\S]*\*\//g,
-  inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
-  blockClass: /(!?)\{\[([^\]]+)\]([^\}]*)\}/g,
+  // inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
+  blockClass: /\({\s*\[([^\]]+)\]\s*(?:\[([^\]]+)\])?([^}]*)?}\)/g,
+  block: {
+    start: /\(\{/,
+    startG: /\(\{/g,
+    r: /([^}]*)?/,
+    end: /\}\)/,
+    endG: /\}\)/g,
+    attr: /^\[([^\]]+)\](?:\[([^\]]+)\])?/,
+  },
 }
 
-
 /** Helper for getting a StringFormatter instance */
-export const SF = (text: string) => new StringFormatter(text)
+export const SF = (text: string, previous?: StringFormatter) => new StringFormatter(text, previous)
 
 export const markdownLine = (lineTxt: string) =>
   SF(lineTxt.trim())
@@ -34,20 +40,23 @@ export class StringFormatter {
 
   private readonly _string: string
 
-  public constructor(text: string) {
-
+  public constructor(
+    text: string,
+    public previous?: StringFormatter,
+  ) {
     if (typeof text !== 'string') {
       throw new Error(`constructor expected string, given ${text}`)
     }
 
     this._string = replaceHTMLCodes(text)
+      .replace(/\n\r/, '\n')
 
   }
 
   public removeComments() {
-    const newString = this.string.replace(regexs.comments, '\n')
+    const newString = this.string.replace(rgx.comments, '\n')
 
-    return SF(newString)
+    return SF(newString, this)
   }
 
   /**
@@ -64,7 +73,7 @@ export class StringFormatter {
    */
   public splitOnN = (trim: boolean = false): string[] => {
 
-    const t1 = trim ? this._string.trim() : this._string
+    const t1 = trim ? this.string.trim() : this.string
 
     return t1
       .split('\n')
@@ -74,8 +83,11 @@ export class StringFormatter {
 
 
   public splitEveryNthLineBreak = (nth: number, filter = true, markdown = true) => {
-    const regex = regexs.lineBreak
-    const lines = this._string
+
+    // console.warn('fix')
+
+    const regex = rgx.lineBreak
+    const lines = this.string
       .split(regex)
       .map((txt) =>
         markdown ?
@@ -106,58 +118,12 @@ export class StringFormatter {
     return arr
   }
 
-  public splitConsecutiveLineBreaks = (everyN: number = 0, filterEmpty = true): string[] => {
+  public splitConsecutiveLineBreaks = (x: number) => {
+    const rgx2 = new RegExp(`\\n{${x + 1}}`)
 
-    const regex = regexs.lineBreak
-
-    const lines = this._string
-      // .trim()
-      .split(regex)
-      .map((txt) => txt.trim())
-
-
-    if (everyN <= 1)
-      return filterEmpty ? lines.filter((txt) => txt) : lines
-
-
-    const groups: string[] = []
-
-    /** Blocks consecutive breaks */
-    let blocked = false
-
-    let groupsIndex = 0
-    let breakCounter = 0
-
-    const lineBreaker = (line: string) => {
-
-      let goToNextGroup = false
-      const isEmpty = line === ''
-
-      if (!groups[groupsIndex])
-        groups[groupsIndex] = ''
-
-      if (isEmpty)
-        breakCounter += 1
-      else
-        breakCounter = 0
-
-      // if breakcounter matches param
-      goToNextGroup = breakCounter === everyN && everyN !== 0
-      groups[groupsIndex] += `${line}\r\n`
-
-      if (!goToNextGroup)
-        blocked = false
-
-      if (goToNextGroup && !blocked) {
-        groupsIndex += 1
-        blocked = true
-      }
-
-    }
-
-    lines.map(lineBreaker)
-
-    return groups
+    return this.string
+      .split(rgx2)
+      .filter((a) => !!a)
   }
 
   /**
@@ -166,7 +132,8 @@ export class StringFormatter {
   public removeDotSlash(): StringFormatter {
 
     return SF(
-      this._string.replace(/^\.\//gu, ''),
+      this.string.replace(/^\.\//gu, ''),
+      this,
     )
 
   }
@@ -177,120 +144,110 @@ export class StringFormatter {
   public removePTag(): StringFormatter {
 
     return SF(
-      this._string.replace(/<\/?p>/gu, ''),
+      this.string.replace(/<\/?p>/gu, ''),
+      this,
     )
 
   }
 
+  public _marked = () => SF(marked(this.string), this)
 
   public markdown(): StringFormatter {
-    const string = this._string.trim()
+    const string = this.string.trim()
 
     if (!string || string !== string) return SF('')
 
-    const markedClasses = SF(this._string)
-      ._markClasses()
-      ._markBlockClasses()
-      .string
-
-    return SF(marked(markedClasses))
-
+    return SF(this.string)
+      ._syntaxReplacer()
+      ._marked()
   }
 
-  private _inlineClassReplacer = (...match: string[]) => {
-
-    const { 3: text } = match
-
-    const classNames = match[2] ? match[2].split(/\s/) : undefined
-    const breakLine = Boolean(match[1])
-
-    const tag = breakLine ? 'div' : 'span'
-
-    const newWord = SF(text)
-      .makeElement(tag, { classNames })
-      .outerHTML
-
-    return newWord
-
-  }
-
-  /**
-   * marks custom classes
-   */
-  private _markClasses(): StringFormatter {
-
-    const regex = regexs.inlineClass
-    if (!regex.test(this._string)) return this
-
-    const newString = this._string
-      .replace(regex, this._inlineClassReplacer.bind(this))
-
-    return SF(newString)
-
-  }
-
-  private _blockClassReplacer = () => {
-    let previousText = this._string
-
-    const replaceFunction = (match: RegExpExecArray) => {
-
-      const replace = match[0]
-      const removeP = !!match[1]
-      const classNames = match[2].split(/\s+/)
-      const { 0: tag } = match[3]
-        .trim()
-        .split(/\s+/)
-
-      const startI = previousText.indexOf(replace)
-      if (startI === -1) {
-        return previousText
-      }
-
-      let endI = regexIndexOf(previousText, /\n\r|\n\n/, startI)
-      if (endI === -1) endI = previousText.length
-
-      const start = previousText.substring(0, startI)
-      const end = previousText.substring(endI, previousText.length)
-
-      const innerText = previousText
-        .substring(startI, endI)
-        .replace(replace, '')
-        .trim()
+  // turn into a helper someday?
+  private _recursive = (string: string) => {
+    // let start = string.match(rgx.block.start) as RegExpExecArray
+    // const end = string.match(rgx.block.end) as RegExpExecArray
+    // let mutableString = string
 
 
-      let newHTMLSF = SF(innerText)
+    // if (start && end) {
+    //   // console.log(replaceBetween(string, starts[2].index, ends[0].index + 1, 'EEEEE'))
+    //   const replace = (index = 0) => {
+    //     const starts = globalMatch(rgx.block.startG, string)
+    //     debugger
+    //     let text = string
+    //       .substring(index + start[0].length, end.index)
 
-      if (innerText && innerText !== '') {
-        newHTMLSF = newHTMLSF.markdown()
+    //     const lnt = regexIndexOf(text, rgx.block.start)
+    //     const isRecursive = lnt > -1
+    //     console.log(text)
 
-        if (removeP)
-          newHTMLSF = newHTMLSF.removePTag()
+    //     if (isRecursive) {
+    //       // restart
+    //       const idx = start.index + lnt + index
+    //       start = text.match(rgx.block.start) as RegExpExecArray
+    //       replace(idx)
+
+    //       return
+    //     }
+
+    //     const attrs: IMakeElementOptions & { tag: string } = {
+    //       attributes: [],
+    //       classNames: [],
+    //       tag: 'div',
+    //     }
+
+    //     // treat this
+    //     text = text.replace(rgx.block.attr, (...attrsM) => {
+    //       attrs.classNames = attrsM[1].split('\s+')
+    //       attrs.tag = attrsM[2] ? attrsM[2] : attrs.tag
+
+    //       return ''
+    //     })
+
+    //     mutableString = replaceBetween(
+    //       mutableString,
+    //       start.index,
+    //       end.index + end[0].length - 1,
+    //       'AAAAA',
+    //     )
+    //     // SI += 1
+    //   }
+
+    //   replace()
+    // }
+
+    // return string
+
+    const replaceFunc = (replacee: string) => replacee.replace(rgx.blockClass, (...match: string[]) => {
+      const classNames = match[1].split(/\s+/)
+      const tag = match[2] ? match[2].trim() : match[2]
+      let text = match[3] ? match[3].trim() : ''
+      const textWCloseTag = `${text}})`
+      const isRecursive = rgx.blockClass.test(textWCloseTag)
+
+      if (isRecursive)
+        text = replaceFunc(textWCloseTag)
+
+      let newHTMLSF = SF(text)
+
+      if (text) {
+        newHTMLSF = newHTMLSF
+          .markdown()
+          .removePTag()
       }
 
       const newHTML = newHTMLSF
         .makeElement(tag || 'div', { classNames })
         .outerHTML
 
-      const newText = start + newHTML + end
+      return newHTML
+    })
 
-      previousText = newText
-
-      return previousText
-    }
-
-    return replaceFunction
+    return replaceFunc(string)
+      .replace(/\}\)/g, '')
   }
 
-  private _markBlockClasses(): StringFormatter {
-
-    const regex = regexs.blockClass
-    const matches = globalMatch(regex, this._string)
-    if (!matches) return this
-
-    const replaced = matches.map(this._blockClassReplacer()) as string[]
-
-    return SF(replaced[replaced.length - 1])
-  }
+  private _syntaxReplacer = () => SF(this._recursive(this.string), this)
 
   /**
    * Makes an in-line element
@@ -312,7 +269,7 @@ export class StringFormatter {
 
     if (id) element.id = id
 
-    element.innerHTML = this._string
+    element.innerHTML = this.string
 
     return element
   }

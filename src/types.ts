@@ -14,6 +14,11 @@ export interface IDynamicElement {
   readonly type: DynamicTypes;
 }
 
+export interface IBranch {
+  [BRANCH_NAME: string]: string | IBranch[] | undefined,
+  children?: IBranch[],
+}
+
 export type IDynamicElementsObject = {
   [key in DynamicTypes]: IDynamicElement[]
 }

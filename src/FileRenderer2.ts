@@ -1,4 +1,4 @@
-import { mapObjToArray } from './helpers';
+import { mapObjToArray } from './helpers'
 import { SF, getMarkedLines } from './StringFormatter'
 import {
   DynamicTypes,
@@ -6,7 +6,7 @@ import {
   IFile,
   IDynamicElement,
 } from './types'
-import { globalMatch } from './barrel';
+import { globalMatch } from './barrel'
 
 
 export const selectors = {
