@@ -1,8 +1,9 @@
 ({
   [green][section]
+  before red
   ({
     [red]
-    nice ({[blue][span] tag}) finished
+    red ({[blue][span] blue}) 
   })
 })
 

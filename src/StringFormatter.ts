@@ -1,7 +1,7 @@
 import marked from 'marked'
 
 import { IMakeElementOptions } from './types'
-import { replaceHTMLCodes, globalMatch, replaceBetween, regexIndexOf } from './helpers'
+import { replaceHTMLCodes } from './helpers'
 
 const rgx = {
   lineBreak: /\n{3,}/g,
@@ -83,7 +83,9 @@ export class StringFormatter {
 
 
   public splitEveryNthLineBreak = (nth: number, filter = true, markdown = true) => {
-    console.warn('fix')
+
+    // console.warn('fix')
+
     const regex = rgx.lineBreak
     const lines = this.string
       .split(regex)
@@ -162,59 +164,59 @@ export class StringFormatter {
 
   // turn into a helper someday?
   private _recursive = (string: string) => {
-    let start = string.match(rgx.block.start) as RegExpExecArray
-    const end = string.match(rgx.block.end) as RegExpExecArray
-    let mutableString = string
+    // let start = string.match(rgx.block.start) as RegExpExecArray
+    // const end = string.match(rgx.block.end) as RegExpExecArray
+    // let mutableString = string
 
 
-    if (start && end) {
-      // console.log(replaceBetween(string, starts[2].index, ends[0].index + 1, 'EEEEE'))
-      const replace = (index = 0) => {
-        const starts = globalMatch(rgx.block.startG, string)
-        debugger
-        let text = string
-          .substring(index + start[0].length, end.index)
+    // if (start && end) {
+    //   // console.log(replaceBetween(string, starts[2].index, ends[0].index + 1, 'EEEEE'))
+    //   const replace = (index = 0) => {
+    //     const starts = globalMatch(rgx.block.startG, string)
+    //     debugger
+    //     let text = string
+    //       .substring(index + start[0].length, end.index)
 
-        const lnt = regexIndexOf(text, rgx.block.start)
-        const isRecursive = lnt > -1
-        console.log(text)
+    //     const lnt = regexIndexOf(text, rgx.block.start)
+    //     const isRecursive = lnt > -1
+    //     console.log(text)
 
-        if (isRecursive) {
-          // restart
-          const idx = start.index + lnt + index
-          start = text.match(rgx.block.start) as RegExpExecArray
-          replace(idx)
+    //     if (isRecursive) {
+    //       // restart
+    //       const idx = start.index + lnt + index
+    //       start = text.match(rgx.block.start) as RegExpExecArray
+    //       replace(idx)
 
-          return
-        }
+    //       return
+    //     }
 
-        const attrs: IMakeElementOptions & { tag: string } = {
-          attributes: [],
-          classNames: [],
-          tag: 'div',
-        }
+    //     const attrs: IMakeElementOptions & { tag: string } = {
+    //       attributes: [],
+    //       classNames: [],
+    //       tag: 'div',
+    //     }
 
-        // treat this
-        text = text.replace(rgx.block.attr, (...attrsM) => {
-          attrs.classNames = attrsM[1].split('\s+')
-          attrs.tag = attrsM[2] ? attrsM[2] : attrs.tag
+    //     // treat this
+    //     text = text.replace(rgx.block.attr, (...attrsM) => {
+    //       attrs.classNames = attrsM[1].split('\s+')
+    //       attrs.tag = attrsM[2] ? attrsM[2] : attrs.tag
 
-          return ''
-        })
+    //       return ''
+    //     })
 
-        mutableString = replaceBetween(
-          mutableString,
-          start.index,
-          end.index + end[0].length - 1,
-          'AAAAA',
-        )
-        // SI += 1
-      }
+    //     mutableString = replaceBetween(
+    //       mutableString,
+    //       start.index,
+    //       end.index + end[0].length - 1,
+    //       'AAAAA',
+    //     )
+    //     // SI += 1
+    //   }
 
-      replace()
-    }
+    //   replace()
+    // }
 
-    return string
+    // return string
 
     const replaceFunc = (replacee: string) => replacee.replace(rgx.blockClass, (...match: string[]) => {
       const classNames = match[1].split(/\s+/)
