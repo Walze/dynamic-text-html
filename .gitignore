@@ -3,6 +3,7 @@ build/
 dist/
 watch/
 lib/
+compiled/
 
 # Logs
 logs

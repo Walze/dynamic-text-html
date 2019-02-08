@@ -119,6 +119,9 @@ export const replaceHTMLCodes = (str: string) =>
     .replace(/&#039;/g, '\'')
 
 
+export const flat = <T>(arr: T[][]) =>
+  arr.reduce((acc, val) => acc.concat(val), []);
+
 
 export const createVTree = (el: HTMLElement): VNode => {
   const tag = el.tagName

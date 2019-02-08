@@ -1,4 +1,4 @@
-import { mapObjToArray } from './helpers'
+import { mapObjToArray, flat } from './helpers'
 import { SF, getMarkedLines } from './StringFormatter'
 import {
   DynamicTypes,
@@ -151,8 +151,7 @@ export class FileRenderer2 {
   private _postRender(div: HTMLElement) {
     const dyEls = this._getDyElements(div)
 
-    return mapObjToArray(dyEls, (e) => e)
-      .flat()
+    return flat(mapObjToArray(dyEls, (e) => e))
       .map((dy) => {
         this.dyElements[dy.type].push(dy)
 

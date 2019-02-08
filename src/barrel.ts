@@ -1,4 +1,6 @@
-
+// tslint:disable:no-implicit-dependencies
+// import '@babel/polyfill'
+import './polyfills'
 export * from './FileRenderer'
 export * from './FileRenderer2'
 export * from './StringFormatter'
