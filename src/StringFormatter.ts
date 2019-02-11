@@ -4,7 +4,7 @@ import { IMakeElementOptions } from './types'
 import { replaceHTMLCodes } from './helpers'
 
 const rgx = {
-  lineBreak: /\n{3,}/g,
+  lineBreak: /^\s*$/gm,
   comments: /\/\*[.\s\n\r\S]*\*\//g,
   // inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
   blockClass: /\({\s*\[([^\]]+)\]\s*(?:\[([^\]]+)\])?([^}]*)?}\)/g,
@@ -94,6 +94,8 @@ export class StringFormatter {
           markdownLine(txt)
           : txt,
       )
+
+    console.warn([this.string])
 
     const arr: string[][] = []
     let index = 0

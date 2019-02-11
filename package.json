@@ -1,10 +1,11 @@
 {
   "name": "dynamic-text-html",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "main": "dist/barrel.js",
   "typings": "./typings.d.ts",
   "scripts": {
     "start": "webpack-dev-server --mode=development --progress --colors --open",
+    "update": "ncu -a && yarn install && yarn start",
     "build-wp": "webpack --mode=production --progress --colors",
     "build": "tsc --outDir ./dist && babel ./dist -d ./dist",
     "deploy": "yarn build && npm publish"
@@ -16,7 +17,7 @@
     "@babel/preset-env": "^7.3.1",
     "@types/core-js": "^2.5.0",
     "@types/marked": "^0.6.0",
-    "@types/node": "^10.12.23",
+    "@types/node": "^10.12.24",
     "@types/virtual-dom": "^2.1.0",
     "@types/webpack": "^4.4.24",
     "@types/webpack-env": "^1.13.7",
