@@ -298,10 +298,10 @@ export class FileRenderer2 {
     const modelCopy = model.cloneNode(true) as HTMLElement
     // loop.removeChild(model)
 
-    const newLoopDiv = document.createElement(newEl.tagName)
+    const newLoopDiv = newEl.cloneNode() as HTMLElement
 
     liness.map((a) => {
-      const newHTML = document.createElement(model.tagName)
+      const newHTML = model.cloneNode(true) as HTMLElement
 
       this._renderLines(
         this._makeDynamicElement(DynamicTypes.lines, dyEl.value)(modelCopy),
