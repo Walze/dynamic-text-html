@@ -7,7 +7,7 @@ const rgx = {
   lineBreak: /^\s*$/gm,
   comments: /\/\*[.\s\n\r\S]*\*\//g,
   // inlineClass: /(!?)\{([^{}]+)\}(\S+)/g,
-  blockClass: /\({\s*\[([^\]]+)\]\s*(?:\[([^\]]+)\])?([^}]*)?}\)/g,
+  blockClass: /(!?)\({\s*\[([^\]]+)\]\s*(?:\[([^\]]+)\])?([^}]*)?}\)/g,
   block: {
     start: /\(\{/,
     startG: /\(\{/g,
@@ -221,9 +221,10 @@ export class StringFormatter {
     // return string
 
     const replaceFunc = (replacee: string) => replacee.replace(rgx.blockClass, (...match: string[]) => {
-      const classNames = match[1].split(/\s+/)
-      const tag = match[2] ? match[2].trim() : match[2]
-      let text = match[3] ? match[3].trim() : ''
+      const addP = !!match[1]
+      const classNames = match[2].split(/\s+/)
+      const tag = match[3] ? match[3].trim() : match[3]
+      let text = match[4] ? match[4].trim() : ''
       const textWCloseTag = `${text}})`
       const isRecursive = rgx.blockClass.test(textWCloseTag)
 
@@ -233,9 +234,10 @@ export class StringFormatter {
       let newHTMLSF = SF(text)
 
       if (text) {
-        newHTMLSF = newHTMLSF
-          .markdown()
-          .removePTag()
+        newHTMLSF = newHTMLSF.markdown()
+
+        if (!addP)
+          newHTMLSF = newHTMLSF.removePTag()
       }
 
       const newHTML = newHTMLSF
