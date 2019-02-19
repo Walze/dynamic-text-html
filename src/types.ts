@@ -7,6 +7,11 @@ export enum DynamicTypes {
   prefab = 'prefab',
 }
 
+
+export interface IFileRendererOptions {
+  readonly warn?: boolean
+}
+
 export interface IDynamicElement {
   readonly elementCopy: HTMLElement;
   readonly DOMElement: HTMLElement;

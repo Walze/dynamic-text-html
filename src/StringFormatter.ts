@@ -95,8 +95,6 @@ export class StringFormatter {
           : txt,
       )
 
-    console.warn([this.string])
-
     const arr: string[][] = []
     let index = 0
 

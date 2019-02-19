@@ -1,12 +1,12 @@
-import { mapObjToArray, flat } from './helpers'
+import { mapObjToArray, flat, globalMatch } from './helpers'
 import { SF, getMarkedLines } from './StringFormatter'
 import {
   DynamicTypes,
   IDynamicElementsObject,
   IFile,
   IDynamicElement,
+  IFileRendererOptions,
 } from './types'
-import { globalMatch } from './barrel'
 
 
 export const selectors = {
@@ -30,6 +30,7 @@ export class FileRenderer2 {
   public constructor(
     public ext: string = 'md',
     public selectorReference: HTMLElement | Document = document,
+    public options: IFileRendererOptions = {},
   ) {
     this.dyElements = this._getDyElements()
   }
@@ -93,7 +94,7 @@ export class FileRenderer2 {
 
 
   public render(file: IFile) {
-    if (file.rendered) {
+    if (file.rendered && this.options.warn) {
       console.warn('file already rendered', file)
     }
 
@@ -156,7 +157,7 @@ export class FileRenderer2 {
         this.dyElements[dy.type].push(dy)
 
         // if file already went by, find it and render it
-        const foundFile = this.files.find((f) => f.name === dy.value && !f.rendered)
+        const foundFile = this.files.find((f) => f.name === dy.value)
         if (foundFile)
           this.render(foundFile)
       })
@@ -197,24 +198,30 @@ export class FileRenderer2 {
       return false
     }
 
-    // gets type of prefab
-    const type = prefab.elementCopy.getAttribute('type') as DynamicTypes | undefined
-    if (!type) {
-      console.log(`prefab ${prefabName} has no type`)
-
-      return false
-    }
-
-    // copies prefab and manages attributes
+    // copies prefab to manage attributes
     const prefabCopy = prefab.elementCopy.cloneNode(true) as HTMLElement
     prefabCopy.removeAttribute('prefab')
-    prefabCopy.removeAttribute('type')
-    prefabCopy.setAttribute(type, fileName)
+
+    // inline type
+    const type = prefab.elementCopy.getAttribute('type') as DynamicTypes | undefined
+    if (type) prefabCopy.setAttribute(type, fileName)
+
+
+    const types = Array
+      .from(prefabCopy.querySelectorAll('[type]'))
+      .map((el) => {
+        const childType = el.getAttribute('type') as string
+        // el.removeAttribute('type')
+
+        el.setAttribute(childType, fileName)
+        console.log(el)
+      })
+
+    if (types.length < 1) console.warn(`Prefab ${prefab.value} needs at least 1 type`)
 
     // sets prefab html into dynamic elements html
     element.innerHTML = element.innerHTML
       .replace(match, prefabCopy.outerHTML.trim())
-    // .replace(/>\s+</gu, "><")
 
     return true
   }
