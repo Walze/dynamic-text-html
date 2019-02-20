@@ -17,15 +17,12 @@ export interface IDynamicElement {
   readonly DOMElement: HTMLElement;
   readonly value: string;
   readonly type: DynamicTypes;
+  inlineText?: string;
 }
 
 export interface IBranch {
   [BRANCH_NAME: string]: string | IBranch[] | undefined,
   children?: IBranch[],
-}
-
-export type IDynamicElementsObject = {
-  [key in DynamicTypes]: IDynamicElement[]
 }
 
 export interface IFileObject {

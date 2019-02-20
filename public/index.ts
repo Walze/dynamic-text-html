@@ -2,7 +2,6 @@
 // tslint:disable:no-implicit-dependencies
 
 import { FileRenderer2 } from './../src/FileRenderer2'
-import { FileRenderer } from './../src/FileRenderer'
 import { makesFiles, handleBranches } from './../src/helpers'
 // import '@babel/polyfill'
 import './css/main.css'
@@ -60,20 +59,6 @@ export const render2 = () => {
     const diff = Math.ceil(performance.now() - t0)
     console.warn('\n FileRenderer 2 =>', `${diff}ms`)
 }
-
-export const render1 = () => {
-    const t0 = performance.now()
-
-    const renderer = new FileRenderer()
-    files.map((file) => {
-
-        renderer.render(file)
-    })
-
-    const diff = Math.ceil(performance.now() - t0)
-    console.warn('\n FileRenderer 1 =>', `${diff}ms`)
-}
-
 // const saveDOM = document.body.innerHTML
 // document.body.innerHTML = saveDOM
 
