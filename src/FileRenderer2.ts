@@ -1,4 +1,4 @@
-import { globalMatch } from './helpers'
+import { globalMatch, mapEnum, flat } from './helpers'
 import { SF, getMarkedLines } from './StringFormatter'
 import {
   DynamicTypes,
@@ -9,6 +9,7 @@ import {
 
 export class DynamicElement {
   public static htmlRenderable = `${DynamicTypes.field} ${DynamicTypes.lines} ${DynamicTypes.loop}`
+  public static types = mapEnum(DynamicTypes)
   public readonly elementCopy: HTMLElement;
 
   public constructor(
@@ -21,13 +22,7 @@ export class DynamicElement {
   }
 
 }
-
 export const selectors = {
-  field: DynamicTypes.field,
-  lines: DynamicTypes.lines,
-  loops: DynamicTypes.loop,
-  prefab: DynamicTypes.prefab,
-  external: DynamicTypes.external,
   externalRGX: /\[\[(.+)?\](.+)?\]/g,
   model: '.model',
   model_line: '.model-line', // deprecated
@@ -77,13 +72,9 @@ export class FileRenderer2 {
   private _getDyElements(
     selectorReference: HTMLElement | Document = this.selectorReference,
   ): DynamicElement[] {
-    const field = this._queryElements(selectors.field, selectorReference)
-    const lines = this._queryElements(selectors.lines, selectorReference)
-    const loop = this._queryElements(selectors.loops, selectorReference)
-    const external = this._queryElements(selectors.external, selectorReference)
-    const prefab = this._queryElements(selectors.prefab, selectorReference)
-
-    return [...field, ...lines, ...loop, ...external, ...prefab]
+    return flat(
+      DynamicElement.types.map((type) => this._queryElements(type, selectorReference)),
+    )
   }
 
 
@@ -91,10 +82,11 @@ export class FileRenderer2 {
    * Returns all attributes that matches in file name
    */
   private _matchAttributes(file: IFile) {
-    const matchAndPush = (dyEl: DynamicElement) =>
-      dyEl.value === file.name && DynamicElement.htmlRenderable.includes(dyEl.type)
+    const filter = (dyEl: DynamicElement) =>
+      dyEl.value === file.name
+      && DynamicElement.htmlRenderable.includes(dyEl.type)
 
-    return this.dyElements.filter(matchAndPush)
+    return this.dyElements.filter(filter)
   }
 
 

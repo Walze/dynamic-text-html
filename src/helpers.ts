@@ -3,6 +3,19 @@ import {
   h, VNode,
 } from 'virtual-dom'
 
+export const mapEnum = <T>(enumerable: T): Array<T[keyof T]> => {
+  // get all the members of the enum
+  const enumMembers = (Object.keys(enumerable) as Array<keyof T>)
+    .map((key) => enumerable[key])
+
+  // we are only interested in the numeric identifiers as these represent the values
+  // const enumValues = enumMembers.filter((v) => typeof v === "number");
+  const enumValues = enumMembers
+
+  // now map through the enum values
+  return enumValues
+}
+
 export const mapObj = <A, B>(
   object: { [key: string]: A },
   cb: (value: A, prop: string, index: number) => B,
