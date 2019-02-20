@@ -4,7 +4,6 @@ export enum DynamicTypes {
   lines = 'lines',
   loop = 'loop',
   external = 'external',
-  prefab = 'prefab',
 }
 
 

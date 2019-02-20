@@ -10,12 +10,14 @@ import {
 export class DynamicElement {
   public static htmlRenderable = `${DynamicTypes.field} ${DynamicTypes.lines} ${DynamicTypes.loop}`
   public static types = mapEnum(DynamicTypes)
-  public readonly elementCopy: HTMLElement;
+
+  public readonly elementCopy: HTMLElement
 
   public constructor(
-    public readonly DOMElement: HTMLElement,
-    public readonly value: string,
     public readonly type: DynamicTypes,
+    public readonly value: string,
+    public readonly DOMElement: HTMLElement,
+    public readonly dynamicFields: HTMLElement[],
     public inlineText?: string,
   ) {
     this.elementCopy = this.DOMElement.cloneNode(true) as HTMLElement
@@ -46,11 +48,14 @@ export class FileRenderer2 {
 
 
   private _makeDynamicElement = (type: DynamicTypes, fileName?: string) =>
-    (element: HTMLElement): DynamicElement => new DynamicElement(
-      element,
-      fileName || element.getAttribute(type) as string,
-      type,
-    )
+    (element: HTMLElement): DynamicElement => {
+      const types = Array.from(element.querySelectorAll('[type]')) as HTMLElement[]
+      const value = fileName || element.getAttribute(type) as string
+      const dyEl = new DynamicElement(type, value, element, types)
+
+
+      return dyEl
+    }
 
 
   /**
@@ -198,7 +203,7 @@ export class FileRenderer2 {
     // finds prefab
     const prefab = this.dyElements.find((p) =>
       p.value === prefabName
-      && p.type === DynamicTypes.prefab,
+      && p.type === DynamicTypes.external,
     )
 
     if (!prefab) {
@@ -216,14 +221,12 @@ export class FileRenderer2 {
     if (type) prefabCopy.setAttribute(type, fileName)
 
 
-    const types = Array
-      .from(prefabCopy.querySelectorAll('[type]'))
-      .map((el) => {
-        const childType = el.getAttribute('type') as string
-        // el.removeAttribute('type')
+    const types = prefab.dynamicFields.map((el) => {
+      const childType = el.getAttribute('type') as string
+      // el.removeAttribute('type')
 
-        el.setAttribute(childType, fileName)
-      })
+      el.setAttribute(childType, fileName)
+    })
 
     if (this.options.warn && types.length < 1)
       console.warn(`Prefab ${prefab.value} needs at least 1 type`)
