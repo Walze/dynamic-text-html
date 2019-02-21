@@ -19,6 +19,7 @@ const rgx = {
 }
 
 /** Helper for getting a StringFormatter instance */
+// tslint:disable-next-line: no-use-before-declare
 export const SF = (text: string, previous?: StringFormatter) => new StringFormatter(text, previous)
 
 export const markdownLine = (lineTxt: string) =>
@@ -44,6 +45,7 @@ export class StringFormatter {
     text: string,
     public previous?: StringFormatter,
   ) {
+    // tslint:disable-next-line: strict-type-predicates
     if (typeof text !== 'string') {
       throw new Error(`constructor expected string, given ${text}`)
     }
@@ -163,7 +165,7 @@ export class StringFormatter {
   }
 
   // turn into a helper someday?
-  private _recursive = (string: string) => {
+  private readonly _recursive = (string: string) => {
     // let start = string.match(rgx.block.start) as RegExpExecArray
     // const end = string.match(rgx.block.end) as RegExpExecArray
     // let mutableString = string
@@ -249,7 +251,7 @@ export class StringFormatter {
       .replace(/\}\)/g, '')
   }
 
-  private _syntaxReplacer = () => SF(this._recursive(this.string), this)
+  private readonly _syntaxReplacer = () => SF(this._recursive(this.string), this)
 
   /**
    * Makes an in-line element
