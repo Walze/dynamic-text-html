@@ -11,7 +11,6 @@ export class DynamicElement {
   public static htmlRenderable = `${DynamicTypes.field} ${DynamicTypes.lines} ${DynamicTypes.loop}`
   public static types = mapEnum(DynamicTypes)
 
-  public readonly elementCopy: HTMLElement
   public readonly value: string
   public readonly dynamicFields: HTMLElement[]
 
@@ -23,7 +22,6 @@ export class DynamicElement {
   ) {
     this.value = fileName || element.getAttribute(type) as string
     this.dynamicFields = Array.from(element.querySelectorAll('[type]'))
-    this.elementCopy = this.element.cloneNode(true) as HTMLElement
   }
 
   public clone() {
@@ -118,7 +116,7 @@ export class FileRenderer2 {
 
     // debugger
     matchedDyEls.map((dyElement) => {
-      const div = dyElement.elementCopy.cloneNode() as HTMLElement
+      const div = dyElement.element.cloneNode() as HTMLElement
       div.innerHTML = file.data
 
       this._preRender(div)
@@ -184,7 +182,7 @@ export class FileRenderer2 {
 
     if (found)
       element.innerHTML = element.innerHTML
-        .replace(match, found.elementCopy.outerHTML.trim())
+        .replace(match, found.element.outerHTML.trim())
         .replace(/>\s+</gu, "><")
     else {
       console.warn(`External element '[prefab = ${external}]' not found on file`)
@@ -283,7 +281,7 @@ export class FileRenderer2 {
     const linesArray = lines || getMarkedLines(newEl.innerHTML.trim())
     let index = 0
 
-    newEl.innerHTML = dyEl.elementCopy.innerHTML
+    newEl.innerHTML = dyEl.element.innerHTML
       .replace(selectors.line, (...args: string[]) => {
 
         const skip = !!args[1]
@@ -311,7 +309,7 @@ export class FileRenderer2 {
    *  Renders the loop attribute
    */
   private readonly _renderLoop = (dyEl: DynamicElement, newEl: HTMLElement) => {
-    const loop = dyEl.elementCopy
+    const loop = dyEl.element
     const model = loop.querySelector(selectors.model)
     if (!model) throw new Error('model not found')
 
