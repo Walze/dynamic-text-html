@@ -1,5 +1,6 @@
 
 export enum DynamicTypes {
+  text = 'text',
   field = 'field',
   lines = 'lines',
   loop = 'loop',

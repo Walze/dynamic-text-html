@@ -16,18 +16,24 @@ export class DynamicElement {
 
   public constructor(
     public readonly type: DynamicTypes,
-    public readonly element: HTMLElement,
-    fileName: string | undefined,
+    public element: HTMLElement,
+    fileName?: string | undefined,
+    public cloned: boolean = false,
     public inlineText?: string,
   ) {
     this.value = fileName || element.getAttribute(type) as string
     this.dynamicFields = Array.from(element.querySelectorAll('[type]'))
   }
 
-  public clone() {
-    const clone = this.element.cloneNode(true) as HTMLElement
+  public clone(deep = true) {
+    const clone = this.element.cloneNode(deep) as HTMLElement
 
-    return new DynamicElement(this.type, clone, this.value)
+    return new DynamicElement(this.type, clone, this.value, true)
+  }
+
+  public update(dyEl: DynamicElement) {
+    this.element.replaceWith(dyEl.element)
+    this.element = dyEl.element
   }
 
 }
@@ -54,24 +60,16 @@ export class FileRenderer2 {
   }
 
 
-  private readonly _makeDynamicElement = (type: DynamicTypes, fileName?: string) =>
-    (el: HTMLElement): DynamicElement => {
-      const dyEl = new DynamicElement(type, el, fileName)
-
-      return dyEl
-    }
-
-
   /**
    *  Gets element by attribute and gets attributes value
    */
-  private _queryElements(
-    name: DynamicTypes,
+  private _queryElements = (
+    type: DynamicTypes,
     selectorReference: HTMLElement | Document,
-  ): DynamicElement[] {
-    const els = Array.from(selectorReference.querySelectorAll(`[${name}]`)) as HTMLElement[]
+  ): DynamicElement[] => {
+    const els = Array.from(selectorReference.querySelectorAll(`[${type}]`)) as HTMLElement[]
 
-    return els.map(this._makeDynamicElement(name))
+    return els.map((el) => new DynamicElement(type, el))
   }
 
 
@@ -110,21 +108,9 @@ export class FileRenderer2 {
       .removeComments()
       .string
 
-
-    const matchedDyEls = this._matchAttributes(file)
-    console.log(matchedDyEls)
-
-    // debugger
-    matchedDyEls.map((dyElement) => {
-      const div = dyElement.element.cloneNode() as HTMLElement
-      div.innerHTML = file.data
-
-      this._preRender(div)
-      this._render(dyElement, div)
-      this._postRender(div)
-
-      dyElement.element.replaceWith(div)
-    })
+    const matchedDyEls = this
+      ._matchAttributes(file)
+      .map(this._renderDyEl(file))
 
     file.rendered = matchedDyEls.length > 0
 
@@ -134,10 +120,31 @@ export class FileRenderer2 {
   }
 
 
+  private _renderDyEl(file: IFile): (
+    value: DynamicElement,
+    index: number,
+    array: DynamicElement[],
+  ) => void {
+    return (dyElement) => {
+      const newDyEl = new DynamicElement(
+        DynamicTypes.text,
+        dyElement.element.cloneNode() as HTMLElement,
+        file.name,
+      )
+      newDyEl.element.innerHTML = file.data
+
+      this._preRender(newDyEl)
+      this._render(dyElement, newDyEl)
+      this._postRender(newDyEl)
+
+      dyElement.update(newDyEl)
+    }
+  }
+
   /**
    * Renders new Dynamic elements
    */
-  private _preRender(element: HTMLElement) {
+  private _preRender({ element }: DynamicElement) {
     const externalMatches = globalMatch(selectors.externalRGX, element.innerHTML)
 
     if (externalMatches) {
@@ -153,15 +160,30 @@ export class FileRenderer2 {
 
   }
 
+  private _push(dyel: DynamicElement) {
+    let shouldPush = true
+
+    this.dyElements.map((dy) => {
+      if (dy.type === dyel.type && dy.element === dyel.element)
+        shouldPush = false
+    })
+
+    if (shouldPush)
+      this.dyElements.push(dyel)
+    else {
+      console.warn('Tried pushing same DynamicElement into array')
+    }
+  }
+
 
   /**
    * Gets dynamic element from new element, adds it to this.dyElements and renders unrendered files
    */
-  private _postRender(div: HTMLElement) {
-    const dyEls = this._getDyElements(div)
+  private _postRender({ element }: DynamicElement) {
+    const dyEls = this._getDyElements(element)
 
     return dyEls.map((dy) => {
-      this.dyElements.push(dy)
+      this._push(dy)
 
       // if file already went by, find it and render it
       const foundFile = this.files.find((f) => f.name === dy.value)
@@ -211,14 +233,13 @@ export class FileRenderer2 {
     )
 
     if (!prefabFound) {
-      console.warn(`External element '[external = ${prefabName}]' not found on file`)
+      console.warn(`External element '[external = ${prefabName}]' not found`)
 
       return false
     }
 
-    const prefab = prefabFound.clone()
-
     // copies prefab to manage attributes
+    const prefab = prefabFound.clone()
     prefab.element.removeAttribute('prefab')
 
     // inline type
@@ -246,17 +267,17 @@ export class FileRenderer2 {
   /**
    * Renders element by given type
    */
-  private _render(dyElement: DynamicElement, div: HTMLElement) {
+  private _render(dyEl: DynamicElement, textDyEl: DynamicElement) {
 
-    switch (dyElement.type) {
+    switch (dyEl.type) {
       case DynamicTypes.field:
-        this._renderField(div)
+        this._renderField(textDyEl)
         break
       case DynamicTypes.lines:
-        this._renderLines(dyElement, div)
+        this._renderLines(dyEl, textDyEl)
         break
       case DynamicTypes.loop:
-        this._renderLoop(dyElement, div)
+        this._renderLoop(dyEl, textDyEl)
         break
       default:
         throw new Error('Tried rendering unknown dynamic element type')
@@ -267,8 +288,8 @@ export class FileRenderer2 {
   /**
    *  Renders field attribute
    */
-  private readonly _renderField = (el: HTMLElement) => {
-    el.innerHTML = SF(el.innerHTML)
+  private readonly _renderField = ({ element }: DynamicElement) => {
+    element.innerHTML = SF(element.innerHTML)
       .markdown()
       .string
   }
@@ -276,12 +297,14 @@ export class FileRenderer2 {
 
   /**
    *  Renders lines attribute
+   * @param dyEl where divs and structure come from
+   * @param textDyEl where text comes from and goes to
    */
-  private readonly _renderLines = (dyEl: DynamicElement, newEl: HTMLElement, lines?: string[]) => {
-    const linesArray = lines || getMarkedLines(newEl.innerHTML.trim())
+  private readonly _renderLines = (dyEl: DynamicElement, textDyEl: DynamicElement, lines?: string[]) => {
+    const linesArray = lines || getMarkedLines(textDyEl.element.innerHTML.trim())
     let index = 0
 
-    newEl.innerHTML = dyEl.element.innerHTML
+    textDyEl.element.innerHTML = dyEl.element.innerHTML
       .replace(selectors.line, (...args: string[]) => {
 
         const skip = !!args[1]
@@ -302,40 +325,38 @@ export class FileRenderer2 {
 
         return text
       })
+
   }
 
 
   /**
    *  Renders the loop attribute
    */
-  private readonly _renderLoop = (dyEl: DynamicElement, newEl: HTMLElement) => {
-    const loop = dyEl.element
+  private readonly _renderLoop = (dyEl: DynamicElement, textDyEl: DynamicElement) => {
+    const loopDyel = dyEl.clone()
+    const loop = loopDyel.element
+
     const model = loop.querySelector(selectors.model)
     if (!model) throw new Error('model not found')
 
     const breaks = Number(loop.getAttribute('breaks')) || 1
-
-    const liness = SF(newEl.innerHTML)
+    const liness = SF(textDyEl.element.innerHTML)
       .splitEveryNthLineBreak(breaks)
 
-    const modelCopy = model.cloneNode(true) as HTMLElement
-    // loop.removeChild(model)
-
-    const newLoopDiv = newEl.cloneNode() as HTMLElement
-
-    liness.map((a) => {
-      const newHTML = model.cloneNode(true) as HTMLElement
-
-      this._renderLines(
-        this._makeDynamicElement(DynamicTypes.lines, dyEl.value)(modelCopy),
-        newHTML,
-        a,
+    liness.map(lines => {
+      const modelDyel = new DynamicElement(
+        DynamicTypes.lines,
+        model.cloneNode(true) as HTMLElement,
       )
+      const textCopy = textDyEl.clone()
+      console.log(textCopy.element)
 
-      newLoopDiv.append(newHTML)
+      // this._renderLines(modelDyel, textCopy, lines)
+
+      // loop.append(textDyEl.element)
     })
 
-    newEl.innerHTML = newLoopDiv.innerHTML
+    textDyEl.element.innerHTML = loop.innerHTML
   }
 
 

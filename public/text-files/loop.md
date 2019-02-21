@@ -7,3 +7,11 @@ test6
 test3
 
 [[prefab-test-1] importFile]
+
+[[prefab2]
+  frase 1
+
+  frase 2
+
+  frase 3
+]
