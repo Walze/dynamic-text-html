@@ -1,42 +1,13 @@
-import { globalMatch, mapEnum, flat } from './helpers'
+import { globalMatch, flat } from './helpers'
 import { SF, getMarkedLines } from './StringFormatter'
 import {
   DynamicTypes,
   IFile,
   IFileRendererOptions,
 } from './types'
+import { DynamicElement } from './DynamicElement'
 
 
-export class DynamicElement {
-  public static htmlRenderable = `${DynamicTypes.field} ${DynamicTypes.lines} ${DynamicTypes.loop}`
-  public static types = mapEnum(DynamicTypes)
-
-  public readonly value: string
-  public readonly dynamicFields: HTMLElement[]
-
-  public constructor(
-    public readonly type: DynamicTypes,
-    public element: HTMLElement,
-    fileName?: string | undefined,
-    public cloned: boolean = false,
-    public inlineText?: string,
-  ) {
-    this.value = fileName || element.getAttribute(type) as string
-    this.dynamicFields = Array.from(element.querySelectorAll('[type]'))
-  }
-
-  public clone(deep = true) {
-    const clone = this.element.cloneNode(deep) as HTMLElement
-
-    return new DynamicElement(this.type, clone, this.value, true)
-  }
-
-  public update(dyEl: DynamicElement) {
-    this.element.replaceWith(dyEl.element)
-    this.element = dyEl.element
-  }
-
-}
 export const selectors = {
   externalRGX: /\[\[(.+)?\](.+)?\]/g,
   model: '.model',
@@ -301,10 +272,10 @@ export class FileRenderer2 {
    * @param textDyEl where text comes from and goes to
    */
   private readonly _renderLines = (dyEl: DynamicElement, textDyEl: DynamicElement, lines?: string[]) => {
-    const linesArray = lines || getMarkedLines(textDyEl.element.innerHTML.trim())
+    const linesArray = lines || getMarkedLines(textDyEl.innerHTML.trim())
     let index = 0
 
-    textDyEl.element.innerHTML = dyEl.element.innerHTML
+    textDyEl.innerHTML = dyEl.innerHTML
       .replace(selectors.line, (...args: string[]) => {
 
         const skip = !!args[1]
@@ -336,27 +307,30 @@ export class FileRenderer2 {
     const loopDyel = dyEl.clone()
     const loop = loopDyel.element
 
-    const model = loop.querySelector(selectors.model)
+    const model = dyEl.cloneQuery(selectors.model)
+    loopDyel.clearInner()
+
     if (!model) throw new Error('model not found')
 
     const breaks = Number(loop.getAttribute('breaks')) || 1
-    const liness = SF(textDyEl.element.innerHTML)
+    const liness = SF(textDyEl.innerHTML)
       .splitEveryNthLineBreak(breaks)
 
-    liness.map(lines => {
-      const modelDyel = new DynamicElement(
-        DynamicTypes.lines,
-        model.cloneNode(true) as HTMLElement,
-      )
-      const textCopy = textDyEl.clone()
-      console.log(textCopy.element)
+    const modelDyel = new DynamicElement(
+      DynamicTypes.lines,
+      model.cloneNode(true) as HTMLElement,
+    )
 
-      // this._renderLines(modelDyel, textCopy, lines)
+    liness.map((lines) => {
+      const textCopy = modelDyel.clone()
 
-      // loop.append(textDyEl.element)
+      this._renderLines(modelDyel, textCopy, lines)
+
+      loop.append(textCopy.element)
     })
 
-    textDyEl.element.innerHTML = loop.innerHTML
+
+    textDyEl.innerHTML = loop.innerHTML
   }
 
 
