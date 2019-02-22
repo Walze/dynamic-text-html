@@ -9,7 +9,7 @@ import { DynamicElement } from './DynamicElement'
 
 
 export const selectors = {
-  externalRGX: /\[\[(.+?)?\]([^\[\]]+?)\]/g,
+  externalRGX: /\[([^\[\]]+?)?\[(.+?)?\]([^\[\]]+?)?\]/gm,
   model: '.model',
   model_line: '.model-line', // deprecated
   line: /\[line-?(-)?(\d*)\]/g,
@@ -114,7 +114,8 @@ export class FileRenderer2 {
 
     if (externalMatches) {
       externalMatches.map((matchRGX) => {
-        const prefab = !!matchRGX[2].trim()
+        const prefab = matchRGX[2]
+        console.log(externalMatches, prefab)
 
         if (prefab)
           this._renderPrefab(matchRGX, textDyel)
@@ -152,17 +153,17 @@ export class FileRenderer2 {
     // 2 == prefab
     // 3 == file
 
-    const { 0: match, 1: prefabName } = matchRGX
-    let { 2: fileName } = matchRGX
-    if (!fileName) return false
-    fileName = fileName.trim()
+    const { 0: match, 2: prefabName } = matchRGX
+    let { 1: fileN, 3: fileOrText } = matchRGX
+    if (!fileOrText) return false
+    fileOrText = fileOrText.trim()
 
-    console.log({ prefabName, fileName })
+    // console.warn(fileOrText)
 
-    const foundFile = this.files.find((f) => f.name === fileName)
+    const foundFile = this.files.find((f) => f.name === fileOrText)
     const file: IFile = foundFile
       ? foundFile
-      : makeFile('undefined', fileName, '')
+      : makeFile('INLINE_TEXT', fileOrText, '')
 
     // finds prefab
     const prefabFound = this.dyElements.find((p) =>
@@ -195,7 +196,15 @@ export class FileRenderer2 {
 
 
     this._getDyElements(prefab.element)
-      .map(this._renderDyEl(file.data))
+      .map((dyel) => {
+
+        const inline = dyel.element.hasAttribute('inline')
+        const func = inline
+          ? this._renderDyEl(file.data)
+          : this._renderDyEl(file.data)
+
+        func(dyel)
+      })
 
     console.log(prefab.element)
 
