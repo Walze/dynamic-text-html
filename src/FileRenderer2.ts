@@ -1,4 +1,4 @@
-import { globalMatch, flat } from './helpers'
+import { globalMatch, flat, makeFile } from './helpers'
 import { SF, getMarkedLines } from './StringFormatter'
 import {
   DynamicTypes,
@@ -9,7 +9,7 @@ import { DynamicElement } from './DynamicElement'
 
 
 export const selectors = {
-  externalRGX: /\[\[(.+)?\](.+)?\]/g,
+  externalRGX: /\[\[(.+?)?\]([^\[\]]+?)\]/g,
   model: '.model',
   model_line: '.model-line', // deprecated
   line: /\[line-?(-)?(\d*)\]/g,
@@ -114,7 +114,7 @@ export class FileRenderer2 {
 
     if (externalMatches) {
       externalMatches.map((matchRGX) => {
-        const prefab = matchRGX[2]
+        const prefab = !!matchRGX[2].trim()
 
         if (prefab)
           this._renderPrefab(matchRGX, textDyel)
@@ -155,8 +155,14 @@ export class FileRenderer2 {
     const { 0: match, 1: prefabName } = matchRGX
     let { 2: fileName } = matchRGX
     if (!fileName) return false
-
     fileName = fileName.trim()
+
+    console.log({ prefabName, fileName })
+
+    const foundFile = this.files.find((f) => f.name === fileName)
+    const file: IFile = foundFile
+      ? foundFile
+      : makeFile('undefined', fileName, '')
 
     // finds prefab
     const prefabFound = this.dyElements.find((p) =>
@@ -165,7 +171,7 @@ export class FileRenderer2 {
     )
 
     if (!prefabFound) {
-      console.warn(`External element '[external = ${prefabName}]' not found`)
+      console.warn(`Prefab element '[external = ${prefabName}]' not found`)
 
       return false
     }
@@ -176,21 +182,17 @@ export class FileRenderer2 {
 
     // inline type
     const type = prefab.element.getAttribute('type') as DynamicTypes | undefined
-    if (type) prefab.element.setAttribute(type, fileName)
+    if (type) prefab.element.setAttribute(type, file.name)
 
     const types = prefab.dynamicFields.map((el) => {
       const childType = el.getAttribute('type') as string
 
-      el.setAttribute(childType, fileName)
+      el.setAttribute(childType, file.name)
     })
 
     if (this.options.warn && types.length < 1)
       console.warn(`Prefab ${prefab.value} needs at least 1 type`)
 
-    const file = this.files.find((f) => f.name === fileName)
-    if (!file) throw new Error(`File not found ${fileName}`)
-
-    console.log(prefab.element.cloneNode(true), file.data)
 
     this._getDyElements(prefab.element)
       .map(this._renderDyEl(file.data))

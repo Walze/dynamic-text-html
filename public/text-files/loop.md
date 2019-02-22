@@ -8,7 +8,7 @@ test3
 
 [[prefab-test-1] importFile]
 
-[[prefab2]
+[[prefab-2]
   frase 1
 
   frase 2

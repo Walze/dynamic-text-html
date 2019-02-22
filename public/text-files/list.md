@@ -14,3 +14,11 @@ line4
 line5
 
 line6
+
+[[prefab2]
+    text1
+
+    text2
+
+    texte3
+]
