@@ -43,18 +43,14 @@ const filesURLs: {
 }
 
 const files = makesFiles(filesURLs, 'md')
-console.log(files)
 // debugger
 
 export const render2 = () => {
     const t0 = performance.now()
 
-    const renderer = new FileRenderer2()
+    const renderer = new FileRenderer2(files)
     console.log(renderer)
-    files.map((file) => {
-        // debugger
-        renderer.render(file)
-    })
+    renderer.render()
 
     const diff = Math.ceil(performance.now() - t0)
     console.warn('\n FileRenderer 2 =>', `${diff}ms`)

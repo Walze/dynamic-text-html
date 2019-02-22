@@ -19,14 +19,19 @@ export const selectors = {
 export class FileRenderer2 {
 
   public dyElements: DynamicElement[]
-  public files: IFile[] = []
   // private _lastFile: IFile | undefined
 
   public constructor(
+    public files: IFile[],
     public ext: string = 'md',
     public selectorReference: HTMLElement | Document = document,
     public options: IFileRendererOptions = {},
   ) {
+    this.files.map((file) => {
+      file.rendered = false
+      this._checkValidFile(file)
+    })
+
     this.dyElements = this._getDyElements()
   }
 
@@ -40,7 +45,7 @@ export class FileRenderer2 {
   ): DynamicElement[] => {
     const els = Array.from(selectorReference.querySelectorAll(`[${type}]`)) as HTMLElement[]
 
-    return els.map((el) => new DynamicElement(type, el))
+    return els.map((el) => new DynamicElement(el, type))
   }
 
 
@@ -60,20 +65,19 @@ export class FileRenderer2 {
    * Returns all attributes that matches in file name
    */
   private _matchAttributes(file: IFile) {
-    const filter = (dyEl: DynamicElement) =>
-      dyEl.value === file.name
-      && DynamicElement.htmlRenderable.includes(dyEl.type)
+    const filter = (dyEl: DynamicElement) => dyEl.value === file.name && dyEl.htmlDyEl
 
     return this.dyElements.filter(filter)
   }
 
+  public render() {
+    this.files.map((file) => {
+      this.renderFile(file)
+    })
+  }
 
-  public render(file: IFile) {
-    if (file.rendered && this.options.warn) {
-      console.warn('file already rendered', file)
-    }
 
-    this._checkValidFile(file)
+  private renderFile(file: IFile) {
 
     file.data = SF(file.data)
       .removeComments()
@@ -81,32 +85,22 @@ export class FileRenderer2 {
 
     const matchedDyEls = this
       ._matchAttributes(file)
-      .map(this._renderDyEl(file))
+      .map(
+        this._renderDyEl(file.data),
+      )
 
     file.rendered = matchedDyEls.length > 0
-
-    if (!this.files.includes(file))
-      this.files.push(file)
-
   }
 
 
-  private _renderDyEl(file: IFile): (
-    value: DynamicElement,
-    index: number,
-    array: DynamicElement[],
-  ) => void {
+  private _renderDyEl(text: string): (value: DynamicElement) => void {
     return (dyElement) => {
-      const newDyEl = new DynamicElement(
-        DynamicTypes.text,
-        dyElement.element.cloneNode() as HTMLElement,
-        file.name,
-      )
-      newDyEl.element.innerHTML = file.data
+      const newDyEl = new DynamicElement(dyElement.element.cloneNode() as HTMLElement)
 
-      this._preRender(newDyEl)
+      newDyEl.innerHTML = text
+
+      this._handleExternals(newDyEl)
       this._render(dyElement, newDyEl)
-      this._postRender(newDyEl)
 
       dyElement.update(newDyEl)
     }
@@ -115,56 +109,23 @@ export class FileRenderer2 {
   /**
    * Renders new Dynamic elements
    */
-  private _preRender({ element }: DynamicElement) {
-    const externalMatches = globalMatch(selectors.externalRGX, element.innerHTML)
+  private _handleExternals(textDyel: DynamicElement) {
+    const externalMatches = globalMatch(selectors.externalRGX, textDyel.innerHTML)
 
     if (externalMatches) {
       externalMatches.map((matchRGX) => {
         const prefab = matchRGX[2]
 
         if (prefab)
-          this._renderPrefab(matchRGX, element)
+          this._renderPrefab(matchRGX, textDyel)
         else
-          this._renderExternal(matchRGX, element)
+          this._renderExternal(matchRGX, textDyel)
       })
     }
 
   }
 
-  private _push(dyel: DynamicElement) {
-    let shouldPush = true
-
-    this.dyElements.map((dy) => {
-      if (dy.type === dyel.type && dy.element === dyel.element)
-        shouldPush = false
-    })
-
-    if (shouldPush)
-      this.dyElements.push(dyel)
-    else {
-      console.warn('Tried pushing same DynamicElement into array')
-    }
-  }
-
-
-  /**
-   * Gets dynamic element from new element, adds it to this.dyElements and renders unrendered files
-   */
-  private _postRender({ element }: DynamicElement) {
-    const dyEls = this._getDyElements(element)
-
-    return dyEls.map((dy) => {
-      this._push(dy)
-
-      // if file already went by, find it and render it
-      const foundFile = this.files.find((f) => f.name === dy.value)
-      if (foundFile)
-        this.render(foundFile)
-    })
-  }
-
-
-  private _renderExternal(matchRGX: RegExpMatchArray, element: HTMLElement) {
+  private _renderExternal(matchRGX: RegExpMatchArray, { element }: DynamicElement) {
     const { 0: match, 1: external } = matchRGX
 
     const found = this.dyElements
@@ -186,7 +147,7 @@ export class FileRenderer2 {
   }
 
 
-  private _renderPrefab(matchRGX: RegExpMatchArray, element: HTMLElement): boolean {
+  private _renderPrefab(matchRGX: RegExpMatchArray, { element }: DynamicElement): boolean {
     // 1 == texto
     // 2 == prefab
     // 3 == file
@@ -219,7 +180,6 @@ export class FileRenderer2 {
 
     const types = prefab.dynamicFields.map((el) => {
       const childType = el.getAttribute('type') as string
-      // el.removeAttribute('type')
 
       el.setAttribute(childType, fileName)
     })
@@ -227,9 +187,20 @@ export class FileRenderer2 {
     if (this.options.warn && types.length < 1)
       console.warn(`Prefab ${prefab.value} needs at least 1 type`)
 
+    const file = this.files.find((f) => f.name === fileName)
+    if (!file) throw new Error(`File not found ${fileName}`)
+
+    console.log(prefab.element.cloneNode(true), file.data)
+
+    this._getDyElements(prefab.element)
+      .map(this._renderDyEl(file.data))
+
+    console.log(prefab.element)
+
     // sets prefab html into dynamic elements html
     element.innerHTML = element.innerHTML
       .replace(match, prefab.element.outerHTML.trim())
+
 
     return true
   }
@@ -316,10 +287,7 @@ export class FileRenderer2 {
     const liness = SF(textDyEl.innerHTML)
       .splitEveryNthLineBreak(breaks)
 
-    const modelDyel = new DynamicElement(
-      DynamicTypes.lines,
-      model.cloneNode(true) as HTMLElement,
-    )
+    const modelDyel = new DynamicElement(model.cloneNode(true) as HTMLElement)
 
     liness.map((lines) => {
       const textCopy = modelDyel.clone()

@@ -1,6 +1,6 @@
 ({
   [green][section]
-  before red
+  line 1 || before red
   ({
     [red]
     red ({[blue][span] blue}) 
@@ -8,4 +8,4 @@
 })
 
 
-*nice*
+*importFile line 2*
