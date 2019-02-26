@@ -5,7 +5,7 @@ import {
   IFile,
   IFileRendererOptions,
 } from './types'
-import { DynamicElement } from './DynamicElement'
+import { DynamicElement, IType } from './DynamicElement'
 
 
 export const selectors = {
@@ -27,12 +27,39 @@ export class FileRenderer2 {
     public selectorReference: HTMLElement | Document = document,
     public options: IFileRendererOptions = {},
   ) {
-    this.files.map((file) => {
+    this.files = this.files.map((file) => {
+      file.data = SF(file.data)
+        .removeComments()
+        .string
+
       file.rendered = false
       this._checkValidFile(file)
+
+      return file
     })
 
     this.dyElements = this._getDyElements()
+  }
+
+  private _findDyElType(type: DynamicTypes, value: string) {
+    let foundDyel: DynamicElement | undefined
+    let foundType: IType | undefined
+
+    this.dyElements.map((dyel) => dyel.types.some((_type) => {
+      if (_type.name === type && _type.value === value) {
+        foundDyel = dyel
+        foundType = _type
+
+        return true
+      } else return false
+    }))
+
+    if (!foundType) return
+
+    return {
+      dyel: foundDyel as DynamicElement,
+      type: foundType as IType,
+    }
   }
 
 
@@ -44,8 +71,9 @@ export class FileRenderer2 {
     selectorReference: HTMLElement | Document,
   ): DynamicElement[] => {
     const els = Array.from(selectorReference.querySelectorAll(`[${type}]`)) as HTMLElement[]
+    const dyels = els.map((el) => new DynamicElement(el))
 
-    return els.map((el) => new DynamicElement(el, type))
+    return dyels
   }
 
 
@@ -55,54 +83,43 @@ export class FileRenderer2 {
   private _getDyElements(
     selectorReference: HTMLElement | Document = this.selectorReference,
   ): DynamicElement[] {
-    return flat(
-      DynamicElement.types.map((type) => this._queryElements(type, selectorReference)),
-    )
+    const dyels = DynamicElement.types
+      .map((type) => this._queryElements(type, selectorReference))
+
+    return flat(dyels)
   }
 
-
-  /**
-   * Returns all attributes that matches in file name
-   */
-  private _matchAttributes(file: IFile) {
-    const filter = (dyEl: DynamicElement) => dyEl.value === file.name && dyEl.htmlDyEl
-
-    return this.dyElements.filter(filter)
-  }
 
   public render() {
-    this.files.map((file) => {
-      this.renderFile(file)
+    this.dyElements.map((dyel) => {
+      this._matchFileAndRender(dyel)
     })
   }
 
 
-  private renderFile(file: IFile) {
+  private _matchFileAndRender(dyel: DynamicElement) {
+    dyel.types.map((type) => {
+      const file = this.files.find((_file) => type.value === _file.name)
+      if (!file) return
 
-    file.data = SF(file.data)
-      .removeComments()
-      .string
-
-    const matchedDyEls = this
-      ._matchAttributes(file)
-      .map(
-        this._renderDyEl(file.data),
-      )
-
-    file.rendered = matchedDyEls.length > 0
+      this._renderDyEl(file.data)(dyel)
+    })
   }
 
 
-  private _renderDyEl(text: string): (value: DynamicElement) => void {
-    return (dyElement) => {
-      const newDyEl = new DynamicElement(dyElement.element.cloneNode() as HTMLElement)
-
+  private _renderDyEl(text: string) {
+    return (dyel: DynamicElement) => {
+      const newDyEl = new DynamicElement(dyel.element.cloneNode() as HTMLElement)
       newDyEl.innerHTML = text
 
       this._handleExternals(newDyEl)
-      this._render(dyElement, newDyEl)
+      this._render(dyel, newDyEl)
 
-      dyElement.update(newDyEl)
+      if (this.dyElements.includes(dyel))
+        dyel.update(newDyEl, true)
+      else
+        dyel.update(newDyEl)
+
     }
   }
 
@@ -114,8 +131,7 @@ export class FileRenderer2 {
 
     if (externalMatches) {
       externalMatches.map((matchRGX) => {
-        const prefab = matchRGX[2]
-        console.log(externalMatches, prefab)
+        const prefab = !!matchRGX[3]
 
         if (prefab)
           this._renderPrefab(matchRGX, textDyel)
@@ -126,56 +142,59 @@ export class FileRenderer2 {
 
   }
 
-  private _renderExternal(matchRGX: RegExpMatchArray, { element }: DynamicElement) {
-    const { 0: match, 1: external } = matchRGX
+  private _renderExternal(matchRGX: RegExpMatchArray, dyel: DynamicElement) {
+    const { element } = dyel
+    const { 0: match, 2: external } = matchRGX
 
-    const found = this.dyElements
-      .find(({ value: externalName, type }) =>
-        external === externalName
-        && type === DynamicTypes.external,
-      )
+    const found = this._findDyElType(DynamicTypes.external, external)
 
-    if (found)
+    if (found) {
+      const foundExternal = found.dyel
+
       element.innerHTML = element.innerHTML
-        .replace(match, found.element.outerHTML.trim())
+        .replace(match, foundExternal.element.outerHTML.trim())
         .replace(/>\s+</gu, "><")
-    else {
-      console.warn(`External element '[prefab = ${external}]' not found on file`)
+
+      // update new generated dyels
+      const newDyels = this._getDyElements(element)
+
+      newDyels.map((_dyel) => {
+        this._matchFileAndRender(_dyel)
+      })
+
+    } else {
+      console.warn(`External element '[external = ${external}]' not found on file`, dyel)
 
       element.innerHTML = element.innerHTML
-        .replace(match, 'NOT FOUND')
+        .replace(match, `[EXTERNAL NOT FOUND = ${external}]`)
     }
   }
 
 
-  private _renderPrefab(matchRGX: RegExpMatchArray, { element }: DynamicElement): boolean {
-    // 1 == texto
-    // 2 == prefab
-    // 3 == file
+  private _renderPrefab(matchRGX: RegExpMatchArray, dyel: DynamicElement) {
+    const { element } = dyel
 
     const { 0: match, 2: prefabName } = matchRGX
-    let { 1: fileN, 3: fileOrText } = matchRGX
+    let { 1: fileName, 3: fileOrText } = matchRGX
     if (!fileOrText) return false
     fileOrText = fileOrText.trim()
-
-    // console.warn(fileOrText)
 
     const foundFile = this.files.find((f) => f.name === fileOrText)
     const file: IFile = foundFile
       ? foundFile
-      : makeFile('INLINE_TEXT', fileOrText, '')
+      : makeFile('INLINE_TEXT', fileOrText, this.ext)
 
-    // finds prefab
-    const prefabFound = this.dyElements.find((p) =>
-      p.value === prefabName
-      && p.type === DynamicTypes.external,
-    )
 
-    if (!prefabFound) {
-      console.warn(`Prefab element '[external = ${prefabName}]' not found`)
+    const found = this._findDyElType(DynamicTypes.external, prefabName)
+    debugger
+
+    if (!found) {
+      console.warn(`Prefab element '[external = ${prefabName}]' not found`, dyel)
 
       return false
     }
+
+    const prefabFound = found.dyel
 
     // copies prefab to manage attributes
     const prefab = prefabFound.clone()
@@ -192,21 +211,23 @@ export class FileRenderer2 {
     })
 
     if (this.options.warn && types.length < 1)
-      console.warn(`Prefab ${prefab.value} needs at least 1 type`)
+      console.warn(`Prefab ${prefab} needs at least 1 type`)
 
-
+    // update new generated dyels
     this._getDyElements(prefab.element)
-      .map((dyel) => {
+      .map((_dyel) => {
 
-        const inline = dyel.element.hasAttribute('inline')
-        const func = inline
+        const inline = _dyel.element.hasAttribute('inline')
+
+        if (inline && !fileName)
+          console.error('Inline text dynamic element but no file name', [prefab, _dyel])
+
+        const render = inline
           ? this._renderDyEl(file.data)
           : this._renderDyEl(file.data)
 
-        func(dyel)
+        render(_dyel)
       })
-
-    console.log(prefab.element)
 
     // sets prefab html into dynamic elements html
     element.innerHTML = element.innerHTML
@@ -220,21 +241,24 @@ export class FileRenderer2 {
   /**
    * Renders element by given type
    */
-  private _render(dyEl: DynamicElement, textDyEl: DynamicElement) {
+  private _render(dyel: DynamicElement, textDyEl: DynamicElement) {
+    dyel.types.map((type) => {
+      if (!type.htmlRender) return
 
-    switch (dyEl.type) {
-      case DynamicTypes.field:
-        this._renderField(textDyEl)
-        break
-      case DynamicTypes.lines:
-        this._renderLines(dyEl, textDyEl)
-        break
-      case DynamicTypes.loop:
-        this._renderLoop(dyEl, textDyEl)
-        break
-      default:
-        throw new Error('Tried rendering unknown dynamic element type')
-    }
+      switch (type.name) {
+        case DynamicTypes.field:
+          this._renderField(textDyEl)
+          break
+        case DynamicTypes.lines:
+          this._renderLines(dyel, textDyEl)
+          break
+        case DynamicTypes.loop:
+          this._renderLoop(dyel, textDyEl)
+          break
+        default:
+          throw new Error(`Tried rendering invalid dynamic element type ${type}`)
+      }
+    })
   }
 
 

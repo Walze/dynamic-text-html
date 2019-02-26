@@ -1,8 +1,7 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
-  entry: './public/index.ts',
+  entry: './src/barrel.ts',
   devtool: 'source-map',
   module: {
     rules: [
@@ -12,21 +11,23 @@ module.exports = {
         exclude: /node_modules/
       },
       {
+        test: /\.m?js$/,
+        exclude: /(node_modules|bower_components)/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
+        }
+      },
+      {
         test: /\.css$/,
         use: ['style-loader', 'css-loader']
       },
       {
         test: /\.md$/,
         use: 'raw-loader'
-      },
-      // {
-      //   test: /\.(png|jpg|gif|md)$/,
-      //   use: [
-      //     {
-      //       loader: 'file-loader',
-      //     }
-      //   ]
-      // }
+      }
     ]
   },
   resolve: {
@@ -37,9 +38,4 @@ module.exports = {
     chunkFilename: '[name].bundle.js',
     path: path.resolve(__dirname, 'dist')
   },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: 'public/index.html'
-    })
-  ]
 };

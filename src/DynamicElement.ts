@@ -1,14 +1,18 @@
-import { DynamicTypes } from "./types";
-import { mapEnum } from "./barrel";
+import { DynamicTypes } from "./types"
+import { mapEnum } from "./helpers"
+
+export interface IType {
+  htmlRender: boolean,
+  name: DynamicTypes,
+  value: string,
+}
 
 export class DynamicElement {
   public static htmlAttrs = `${DynamicTypes.field} ${DynamicTypes.lines} ${DynamicTypes.loop}`
   public static types = mapEnum(DynamicTypes)
 
-  public readonly value: string
   public _dynamicFields: HTMLElement[] | undefined
-  public htmlDyEl: boolean
-
+  public types: IType[]
   public get dynamicFields() {
     if (!this._dynamicFields)
       this._dynamicFields = Array.from(this.element.querySelectorAll('[type]'))
@@ -16,17 +20,25 @@ export class DynamicElement {
     return this._dynamicFields
   }
 
+
   public constructor(
     public element: HTMLElement,
-    public readonly type: DynamicTypes = DynamicTypes.text,
-    fileName?: string | undefined,
+    private _fileName?: string | undefined,
     public cloned: boolean = false,
   ) {
-    this.htmlDyEl = DynamicElement.htmlAttrs.includes(type)
-    this.value = fileName || element.getAttribute(type) as string
-    this._dynamicFields = undefined
-  }
+    this.types = DynamicElement.types.map((name) => {
+      const value = element.getAttribute(name) || _fileName
+      if (!value) return
 
+      return {
+        name,
+        value,
+        htmlRender: DynamicElement.htmlAttrs.includes(name),
+      }
+    })
+      .filter((_) => _) as IType[]
+
+  }
 
   public set outerHTML(string) {
     this.element.outerHTML = string
@@ -58,10 +70,17 @@ export class DynamicElement {
   public clone(deep = true) {
     const clone = this.element.cloneNode(deep) as HTMLElement
 
-    return new DynamicElement(clone, this.type, this.value, true)
+    return new DynamicElement(clone, this._fileName, true)
   }
 
-  public update(dyEl: DynamicElement) {
+  public update(dyEl: DynamicElement, warn = false) {
+    if (warn) {
+      const bodyHas = document.body.contains(this.element)
+
+      if (!bodyHas)
+        console.warn(`Replaced non existant element`, this, dyEl)
+    }
+
     this.element.replaceWith(dyEl.element)
     this.element = dyEl.element
   }
