@@ -19,7 +19,7 @@
     "@types/marked": "^0.6.1",
     "@types/node": "^11.9.5",
     "@types/virtual-dom": "^2.1.0",
-    "@types/webpack": "^4.4.24",
+    "@types/webpack": "^4.4.25",
     "@types/webpack-env": "^1.13.7",
     "@types/xregexp": "^3.0.29",
     "babel-loader": "^8.0.5",

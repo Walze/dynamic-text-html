@@ -1,4 +1,4 @@
-import { globalMatch, flat, makeFile } from './helpers'
+import { globalMatch, makeFile } from './helpers'
 import { SF, getMarkedLines } from './StringFormatter'
 import {
   DynamicTypes,
@@ -24,7 +24,7 @@ export class FileRenderer2 {
   public constructor(
     public files: IFile[],
     public ext: string = 'md',
-    public selectorReference: HTMLElement | Document = document,
+    public selectorReference = document.body,
     public options: IFileRendererOptions = {},
   ) {
     this.files = this.files.map((file) => {
@@ -38,7 +38,11 @@ export class FileRenderer2 {
       return file
     })
 
-    this.dyElements = this._getDyElements()
+    this.dyElements = DynamicElement.getDyElements(selectorReference)
+
+    console.log(
+      DynamicElement.mapChildren(this.dyElements)
+    )
   }
 
   private _findDyElType(type: DynamicTypes, value: string) {
@@ -62,34 +66,6 @@ export class FileRenderer2 {
     }
   }
 
-
-  /**
-   *  Gets element by attribute and gets attributes value
-   */
-  private _queryElements = (
-    type: DynamicTypes,
-    selectorReference: HTMLElement | Document,
-  ): DynamicElement[] => {
-    const els = Array.from(selectorReference.querySelectorAll(`[${type}]`)) as HTMLElement[]
-    const dyels = els.map((el) => new DynamicElement(el))
-
-    return dyels
-  }
-
-
-  /**
-   *  Gets all attributes
-   */
-  private _getDyElements(
-    selectorReference: HTMLElement | Document = this.selectorReference,
-  ): DynamicElement[] {
-    const dyels = DynamicElement.types
-      .map((type) => this._queryElements(type, selectorReference))
-
-    return flat(dyels)
-  }
-
-
   public render() {
     this.dyElements.map((dyel) => {
       this._matchFileAndRender(dyel)
@@ -99,6 +75,8 @@ export class FileRenderer2 {
 
   private _matchFileAndRender(dyel: DynamicElement) {
     dyel.types.map((type) => {
+      if (!type.htmlRender) return
+
       const file = this.files.find((_file) => type.value === _file.name)
       if (!file) return
 
@@ -115,11 +93,7 @@ export class FileRenderer2 {
       this._handleExternals(newDyEl)
       this._render(dyel, newDyEl)
 
-      if (this.dyElements.includes(dyel))
-        dyel.update(newDyEl, true)
-      else
-        dyel.update(newDyEl)
-
+      dyel.update(newDyEl)
     }
   }
 
@@ -149,18 +123,18 @@ export class FileRenderer2 {
     const found = this._findDyElType(DynamicTypes.external, external)
 
     if (found) {
-      const foundExternal = found.dyel
+      const foundExternal = found.dyel.clone()
+
+      // update new generated dyels
+      foundExternal.children.map((_dyel) => {
+        this._matchFileAndRender(_dyel)
+      })
+      this._matchFileAndRender(foundExternal)
 
       element.innerHTML = element.innerHTML
         .replace(match, foundExternal.element.outerHTML.trim())
-        .replace(/>\s+</gu, "><")
+        .replace(/>\s+</gu, ">\n<")
 
-      // update new generated dyels
-      const newDyels = this._getDyElements(element)
-
-      newDyels.map((_dyel) => {
-        this._matchFileAndRender(_dyel)
-      })
 
     } else {
       console.warn(`External element '[external = ${external}]' not found on file`, dyel)
@@ -186,9 +160,9 @@ export class FileRenderer2 {
 
 
     const found = this._findDyElType(DynamicTypes.external, prefabName)
-    debugger
 
     if (!found) {
+      debugger
       console.warn(`Prefab element '[external = ${prefabName}]' not found`, dyel)
 
       return false
@@ -198,7 +172,7 @@ export class FileRenderer2 {
 
     // copies prefab to manage attributes
     const prefab = prefabFound.clone()
-    prefab.element.removeAttribute('prefab')
+    prefab.element.removeAttribute('external')
 
     // inline type
     const type = prefab.element.getAttribute('type') as DynamicTypes | undefined
@@ -214,7 +188,8 @@ export class FileRenderer2 {
       console.warn(`Prefab ${prefab} needs at least 1 type`)
 
     // update new generated dyels
-    this._getDyElements(prefab.element)
+    DynamicElement
+      .getDyElements(prefab.element)
       .map((_dyel) => {
 
         const inline = _dyel.element.hasAttribute('inline')
